@@ -1,79 +1,70 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { getTasks, trackUsage } from '@/lib/storage';
-import type { Task } from '@/lib/storage';
 import { Card } from '@/components/Card';
+import { AiStaff, getStaffStatus, loadAiStaff } from '@/lib/hey-mvp';
 
 export default function HomePage() {
-  const router = useRouter();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [staffList, setStaffList] = useState<AiStaff[]>([]);
 
   useEffect(() => {
-    trackUsage('home');
-    getTasks().then((t) => setTasks(t));
+    Promise.resolve().then(() => setStaffList(loadAiStaff()));
   }, []);
 
-  const activeTasks = tasks.filter((t) => t.status !== 'done');
-  const doneTasks = tasks.filter((t) => t.status === 'done');
-
   return (
-    <div className="flex flex-col gap-6 mt-4">
-      <div className="text-center">
-        <p className="text-4xl mb-2">🐥</p>
-        <h1 className="text-2xl font-bold text-gray-800">HEY!おぴよ!</h1>
-        <p className="text-sm text-gray-400 mt-1">クリエイターのアシスタント</p>
-      </div>
+    <div className="flex flex-col gap-5">
+      <section className="pt-3">
+        <p className="text-sm font-medium text-amber-600">HEY</p>
+        <h1 className="mt-2 text-3xl font-bold tracking-normal text-gray-950">HEY</h1>
+        <p className="mt-3 text-base leading-relaxed text-gray-600">
+          クリエイターの仕事を、担当AIと一緒に片付ける
+        </p>
+      </section>
 
-      <Card>
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold text-gray-600">タスク</p>
-          <button type="button" onClick={() => router.push('/tasks')} className="text-xs text-amber-500">
-            すべて見る ›
-          </button>
-        </div>
-        {activeTasks.length > 0 ? (
-          <div className="flex flex-col gap-2">
-            {activeTasks.slice(0, 3).map((task) => (
-              <div key={task.id} className="flex items-center gap-2 text-sm text-gray-700">
-                <span>{task.status === 'in_progress' ? '🔄' : '⬜'}</span>
-                <span className="truncate">{task.title}</span>
-              </div>
-            ))}
-            {activeTasks.length > 3 && (
-              <p className="text-xs text-gray-400 mt-1">他 {activeTasks.length - 3} 件</p>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-gray-400 text-center py-2">タスクはまだないよ 🐥</p>
-        )}
+      <Card className="bg-gray-950 text-white">
+        <p className="text-sm leading-relaxed text-gray-100">
+          担当AIには体力があります。依頼すると体力を消費し、毎日回復します。
+        </p>
       </Card>
 
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          onClick={() => router.push('/tasks')}
-          className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 flex flex-col items-center gap-2 text-center active:scale-95 transition-all"
-        >
-          <span className="text-3xl">✅</span>
-          <p className="text-sm font-medium text-gray-700">タスク管理</p>
-          <p className="text-xs text-gray-400">{activeTasks.length} 件進行中</p>
-        </button>
-        <button
-          type="button"
-          onClick={() => router.push('/settings')}
-          className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 flex flex-col items-center gap-2 text-center active:scale-95 transition-all"
-        >
-          <span className="text-3xl">⚙️</span>
-          <p className="text-sm font-medium text-gray-700">投稿スタイル</p>
-          <p className="text-xs text-gray-400">SNS設定</p>
-        </button>
-      </div>
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-900">担当AI</h2>
+          <Link href="/chat" className="text-sm font-medium text-amber-600">
+            依頼する
+          </Link>
+        </div>
 
-      {doneTasks.length > 0 && (
-        <p className="text-xs text-gray-400 text-center">完了済みタスク: {doneTasks.length} 件</p>
-      )}
+        {staffList.map((staff) => {
+          const staminaPercent = Math.round((staff.currentStamina / staff.maxStamina) * 100);
+          return (
+            <Card key={staff.id} className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-lg font-bold text-gray-900">{staff.name}</p>
+                  <p className="mt-1 text-sm text-gray-500">{staff.role}</p>
+                </div>
+                <p className="shrink-0 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                  {getStaffStatus(staff)}
+                </p>
+              </div>
+              <p className="text-sm leading-relaxed text-gray-600">{staff.description}</p>
+              <div>
+                <div className="mb-1 flex justify-between text-xs text-gray-500">
+                  <span>体力</span>
+                  <span>
+                    {staff.currentStamina} / {staff.maxStamina}
+                  </span>
+                </div>
+                <div className="h-2 rounded-full bg-gray-100">
+                  <div className="h-2 rounded-full bg-amber-400" style={{ width: `${staminaPercent}%` }} />
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </section>
     </div>
   );
 }
