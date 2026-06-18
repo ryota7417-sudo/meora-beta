@@ -1,0 +1,19 @@
+API
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxaWlwYWluZnlkc2ZoZGRkcWNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTY0OTQsImV4cCI6MjA5NjIzMjQ5NH0.c6SqWpZMDLrwuqNh7wftBa6Zaej00ohwMLvjyni4OiI
+
+URL
+https://pqiipainfydsfhdddqcf.supabase.co
+
+
+
+
+Set up Supabase for this project.
+
+Create or update .env.local with:
+
+NEXT_PUBLIC_SUPABASE_URL=https://pqiipainfydsfhdddqcf.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=PASTE_ANON_PUBLIC_KEY_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxaWlwYWluZnlkc2ZoZGRkcWNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTY0OTQsImV4cCI6MjA5NjIzMjQ5NH0.c6SqWpZMDLrwuqNh7wftBa6Zaej00ohwMLvjyni4OiI
+
+Do not use service_role key.
+
+Then connect the app to Supabase and keep mock/local fallback if env vars are missing.

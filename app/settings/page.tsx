@@ -1,152 +1,246 @@
 'use client';
-
 import { useState, useEffect } from 'react';
-import { getSnsStyle, saveSnsStyle, trackUsage } from '@/lib/storage';
-import type { SnsStyle } from '@/lib/storage';
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
+import { useRouter } from 'next/navigation';
+import { BottomNav } from '@/components/ui/BottomNav';
+import { CharAvatar } from '@/components/ui/CharacterSvg';
+import { loadState, AppState, Character } from '@/lib/store';
+import { createClient } from '@/lib/supabase';
+import type { User } from '@supabase/supabase-js';
 
-function makeGrokPrompt(xId: string) {
-  return `Analyze the X account ${xId}. Summarize this user's posting style, personality, tone, common topics, emoji usage, sentence length, values, and communication habits. Output it as a reusable prompt for another AI assistant to generate posts in this user's style. Do not include private assumptions. Focus only on public posting style.`;
+type Purchase = {
+  id: string;
+  listing_id: string;
+  amount: number;
+  created_at: string;
+  market_listings: {
+    name: string;
+    type: string;
+    photo_url: string | null;
+  } | null;
+};
+
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
 }
 
 export default function SettingsPage() {
-  const [step, setStep] = useState<'select' | 'enter-id' | 'grok-prompt' | 'enter-style' | 'done'>('select');
-  const [accountId, setAccountId] = useState('');
-  const [styleInput, setStyleInput] = useState('');
-  const [saved, setSaved] = useState<SnsStyle | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const router = useRouter();
+  const [confirmed, setConfirmed] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [purchasesLoading, setPurchasesLoading] = useState(true);
+  const [state] = useState<AppState | null>(() => loadState());
 
   useEffect(() => {
-    trackUsage('settings');
-    getSnsStyle('x').then((style) => {
-      if (style) {
-        setSaved(style);
-        setStep('done');
-      }
-    });
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+
+    supabase
+      .from('purchases')
+      .select('id, listing_id, amount, created_at, market_listings(name, type, photo_url)')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        setPurchases((data as unknown as Purchase[]) ?? []);
+        setPurchasesLoading(false);
+      });
   }, []);
 
-  async function handleSave() {
-    if (!styleInput.trim()) return;
-    setSaving(true);
-    try {
-      const result = await saveSnsStyle('x', accountId.trim(), styleInput.trim());
-      setSaved(result);
-      setStep('done');
-    } finally {
-      setSaving(false);
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    await createClient().auth.signOut();
+    router.replace('/onboarding');
+  };
+
+  const handleReset = () => {
+    if (!confirmed) {
+      setConfirmed(true);
+      return;
     }
-  }
+    localStorage.clear();
+    router.replace('/onboarding');
+  };
 
-  async function handleCopy() {
-    await navigator.clipboard.writeText(makeGrokPrompt(accountId)).catch(() => {});
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
+  const editable: Character[] = state
+    ? state.characters.filter(c => c.userCreated).length > 0
+      ? state.characters.filter(c => c.userCreated)
+      : state.characters
+    : [];
 
-  function handleReset() {
-    setSaved(null);
-    setAccountId('');
-    setStyleInput('');
-    setStep('select');
-  }
+  const typeLabel = (type: string) =>
+    type === 'character' ? 'キャラ' : type === 'food' ? 'お食事' : 'スキン';
 
   return (
-    <div className="flex flex-col gap-4">
-      <h2 className="text-xl font-bold text-gray-800">投稿スタイルの設定</h2>
+    <div style={{ minHeight: '100vh', paddingBottom: 'calc(96px + env(safe-area-inset-bottom))' }}>
+      <div style={{ background: '#111', color: '#fff', padding: '14px 20px' }}>
+        <h1 style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 900 }}>
+          設定
+        </h1>
+      </div>
 
-      {step === 'select' && (
-        <Card className="flex flex-col gap-4">
-          <p className="text-base text-gray-700">どのSNSのスタイルを登録する？🐥</p>
-          <Button size="lg" onClick={() => setStep('enter-id')}>
-            X（旧 Twitter）
-          </Button>
-          <p className="text-xs text-gray-400">Instagram などは今後対応予定</p>
-        </Card>
-      )}
+      <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-      {step === 'enter-id' && (
-        <Card className="flex flex-col gap-4">
-          <p className="text-base text-gray-700">X のアカウント ID を教えて 🐥</p>
-          <input
-            type="text"
-            value={accountId}
-            onChange={(e) => setAccountId(e.target.value)}
-            placeholder="@yourhandle"
-            autoCapitalize="none"
-            autoCorrect="off"
-            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-base outline-none focus:border-amber-400"
-          />
-          <Button onClick={() => setStep('grok-prompt')} disabled={!accountId.trim()}>
-            次へ
-          </Button>
-          <button type="button" onClick={() => setStep('select')} className="text-sm text-gray-400 self-center">
-            戻る
-          </button>
-        </Card>
-      )}
-
-      {step === 'grok-prompt' && (
-        <div className="flex flex-col gap-4">
-          <Card className="flex flex-col gap-3">
-            <p className="text-base text-gray-700">Grok にこのプロンプトを送ってみて 🐥</p>
-            <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-700 leading-relaxed font-mono break-all">
-              {makeGrokPrompt(accountId)}
+        {/* 自分のキャラを編集 */}
+        <div className="card" style={{ padding: '20px 16px' }}>
+          <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 800 }}>自分のキャラを編集</h2>
+          <p style={{ margin: '0 0 14px', fontSize: 12, color: '#888', lineHeight: 1.6 }}>
+            名前・写真・性格・口調を編集できます。
+          </p>
+          {editable.length === 0 ? (
+            <div style={{ fontSize: 13, color: '#888', lineHeight: 1.7 }}>
+              まだキャラがいません。
             </div>
-            <Button variant="secondary" onClick={handleCopy}>
-              {copied ? 'コピーしました！' : 'コピーする'}
-            </Button>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              Grok が {accountId} の投稿スタイルを分析して、文体プロンプトを返してくれます。
-              その文章を次の画面に貼り付けると、X 投稿生成に反映されます。
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', border: '2px solid #111', boxShadow: '4px 4px 0 #111', background: '#fff' }}>
+              {editable.map((char, i) => (
+                <div
+                  key={char.id}
+                  onClick={() => router.push(`/character/edit/${char.id}`)}
+                  style={{ display: 'flex', alignItems: 'center', padding: '12px 12px', gap: 11, cursor: 'pointer', borderBottom: i < editable.length - 1 ? '1px solid #ddd' : 'none' }}
+                >
+                  <div style={{ width: 40, height: 40, border: '2px solid #111', flexShrink: 0, background: '#f0f0ea', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                    <CharAvatar photo={char.photo} name={char.name} size={36} />
+                  </div>
+                  <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{char.name}</span>
+                  <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 800, color: '#111', background: '#f7f5f0', border: '2px solid #111', padding: '3px 8px' }}>編集 →</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* アカウント */}
+        <div className="card" style={{ padding: '20px 16px' }}>
+          <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 800 }}>アカウント</h2>
+
+          {/* ログイン中のアカウント表示 */}
+          <div style={{ marginBottom: 14, padding: '12px', background: '#f7f5f0', border: '2px solid #111' }}>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', color: '#888', marginBottom: 4, textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+              ログイン中
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#111', wordBreak: 'break-all' }}>
+              {user ? user.email : '読み込み中...'}
+            </div>
+            {user?.user_metadata?.full_name && (
+              <div style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
+                {user.user_metadata.full_name}
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: '#fff',
+              color: '#111',
+              border: '2px solid #111',
+              boxShadow: loggingOut ? 'none' : '3px 3px 0 #111',
+              fontWeight: 800,
+              fontSize: 14,
+              cursor: loggingOut ? 'not-allowed' : 'pointer',
+              opacity: loggingOut ? 0.6 : 1,
+              transition: 'all 0.1s',
+            }}
+          >
+            {loggingOut ? 'ログアウト中...' : 'ログアウト'}
+          </button>
+        </div>
+
+        {/* 購入履歴 */}
+        <div className="card" style={{ padding: '20px 16px' }}>
+          <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 800 }}>購入履歴</h2>
+
+          {purchasesLoading ? (
+            <div style={{ fontSize: 13, color: '#888', padding: '12px 0' }}>読み込み中...</div>
+          ) : purchases.length === 0 ? (
+            <div style={{ fontSize: 13, color: '#888', lineHeight: 1.7, padding: '12px 0', textAlign: 'center' }}>
+              まだ購入履歴がありません
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', border: '2px solid #111', boxShadow: '4px 4px 0 #111', background: '#fff' }}>
+              {purchases.map((p, i) => (
+                <div
+                  key={p.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '12px 12px',
+                    gap: 11,
+                    borderBottom: i < purchases.length - 1 ? '1px solid #ddd' : 'none',
+                  }}
+                >
+                  {/* アイテム写真 */}
+                  <div style={{ width: 40, height: 40, border: '2px solid #111', flexShrink: 0, background: '#f0f0ea', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {p.market_listings?.photo_url ? (
+                      <img src={p.market_listings.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <span style={{ fontSize: 18 }}>🛍</span>
+                    )}
+                  </div>
+                  {/* 名前 + 種別 */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {p.market_listings?.name ?? 'アイテム'}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
+                      {p.market_listings ? typeLabel(p.market_listings.type) : ''} · {formatDate(p.created_at)}
+                    </div>
+                  </div>
+                  {/* 金額 */}
+                  <div style={{ flexShrink: 0, fontSize: 14, fontWeight: 800, color: '#111', fontFamily: 'var(--font-mono)' }}>
+                    ¥{p.amount.toLocaleString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* アプリについて */}
+        <div className="card" style={{ padding: '20px 16px' }}>
+          <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 800 }}>アプリについて</h2>
+          <div style={{ fontSize: 13, color: '#555', lineHeight: 1.8 }}>
+            <div>バージョン: 0.1.0</div>
+            <div>MEORA — いつもそばに。僕と過ごすAI。</div>
+          </div>
+        </div>
+
+        {/* データ管理 */}
+        <div className="card" style={{ padding: '20px 16px' }}>
+          <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 800 }}>データ管理</h2>
+          <p style={{ margin: '0 0 16px', fontSize: 13, color: '#555', lineHeight: 1.6 }}>
+            全てのデータをリセットしてオンボーディングからやり直します。
+          </p>
+          <button
+            onClick={handleReset}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: confirmed ? '#e53935' : '#fff',
+              color: confirmed ? '#fff' : '#e53935',
+              border: '2px solid #e53935',
+              boxShadow: confirmed ? 'none' : '3px 3px 0 #e53935',
+              fontWeight: 800,
+              fontSize: 14,
+              cursor: 'pointer',
+              transition: 'all 0.1s',
+            }}
+          >
+            {confirmed ? '本当にリセット（クリックで実行）' : 'データをリセット'}
+          </button>
+          {confirmed && (
+            <p style={{ margin: '8px 0 0', fontSize: 12, color: '#e53935', fontWeight: 600 }}>
+              この操作は取り消せません
             </p>
-          </Card>
-          <Button size="lg" onClick={() => setStep('enter-style')}>
-            Grok の返答が届いたら次へ
-          </Button>
-          <button type="button" onClick={() => setStep('enter-id')} className="text-sm text-gray-400 self-center">
-            戻る
-          </button>
+          )}
         </div>
-      )}
+      </div>
 
-      {step === 'enter-style' && (
-        <Card className="flex flex-col gap-4">
-          <p className="text-base text-gray-700">Grok からもらったプロンプトをここに貼り付けて 🐥</p>
-          <textarea
-            value={styleInput}
-            onChange={(e) => setStyleInput(e.target.value)}
-            placeholder="Grok の返答をここにペースト…"
-            rows={7}
-            className="w-full resize-none rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-amber-400 leading-relaxed"
-          />
-          <Button onClick={handleSave} disabled={!styleInput.trim() || saving}>
-            {saving ? '保存中…' : '保存する'}
-          </Button>
-          <button type="button" onClick={() => setStep('grok-prompt')} className="text-sm text-gray-400 self-center">
-            戻る
-          </button>
-        </Card>
-      )}
-
-      {step === 'done' && saved && (
-        <div className="flex flex-col gap-4">
-          <Card className="flex flex-col gap-3">
-            <p className="text-sm text-gray-500">登録済みのスタイル</p>
-            <div className="flex items-center gap-2">
-              <span className="text-lg">𝕏</span>
-              <span className="text-base font-medium text-gray-800">{saved.account_id}</span>
-            </div>
-            <p className="text-xs text-gray-400 leading-relaxed line-clamp-4">{saved.style_prompt}</p>
-          </Card>
-          <p className="text-sm text-gray-500 text-center">このスタイルが X 投稿の生成に使われます 🐥</p>
-          <Button variant="secondary" size="sm" className="self-center" onClick={handleReset}>
-            スタイルを変更する
-          </Button>
-        </div>
-      )}
+      <BottomNav />
     </div>
   );
 }
