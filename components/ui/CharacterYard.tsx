@@ -176,7 +176,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
 
     const movers: Mover[] = list.map((char, i) => {
       const dir: 'left' | 'right' = Math.random() < 0.5 ? 'left' : 'right';
-      const speed = rand(14, 30); // px/sec
+      const speed = rand(6, 14); // px/sec
       // 重なりすぎない初期配置: 横方向に概ね等間隔 + ランダムゆらぎ。
       const slot = list.length > 0 ? (W - SPRITE_W) / list.length : 0;
       const x = Math.min(
