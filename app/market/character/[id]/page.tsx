@@ -105,7 +105,7 @@ export default function MarketCharacterPage({ params }: { params: Promise<{ id: 
             style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 7, border: '2px solid #111', padding: '5px 10px', cursor: 'pointer', background: '#f7f5f0' }}
           >
             <div style={{ width: 22, height: 22, border: '1.5px solid #111', overflow: 'hidden', flexShrink: 0, background: creator.avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <CharAvatar name={creator.name} size={22} />
+              <img src="/characters/market_creator_default.png" alt={creator.name} width={22} height={22} style={{ objectFit: 'cover' }} />
             </div>
             <span style={{ fontSize: 11, fontWeight: 800 }}>{creator.name}</span>
             <span style={{ fontSize: 11, fontWeight: 800, color: '#7a746c' }}>お店へ ›</span>

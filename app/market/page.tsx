@@ -176,7 +176,7 @@ export default function MarketPage() {
             {MARKET_CREATORS.map((creator) => (
               <div key={creator.id} onClick={() => goShop(creator.id)} style={{ flexShrink: 0, width: 96, textAlign: 'center', cursor: 'pointer' }}>
                 <div style={{ width: 64, height: 64, border: '2px solid #111', boxShadow: '3px 3px 0 #111', margin: '0 auto 6px', background: creator.avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  <CharAvatar name={creator.name} size={64} />
+                  <img src="/characters/market_creator_default.png" alt={creator.name} width={64} height={64} style={{ objectFit: 'cover' }} />
                 </div>
                 <div style={{ fontSize: 11, fontWeight: 800, lineHeight: 1.2 }}>{creator.name}</div>
                 <div style={{ fontSize: 9, color: '#7a746c', marginTop: 2 }}>{creator.followers} フォロー</div>

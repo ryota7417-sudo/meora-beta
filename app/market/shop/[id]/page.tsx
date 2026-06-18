@@ -72,7 +72,7 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
         </div>
         <div style={{ display: 'flex', gap: 12, padding: '0 14px 14px', marginTop: -26 }}>
           <div style={{ width: 64, height: 64, border: '2px solid #111', boxShadow: '3px 3px 0 #111', background: creator.avatarBg, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-            <CharAvatar name={creator.name} size={64} />
+            <img src="/characters/market_creator_default.png" alt={creator.name} width={64} height={64} style={{ objectFit: 'cover' }} />
           </div>
           <div style={{ flex: 1, minWidth: 0, paddingTop: 30 }}>
             <div style={{ fontSize: 16, fontWeight: 800 }}>{creator.name}</div>
