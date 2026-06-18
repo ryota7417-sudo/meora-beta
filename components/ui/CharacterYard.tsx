@@ -18,8 +18,8 @@ import { Character, getSprite } from '@/lib/store';
 const MAX_CHARS = 10;
 
 // スプライト/アバターの表示サイズ（px）。
-const SPRITE_W = 56;
-const SPRITE_H = 56;
+const SPRITE_W = 112;
+const SPRITE_H = 112;
 
 // 独り言の汎用プール（JA・絵文字なし）。
 const TALK_LINES = [
@@ -190,7 +190,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
         y,
         vx: dir === 'right' ? speed : -speed,
         dir,
-        state: Math.random() < 0.7 ? 'walk' : 'idle',
+        state: 'walk' as const,
         nextStateChangeAt: now + rand(2000, 5000),
         nextTalkAt: now + rand(2500, 9000),
         talkUntil: 0,
@@ -255,7 +255,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
         // walk/idle 切替。
         if (t >= m.nextStateChangeAt) {
           m.state = m.state === 'walk' ? 'idle' : 'walk';
-          m.nextStateChangeAt = t + (m.state === 'walk' ? rand(3000, 7000) : rand(1500, 4000));
+          m.nextStateChangeAt = t + (m.state === 'walk' ? rand(6000, 12000) : rand(800, 2000));
         }
 
         // 移動（walk のときだけ）。
@@ -445,19 +445,6 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
             )}
 
             <SpriteVisual char={char} view={view} />
-
-            {/* 足元の影（モノクロ） */}
-            <div
-              style={{
-                width: SPRITE_W * 0.6,
-                height: 5,
-                marginTop: -3,
-                background: 'rgba(0,0,0,0.5)',
-                borderRadius: '50%',
-                filter: 'blur(2px)',
-                pointerEvents: 'none',
-              }}
-            />
           </div>
         );
       })}

@@ -198,13 +198,15 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
               borderRadius: 0,
               lineHeight: 1.2,
               fontFamily: 'inherit',
+              position: 'relative',
+              zIndex: 1,
             }}
           >
             ← ダッシュボード
           </button>
 
           {/* キャラ名 + ジョブ/カテゴリバッジ（無ければ非表示） */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          <div style={{ position: 'absolute', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'none' }}>
             <span style={{ fontSize: 18, fontWeight: 800, color: '#111', letterSpacing: '-0.3px', lineHeight: 1.1 }}>{char.name}</span>
             {(char.job || char.role || char.category) && (
               <span style={{

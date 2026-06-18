@@ -303,7 +303,7 @@ function DbCharCard({ listing }: { listing: DbListing }) {
       <div style={{ borderTop: '2px solid #111', display: 'flex' }}>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '9px 12px' }}>
           <span style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>
-            {listing.price === 0 ? '無料' : `¥${listing.price.toLocaleString()}`}
+            {listing.price === 0 ? '無料' : `${listing.price.toLocaleString()}円`}
           </span>
         </div>
         <div style={{ flexShrink: 0, background: '#111', color: '#fff', fontSize: 12, fontWeight: 800, padding: '0 16px', display: 'flex', alignItems: 'center', borderLeft: '2px solid #111' }}>
@@ -318,19 +318,18 @@ function DbFoodCard({ listing }: { listing: DbListing }) {
   return (
     <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px' }}>
       <div style={{ flexShrink: 0, width: 52, height: 52, border: '2px solid #111', background: '#f7f5f0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        {listing.hp_bonus != null && (
-          <>
-            <span style={{ fontSize: 9, fontWeight: 800, color: '#e8568a', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>+{listing.hp_bonus}</span>
-            <span style={{ fontSize: 9, fontWeight: 700, color: '#7a746c', fontFamily: 'var(--font-mono)' }}>HP</span>
-          </>
-        )}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 800 }}>{listing.name}</div>
+        <div style={{ fontSize: 14, fontWeight: 800 }}>
+          {listing.name}
+          {listing.hp_bonus != null && (
+            <span style={{ fontSize: 11, fontWeight: 800, color: '#e8568a', marginLeft: 6, fontFamily: 'var(--font-mono)' }}>+{listing.hp_bonus} HP</span>
+          )}
+        </div>
         {listing.description && <div style={{ fontSize: 11, color: '#7a746c', marginTop: 2 }}>{listing.description}</div>}
         <div style={{ fontSize: 10, color: '#7a746c', marginTop: 2 }}>by @{listing.creator_profiles?.display_name ?? '???'}</div>
       </div>
-      <div style={{ flexShrink: 0, fontSize: 13, fontWeight: 800 }}>¥{listing.price}</div>
+      <div style={{ flexShrink: 0, fontSize: 13, fontWeight: 800 }}>{listing.price}円</div>
     </div>
   );
 }
@@ -349,7 +348,7 @@ function DbSkinCard({ listing }: { listing: DbListing }) {
         {listing.description && <div style={{ fontSize: 11, color: '#7a746c', marginTop: 2 }}>{listing.description}</div>}
         <div style={{ fontSize: 10, color: '#7a746c', marginTop: 2 }}>by @{listing.creator_profiles?.display_name ?? '???'}</div>
       </div>
-      <div style={{ flexShrink: 0, fontSize: 13, fontWeight: 800 }}>¥{listing.price}</div>
+      <div style={{ flexShrink: 0, fontSize: 13, fontWeight: 800 }}>{listing.price}円</div>
     </div>
   );
 }
@@ -376,14 +375,7 @@ function PickupCard({ char, onClick }: { char: MarketCharacter; onClick: () => v
         </div>
       </div>
       <div style={{ borderTop: '2px solid #111', display: 'flex' }}>
-        <div style={{ flex: 1, display: 'flex', gap: 5, alignItems: 'center', padding: '9px 12px', flexWrap: 'wrap' }}>
-          {char.tags.map((t) => (
-            <span key={t} style={{ fontSize: 10, fontWeight: 700, color: '#e8568a', background: '#fce4ee', border: '1.5px solid #e8568a', padding: '1px 6px' }}>
-              #{t}
-            </span>
-          ))}
-        </div>
-        <div style={{ flexShrink: 0, background: '#111', color: '#fff', fontSize: 12, fontWeight: 800, padding: '0 16px', display: 'flex', alignItems: 'center', borderLeft: '2px solid #111', letterSpacing: '0.02em' }}>
+        <div style={{ flex: 1, flexShrink: 0, background: '#111', color: '#fff', fontSize: 12, fontWeight: 800, padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', letterSpacing: '0.02em' }}>
           {isFree ? '無料で話す' : '話す'} ›
         </div>
       </div>
@@ -394,14 +386,15 @@ function PickupCard({ char, onClick }: { char: MarketCharacter; onClick: () => v
 function FoodCard({ item }: { item: FoodItem }) {
   const isFree = item.price === 0;
   return (
-    <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px' }}>
+    <div onClick={() => alert('リリース時に実装予定です')} style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px', cursor: 'pointer' }}>
       {/* アイコン */}
       <div style={{ flexShrink: 0, width: 52, height: 52, border: '2px solid #111', background: '#f7f5f0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 9, fontWeight: 800, color: '#e8568a', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}>+{item.hpBonus}</span>
-        <span style={{ fontSize: 9, fontWeight: 700, color: '#7a746c', fontFamily: 'var(--font-mono)' }}>HP</span>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.02em' }}>{item.name}</div>
+        <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.02em' }}>
+          {item.name}
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#e8568a', marginLeft: 6, fontFamily: 'var(--font-mono)' }}>+{item.hpBonus} HP</span>
+        </div>
         <div style={{ fontSize: 11, color: '#7a746c', marginTop: 2, lineHeight: 1.4 }}>{item.desc}</div>
       </div>
       <div style={{ flexShrink: 0, textAlign: 'right' }}>
@@ -410,7 +403,7 @@ function FoodCard({ item }: { item: FoodItem }) {
             毎日無料
           </div>
         ) : (
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>¥{item.price}</div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>{item.price}円</div>
         )}
       </div>
     </div>
@@ -419,7 +412,7 @@ function FoodCard({ item }: { item: FoodItem }) {
 
 function SkinCard({ item }: { item: MarketSkinItem }) {
   return (
-    <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px' }}>
+    <div onClick={() => alert('リリース時に実装予定です')} style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px', cursor: 'pointer' }}>
       <div style={{ flexShrink: 0, width: 52, height: 52, border: '2px solid #111', background: '#f7f5f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
           <rect x="4" y="8" width="20" height="14" stroke="#111" strokeWidth="2"/>
@@ -434,7 +427,7 @@ function SkinCard({ item }: { item: MarketSkinItem }) {
         <div style={{ fontSize: 10, color: '#7a746c', marginTop: 3 }}>by @{item.creatorId}</div>
       </div>
       <div style={{ flexShrink: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>¥{item.price}</div>
+        <div style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>{item.price}円</div>
       </div>
     </div>
   );
