@@ -2,13 +2,13 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'hey-opiyo',
+  title: 'MEORA',
   description: 'あなただけのAIキャラクターと始めよう',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'hey-opiyo',
+    title: 'MEORA',
   },
 };
 

@@ -92,7 +92,7 @@ export function loadState(): AppState {
     return freshState();
   }
   try {
-    const s = localStorage.getItem('hey-opiyo-state');
+    const s = localStorage.getItem('meora-state');
     if (!s) return freshState();
     const parsed = JSON.parse(s) as Record<string, unknown>;
 
@@ -123,7 +123,7 @@ export function loadState(): AppState {
 
 export function saveState(state: AppState) {
   if (typeof window === 'undefined') return;
-  localStorage.setItem('hey-opiyo-state', JSON.stringify({ ...state, schemaVersion: SCHEMA_VERSION }));
+  localStorage.setItem('meora-state', JSON.stringify({ ...state, schemaVersion: SCHEMA_VERSION }));
 }
 
 // 次回のお食事到着時刻（毎日 AM5:00）までの残り時間を返す。
@@ -209,7 +209,7 @@ export type ChatMessage = {
 export function loadChatHistory(characterId: string): ChatMessage[] {
   if (typeof window === 'undefined') return [];
   try {
-    const s = localStorage.getItem(`hey-opiyo-chat-${characterId}`);
+    const s = localStorage.getItem(`meora-chat-${characterId}`);
     return s ? JSON.parse(s) : [];
   } catch {
     return [];
@@ -219,5 +219,5 @@ export function loadChatHistory(characterId: string): ChatMessage[] {
 export function saveChatHistory(characterId: string, messages: ChatMessage[]) {
   if (typeof window === 'undefined') return;
   const trimmed = messages.slice(-50);
-  localStorage.setItem(`hey-opiyo-chat-${characterId}`, JSON.stringify(trimmed));
+  localStorage.setItem(`meora-chat-${characterId}`, JSON.stringify(trimmed));
 }
