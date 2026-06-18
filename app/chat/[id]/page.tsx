@@ -142,6 +142,11 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
   const dead = char.hp === 0;
   const pct = char.maxHp > 0 ? Math.max(0, Math.min(100, (char.hp / char.maxHp) * 100)) : 0;
+
+  const currentHour = new Date().getHours();
+  const isSleepy = currentHour === 23;
+  const isAsleep = currentHour >= 0 && currentHour < 5;
+  const isNightMode = isSleepy || isAsleep;
   const jobColor = getJobColor(char.job || char.role);
   const hpFill = getHpFillColor(pct);
 
@@ -248,6 +253,28 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             </div>
           </div>
         </div>
+
+        {/* NIGHT MODE BANNER */}
+        {isNightMode && (
+          <div style={{ padding: '0 14px 4px', flexShrink: 0 }}>
+            <div style={{
+              background: isAsleep ? '#1a1a2e' : '#2d2d44',
+              border: '2px solid #111',
+              boxShadow: '4px 4px 0 #111',
+              padding: '10px 14px',
+              color: '#e0d8c8',
+              fontSize: 12,
+              fontWeight: 700,
+              textAlign: 'center',
+              letterSpacing: '0.04em',
+              lineHeight: 1.5,
+            }}>
+              {isAsleep
+                ? `${char.name}はぐっすり眠っています... zzz`
+                : `${char.name}は眠くなってきたみたい...`}
+            </div>
+          </div>
+        )}
 
         {/* CHAT AREA */}
         <div

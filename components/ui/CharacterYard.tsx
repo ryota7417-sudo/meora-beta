@@ -37,6 +37,23 @@ const TALK_LINES = [
   'えへへ',
 ];
 
+const SLEEPY_TALK_LINES = [
+  'zzz...',
+  'むにゃ…',
+  'すぅ…すぅ…',
+  'おやすみ…',
+  'ふぁ〜…ねむい…',
+  'もう関東ねよ…?',
+  'あしたね…zzz',
+];
+
+function getTalkLines(): string[] {
+  const h = new Date().getHours();
+  if (h >= 0 && h < 5) return SLEEPY_TALK_LINES;
+  if (h === 23) return [...TALK_LINES.slice(3, 5), ...SLEEPY_TALK_LINES];
+  return TALK_LINES;
+}
+
 // 1体分のランタイム状態（ref で保持し DOM を直接動かす）。
 type Mover = {
   char: Character;
@@ -174,9 +191,14 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
     const bandTop = Math.max(8, H * 0.35);
     const bandBottom = Math.max(bandTop + 1, H - SPRITE_H - 8);
 
+    const hour = new Date().getHours();
+    const isNight = hour >= 0 && hour < 5;
+    const isSleepy = hour === 23;
+
     const movers: Mover[] = list.map((char, i) => {
       const dir: 'left' | 'right' = Math.random() < 0.5 ? 'left' : 'right';
-      const speed = rand(6, 14); // px/sec
+      const baseSpeed = isNight ? rand(1, 3) : isSleepy ? rand(3, 6) : rand(6, 14);
+      const speed = baseSpeed;
       // 重なりすぎない初期配置: 横方向に概ね等間隔 + ランダムゆらぎ。
       const slot = list.length > 0 ? (W - SPRITE_W) / list.length : 0;
       const x = Math.min(
@@ -190,7 +212,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
         y,
         vx: dir === 'right' ? speed : -speed,
         dir,
-        state: 'walk' as const,
+        state: isNight ? 'idle' as const : 'walk' as const,
         nextStateChangeAt: now + rand(2000, 5000),
         nextTalkAt: now + rand(2500, 9000),
         talkUntil: 0,
@@ -252,10 +274,21 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
       for (const m of movers) {
         const prevView = lastViewsRef.current[m.char.id];
 
-        // walk/idle 切替。
+        // walk/idle 切替。深夜はほぼidle（寝ている）。
         if (t >= m.nextStateChangeAt) {
-          m.state = m.state === 'walk' ? 'idle' : 'walk';
-          m.nextStateChangeAt = t + (m.state === 'walk' ? rand(6000, 12000) : rand(800, 2000));
+          const h = new Date().getHours();
+          const night = h >= 0 && h < 5;
+          const sleepy = h === 23;
+          if (night) {
+            m.state = Math.random() < 0.9 ? 'idle' : 'walk';
+            m.nextStateChangeAt = t + (m.state === 'walk' ? rand(1500, 3000) : rand(5000, 12000));
+          } else if (sleepy) {
+            m.state = m.state === 'walk' ? 'idle' : 'walk';
+            m.nextStateChangeAt = t + (m.state === 'walk' ? rand(3000, 6000) : rand(2000, 5000));
+          } else {
+            m.state = m.state === 'walk' ? 'idle' : 'walk';
+            m.nextStateChangeAt = t + (m.state === 'walk' ? rand(6000, 12000) : rand(800, 2000));
+          }
         }
 
         // 移動（walk のときだけ）。
@@ -288,7 +321,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
           m.talkUntil = 0;
           m.talkText = '';
         } else if (m.talkUntil === 0 && t >= m.nextTalkAt) {
-          m.talkText = pick(TALK_LINES);
+          m.talkText = pick(getTalkLines());
           m.talkUntil = t + rand(2600, 4200);
           m.nextTalkAt = m.talkUntil + rand(4000, 11000);
         }
