@@ -363,7 +363,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
               fontFamily: 'var(--font-display)',
             }}
           >
-            まだ庭にキャラがいません
+            まだホームにキャラがいません
           </span>
           <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', letterSpacing: '0.04em', lineHeight: 1.7 }}>
             下からキャラを作る / 探すと、ここを歩きはじめます

@@ -222,7 +222,7 @@ export default function CharacterNewPage() {
               })}
             </div>
             <div style={{ fontSize: 11, color: '#999', marginTop: 10, letterSpacing: '0.02em', lineHeight: 1.5 }}>
-              透過PNGをそのまま設定できます。庭での歩き方向ごとに画像を設定できます。
+              透過PNGをそのまま設定できます。ホームでの歩き方向ごとに画像を設定できます。
             </div>
           </div>
 
