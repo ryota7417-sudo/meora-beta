@@ -39,9 +39,9 @@ export function InheritPersonaCopy({ lang = DEFAULT_LANG }: { lang?: Lang }) {
         {t.inheritTitle}
       </div>
       <div style={{ fontSize: 12, color: '#666', lineHeight: 2.0, marginBottom: 14 }}>
-        <div>① このプロンプトをコピー</div>
+        <div>①「プロンプトをコピー」を押す</div>
         <div>② いつも使っているAI(ChatGPT等)に貼り付け・送信</div>
-        <div>③ 返ってきた文章を上の「性格・口調」に貼り付け</div>
+        <div>③ 返ってきた文章を全てコピーし、上の「性格・口調」に貼り付け</div>
       </div>
       <button
         type="button"
