@@ -75,6 +75,22 @@ export default function CharacterNewPage() {
 
   const previewSrc = spriteMap['idle'] ?? spriteMap['walkRight'] ?? spriteMap['walkLeft'];
 
+  const [useDefault, setUseDefault] = useState(false);
+
+  const handleSelectDefault = () => {
+    setUseDefault(true);
+    setSpriteMap(prev => ({ ...prev, idle: '/icon_default.png' }));
+  };
+
+  const handleDeselectDefault = () => {
+    setUseDefault(false);
+    setSpriteMap(prev => {
+      const next = { ...prev };
+      delete next['idle'];
+      return next;
+    });
+  };
+
   const handleSave = () => {
     if (!name.trim()) return;
     const sprites = SPRITE_ROWS
@@ -142,24 +158,39 @@ export default function CharacterNewPage() {
           <div />
         </div>
 
-        {/* プレビュー */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 16px 16px', background: '#111', margin: '14px 16px 0', border: '2px solid #111', boxShadow: '4px 4px 0 #555' }}>
-          <div style={{ background: 'rgba(255,255,255,0.06)', border: '2px solid rgba(255,255,255,0.2)', padding: 16, marginBottom: 12 }}>
-            {previewSrc ? (
-              <img src={previewSrc} alt={name || 'キャラ'} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
-            ) : (
-              <div style={{ width: 100, height: 100, border: '2px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-                画像なし
-              </div>
-            )}
-          </div>
-          <div style={{ color: '#fff', fontSize: 16, fontWeight: 800, letterSpacing: '0.04em' }}>
-            {name || 'あなたのキャラ'}
-          </div>
-        </div>
-
         {/* 入力セクション */}
         <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* デフォルトキャラクター */}
+          <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
+            {sectionLabel('デフォルトキャラクター')}
+            <div style={{ fontSize: 12, color: '#666', lineHeight: 1.6, marginBottom: 12 }}>
+              オリジナルのキャラクターを作らなくても、デフォルトのMEORAですぐに始められます。
+            </div>
+            <div
+              onClick={useDefault ? handleDeselectDefault : handleSelectDefault}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 14, padding: 12,
+                border: useDefault ? '3px solid #111' : '2px solid #ccc',
+                background: useDefault ? '#f0f0e8' : '#f8f8f4',
+                cursor: 'pointer',
+                transition: 'border 0.15s, background 0.15s',
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icon_default.png" alt="デフォルトMEORA" style={{ width: 64, height: 64, objectFit: 'contain', display: 'block' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#111', marginBottom: 4 }}>MEORA</div>
+                <div style={{ fontSize: 11, color: '#888' }}>デフォルトキャラクター</div>
+              </div>
+              <div style={{
+                width: 24, height: 24, border: '2px solid #111', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: useDefault ? '#111' : '#fff',
+              }}>
+                {useDefault && <span style={{ color: '#fff', fontSize: 14, fontWeight: 900, lineHeight: 1 }}>✓</span>}
+              </div>
+            </div>
+          </div>
 
           {/* キャラ名 */}
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
@@ -180,6 +211,7 @@ export default function CharacterNewPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {SPRITE_ROWS.map(({ type, label }) => {
                 const src = spriteMap[type];
+                const isDefaultIdle = useDefault && type === 'idle';
                 return (
                   <div key={type}>
                     <input
@@ -191,7 +223,9 @@ export default function CharacterNewPage() {
                     />
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, border: '1.5px solid #111', padding: 10, background: '#f8f8f4' }}>
                       <div style={{ flexShrink: 0, width: 54, height: 54, border: '2px solid #111', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                        {src ? (
+                        {isDefaultIdle ? (
+                          <img src="/icon_default.png" alt={label} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                        ) : src ? (
                           <img src={src} alt={label} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
                         ) : (
                           <span style={{ fontSize: 9, color: '#bbb', fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.4 }}>画像<br/>なし</span>
@@ -201,13 +235,15 @@ export default function CharacterNewPage() {
                         <div style={{ fontSize: 12, fontWeight: 800, color: '#111', letterSpacing: '0.04em' }}>{label}</div>
                       </div>
                       <div style={{ flexShrink: 0, display: 'flex', gap: 6 }}>
-                        <button
-                          onClick={() => fileRefs.current[type]?.click()}
-                          style={{ padding: '7px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em', whiteSpace: 'nowrap' }}
-                        >
-                          {src ? '変更' : '設定'}
-                        </button>
-                        {src && (
+                        {!isDefaultIdle && (
+                          <button
+                            onClick={() => fileRefs.current[type]?.click()}
+                            style={{ padding: '7px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em', whiteSpace: 'nowrap' }}
+                          >
+                            {src ? '変更' : '設定'}
+                          </button>
+                        )}
+                        {src && !isDefaultIdle && (
                           <button
                             onClick={() => handleSpriteRemove(type)}
                             style={{ padding: '7px 10px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em' }}
@@ -226,9 +262,33 @@ export default function CharacterNewPage() {
             </div>
           </div>
 
+          {/* プレビュー（見た目の下） */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 16px 16px', background: '#111', border: '2px solid #111', boxShadow: '4px 4px 0 #555' }}>
+            <div style={{ background: 'rgba(255,255,255,0.06)', border: '2px solid rgba(255,255,255,0.2)', padding: 16, marginBottom: 12 }}>
+              {useDefault ? (
+                <img src="/icon_default.png" alt={name || 'キャラ'} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
+              ) : previewSrc ? (
+                <img src={previewSrc} alt={name || 'キャラ'} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
+              ) : (
+                <div style={{ width: 100, height: 100, border: '2px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+                  画像なし
+                </div>
+              )}
+            </div>
+            <div style={{ color: '#fff', fontSize: 16, fontWeight: 800, letterSpacing: '0.04em' }}>
+              {name || 'あなたのキャラ'}
+            </div>
+          </div>
+
           {/* 性格・口調 */}
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
             {sectionLabel('性格・口調')}
+            <div style={{ fontSize: 12, color: '#666', lineHeight: 1.6, marginBottom: 10 }}>
+              ここに書いた内容がキャラの話し方になります。
+            </div>
+            <div style={{ fontSize: 12, color: '#888', lineHeight: 1.6, marginBottom: 10 }}>
+              テンプレートを使って性格や口調を指定できます。
+            </div>
             <button
               onClick={() => setPersonality(prev => prev ? prev : PERSONALITY_TEMPLATE)}
               style={{ marginBottom: 10, padding: '6px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.04em' }}
@@ -242,11 +302,10 @@ export default function CharacterNewPage() {
               rows={7}
               style={{ ...inputStyle, resize: 'vertical', minHeight: 120, lineHeight: 1.7 }}
             />
-            <div style={{ fontSize: 11, color: '#999', marginTop: 8, letterSpacing: '0.02em', lineHeight: 1.5 }}>
-              ここに書いた内容がキャラの話し方になります。
-            </div>
-            <InheritPersonaCopy />
           </div>
+
+          {/* いま使っているAIの個性を引き継ぐ */}
+          <InheritPersonaCopy />
 
           {/* 作成ボタン */}
           <button
