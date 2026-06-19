@@ -1,11 +1,11 @@
 // キャラクターSVGコンポーネント
-// 旧デフォルトキャラ（aoi/ruka/haruka）は廃止済み。現行は写真 or 名前イニシャルの
+// 旧デフォルトMEORA（aoi/ruka/haruka）は廃止済み。現行は写真 or 名前イニシャルの
 // プレースホルダで描画する CharAvatar / CharAvatarChat のみを使用する。
 
 // ===== 写真対応アイコン =====
 // photo（dataURL）があれば写真をアイコン表示（object-fit:cover・黒枠は呼び出し側で付与）。
 // 無ければ名前イニシャルのプレースホルダにフォールバックする。
-// 旧デフォルトキャラ（aoi/ruka/haruka）が廃止されたため、自作キャラ/マーケット入手キャラ
+// 旧デフォルトMEORA（aoi/ruka/haruka）が廃止されたため、自作MEORA/マーケット入手MEORA
 // は基本的にこのコンポーネントで描画する。
 
 function initialOf(name: string): string {

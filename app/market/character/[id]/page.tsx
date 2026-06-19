@@ -46,7 +46,7 @@ export default function MarketCharacterPage({ params }: { params: Promise<{ id: 
   if (!char) {
     return (
       <div style={{ ...PAPER_BG, minHeight: '100vh', maxWidth: 390, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, color: '#111', padding: 24 }}>
-        <div style={{ fontSize: 14, fontWeight: 800 }}>このキャラは見つかりませんでした。</div>
+        <div style={{ fontSize: 14, fontWeight: 800 }}>このMEORAは見つかりませんでした。</div>
         <button
           onClick={() => router.push('/market')}
           style={{ background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '3px 3px 0 #555', fontSize: 13, fontWeight: 800, padding: '10px 18px', cursor: 'pointer', fontFamily: 'inherit' }}

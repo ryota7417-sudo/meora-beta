@@ -98,7 +98,7 @@ export default function MarketPage() {
   const goShop = (id: string) => router.push(`/market/shop/${id}`);
 
   const tabs: { key: TabType; label: string }[] = [
-    { key: 'character', label: 'キャラ' },
+    { key: 'character', label: 'MEORA' },
     { key: 'food',      label: 'お食事' },
     { key: 'skin',      label: 'スキン' },
   ];
@@ -123,7 +123,7 @@ export default function MarketPage() {
             <path d="M11 11L15 15" stroke="#111" strokeWidth="2" strokeLinecap="round" />
           </svg>
           <input
-            placeholder="キャラ・お店・タグで探す"
+            placeholder="MEORA・お店・タグで探す"
             style={{ border: 'none', outline: 'none', flex: 1, fontSize: 13, fontFamily: 'inherit', background: 'transparent', color: '#111' }}
           />
         </div>
@@ -159,7 +159,7 @@ export default function MarketPage() {
         })}
       </div>
 
-      {/* ===== TAB: キャラ ===== */}
+      {/* ===== TAB: MEORA ===== */}
       {activeTab === 'character' && (
         <>
           {/* PICK UP */}
@@ -208,7 +208,7 @@ export default function MarketPage() {
             })}
           </div>
 
-          {/* クリエイター出品キャラ (Supabase Realtime) */}
+          {/* クリエイター出品MEORA (Supabase Realtime) */}
           {dbChars.length > 0 && (
             <>
               <SectionLabel>NEW — クリエイター出品</SectionLabel>
@@ -228,7 +228,7 @@ export default function MarketPage() {
           <SectionLabel>お食事アイテム</SectionLabel>
           <div style={{ padding: '0 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ fontSize: 12, color: '#7a746c', lineHeight: 1.6, padding: '0 2px 8px' }}>
-              キャラに食事を与えて満腹度を回復しましょう。毎日おにぎり1個が無料で届きます。
+              MEORAに食事を与えて満腹度を回復しましょう。毎日おにぎり1個が無料で届きます。
             </div>
             {DEFAULT_FOOD_ITEMS.map(item => (
               <FoodCard key={item.id} item={item} />
@@ -263,7 +263,7 @@ export default function MarketPage() {
           <SectionLabel>スキンアイテム</SectionLabel>
           <div style={{ padding: '0 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ fontSize: 12, color: '#7a746c', lineHeight: 1.6, padding: '0 2px 8px' }}>
-              キャラの見た目を変えるスキンです。クリエイターが出品しています。
+              MEORAの見た目を変えるスキンです。クリエイターが出品しています。
             </div>
             {MARKET_SKIN_ITEMS.map(item => (
               <SkinCard key={item.id} item={item} />

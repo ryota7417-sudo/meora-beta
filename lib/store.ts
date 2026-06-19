@@ -9,7 +9,7 @@ export type Sprite = {
 };
 
 export type Character = {
-  // 旧デフォルトキャラは固定 id だったが、自作キャラ/マーケット入手キャラは任意 id を持つ。
+  // 旧デフォルトMEORAは固定 id だったが、自作MEORA/マーケット入手MEORAは任意 id を持つ。
   id: string;
   name: string;
   role: string;
@@ -23,35 +23,35 @@ export type Character = {
   //   basic / advanced プロンプトを読み込む想定の受け皿。
   // ジョブ↔フォルダ対応: ライター→writer / デザイナー→designer / 秘書→secretary / ※coding は将来枠
   tier?: 'basic' | 'advanced';
-  // ===== 拡張フィールド（自作キャラ / マーケット入手キャラ共通） =====
+  // ===== 拡張フィールド（自作MEORA / マーケット入手MEORA共通） =====
   // 写真（dataURL）。設定されていれば SVG アイコンの代わりに表示する。
   // トーク一覧アイコン・フォールバック用。sprites があっても残す。
   photo?: string;
   // 方向別スプライト（歩く庭の歩行アニメ用・最大5枚）。
-  // 後方互換: 未設定の旧キャラは photo（無ければイニシャル）で表示する。
+  // 後方互換: 未設定の旧MEORAは photo（無ければイニシャル）で表示する。
   sprites?: Sprite[];
   // 性格・口調。チャットAPIのシステムプロンプト素材になる。
   personality?: string;
   // カテゴリ（任意）。例: 癒し / 恋愛相談 など。
   category?: string;
-  // 自作フラグ。ユーザーがオンボーディング等で作成したキャラは true。
+  // 自作フラグ。ユーザーがオンボーディング等で作成したMEORAは true。
   userCreated?: boolean;
-  // 販売可否。自作キャラは常に false（非売・プライベート）。
+  // 販売可否。自作MEORAは常に false（非売・プライベート）。
   sellable?: boolean;
 };
 
-// 指定キャラの指定種類スプライトの dataURL を返す。無ければ undefined。
-// 後方互換: sprites 未設定の旧キャラは常に undefined を返すので、
+// 指定MEORAの指定種類スプライトの dataURL を返す。無ければ undefined。
+// 後方互換: sprites 未設定の旧MEORAは常に undefined を返すので、
 // 呼び出し側は photo → イニシャルの順でフォールバックすること。
 export function getSprite(char: Character, type: SpriteType): string | undefined {
   return char.sprites?.find((s) => s.type === type)?.dataUrl;
 }
 
 // localStorage に保存するスキーマのバージョン。
-// 旧構造（avatar あり / 旧デフォルトキャラ）を検出して移行するために使う。
+// 旧構造（avatar あり / 旧デフォルトMEORA）を検出して移行するために使う。
 export const SCHEMA_VERSION = 2;
 
-// 旧デフォルトキャラの id（移行検出用）。
+// 旧デフォルトMEORAの id（移行検出用）。
 const LEGACY_CHARACTER_IDS = ['aoi', 'ruka', 'haruka'];
 
 export type AppState = {
@@ -61,7 +61,7 @@ export type AppState = {
   onboardingDone: boolean;
 };
 
-// デフォルト3体は廃止。自作キャラはオンボーディングで追加される。
+// デフォルト3体は廃止。自作MEORAはオンボーディングで追加される。
 export const DEFAULT_CHARACTERS: Character[] = [];
 
 function freshState(): AppState {
@@ -76,7 +76,7 @@ function freshState(): AppState {
 // 旧構造かどうかを判定する。
 // - schemaVersion が無い / 古い
 // - avatar フィールドが残っている
-// - 旧デフォルトキャラ id を含む
+// - 旧デフォルトMEORA id を含む
 function isLegacyState(parsed: Record<string, unknown>): boolean {
   if (typeof parsed.schemaVersion !== 'number' || parsed.schemaVersion < SCHEMA_VERSION) return true;
   if ('avatar' in parsed) return true;
@@ -98,7 +98,7 @@ export function loadState(): AppState {
 
     // 旧バージョン/旧構造を検出 → 移行。
     // characters をリセットし、avatar を破棄し、onboardingDone=false にして
-    // 新オンボーディング（自分のキャラ作成）へ誘導する。userName は引き継ぐ。
+    // 新オンボーディング（自分のMEORA作成）へ誘導する。userName は引き継ぐ。
     if (isLegacyState(parsed)) {
       const migrated: AppState = {
         schemaVersion: SCHEMA_VERSION,
@@ -157,8 +157,8 @@ export function consumeHp(state: AppState, characterId: string, amount: number):
   };
 }
 
-// マーケットで入手できるキャラの最小スキーマ。
-// market-data.ts のサンプルキャラはこの型を満たす。acquireCharacter に渡される。
+// マーケットで入手できるMEORAの最小スキーマ。
+// market-data.ts のサンプルMEORAはこの型を満たす。acquireCharacter に渡される。
 export type AcquirableCharacter = {
   id: string;
   name: string;
@@ -167,9 +167,9 @@ export type AcquirableCharacter = {
   photoUrl?: string;
 };
 
-// マーケットのキャラを state.characters に追加する（=入手）。
-// すでに同じ id を持つキャラがいれば重複追加せず、そのまま state を返す（重複入手防止）。
-// 追加されるキャラは userCreated:false / sellable:false。hp 等は自作キャラと同じデフォルト。
+// マーケットのMEORAを state.characters に追加する（=入手）。
+// すでに同じ id を持つMEORAがいれば重複追加せず、そのまま state を返す（重複入手防止）。
+// 追加されるMEORAは userCreated:false / sellable:false。hp 等は自作MEORAと同じデフォルト。
 export function acquireCharacter(state: AppState, marketChar: AcquirableCharacter): AppState {
   if (state.characters.some((c) => c.id === marketChar.id)) {
     return state;
@@ -195,7 +195,7 @@ export function acquireCharacter(state: AppState, marketChar: AcquirableCharacte
   };
 }
 
-// 指定 id のキャラを既に入手済みか判定する。
+// 指定 id のMEORAを既に入手済みか判定する。
 export function isCharacterOwned(state: AppState, id: string): boolean {
   return state.characters.some((c) => c.id === id);
 }

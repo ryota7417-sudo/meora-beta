@@ -1,5 +1,5 @@
 'use client';
-// キャラが歩く庭。
+// MEORAが歩く庭。
 // 与えられた characters を枠内で歩かせ、時々 walk↔idle を切替え、
 // ランダムに独り言の吹き出しを出す。タップでチャットへ遷移する。
 //
@@ -396,10 +396,10 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
               fontFamily: 'var(--font-display)',
             }}
           >
-            まだホームにキャラがいません
+            まだホームにMEORAがいません
           </span>
           <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', letterSpacing: '0.04em', lineHeight: 1.7 }}>
-            下からキャラを作る / 探すと、ここを歩きはじめます
+            下からMEORAを作る / 探すと、ここを歩きはじめます
           </span>
         </div>
       </div>

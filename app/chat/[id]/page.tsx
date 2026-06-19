@@ -210,7 +210,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             ← ダッシュボード
           </button>
 
-          {/* キャラ名 + ジョブ/カテゴリバッジ（無ければ非表示） */}
+          {/* MEORA名 + ジョブ/カテゴリバッジ（無ければ非表示） */}
           <div style={{ position: 'absolute', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'none' }}>
             <span style={{ fontSize: 18, fontWeight: 800, color: '#111', letterSpacing: '-0.3px', lineHeight: 1.1 }}>{char.name}</span>
             {(char.job || char.role || char.category) && (

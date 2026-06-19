@@ -167,7 +167,7 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
         {/* ヘッダー */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 16px 12px', borderBottom: '2px solid #111', backgroundColor: '#f8f8f4', position: 'sticky', top: 0, zIndex: 10 }}>
           <div><button onClick={() => router.back()} style={{ fontSize: 12, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>← 戻る</button></div>
-          <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>キャラを編集</div>
+          <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>MEORAを編集</div>
           <div />
         </div>
 
@@ -175,7 +175,7 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 16px 16px', background: '#111', margin: '14px 16px 0', border: '2px solid #111', boxShadow: '4px 4px 0 #555' }}>
           <div style={{ background: 'rgba(255,255,255,0.06)', border: '2px solid rgba(255,255,255,0.2)', padding: 16, marginBottom: 12 }}>
             {previewSrc ? (
-              <img src={previewSrc} alt={name || 'キャラ'} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
+              <img src={previewSrc} alt={name || 'MEORA'} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
             ) : (
               <div style={{ width: 100, height: 100, border: '2px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
                 画像なし
@@ -183,16 +183,16 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
             )}
           </div>
           <div style={{ color: '#fff', fontSize: 16, fontWeight: 800, letterSpacing: '0.04em' }}>
-            {name || 'あなたのキャラ'}
+            {name || 'あなたのMEORA'}
           </div>
         </div>
 
         {/* 入力セクション */}
         <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-          {/* キャラ名 */}
+          {/* MEORA名 */}
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
-            {sectionLabel('キャラ名')}
+            {sectionLabel('MEORA名')}
             <input type="text" value={name} onChange={e => setName(e.target.value)} maxLength={20} style={inputStyle} />
           </div>
 
@@ -269,7 +269,7 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
               style={{ ...inputStyle, resize: 'vertical', minHeight: 120, lineHeight: 1.7 }}
             />
             <div style={{ fontSize: 11, color: '#999', marginTop: 8, letterSpacing: '0.02em', lineHeight: 1.5 }}>
-              ここに書いた内容がキャラの話し方になります。
+              ここに書いた内容がMEORAの話し方になります。
             </div>
             <InheritPersonaCopy />
           </div>

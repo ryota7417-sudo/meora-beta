@@ -84,7 +84,7 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
               </div>
               <div>
                 <b style={{ fontSize: 13, fontWeight: 800 }}>{characters.length}</b>
-                <span style={{ fontSize: 9, color: '#7a746c', display: 'block' }}>キャラ</span>
+                <span style={{ fontSize: 9, color: '#7a746c', display: 'block' }}>MEORA</span>
               </div>
               <div>
                 <b style={{ fontSize: 13, fontWeight: 800 }}>{creator.rating}</b>
@@ -124,7 +124,7 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* CHARACTERS */}
-      <SectionLabel>CHARACTERS — 扱うキャラ</SectionLabel>
+      <SectionLabel>CHARACTERS — 扱うMEORA</SectionLabel>
       <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '8px 14px 4px', scrollbarWidth: 'none' }}>
         {characters.map((char) => {
           const isFree = char.accessTier === 'free';

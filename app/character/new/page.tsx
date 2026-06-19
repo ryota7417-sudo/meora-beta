@@ -154,7 +154,7 @@ export default function CharacterNewPage() {
         {/* ヘッダー */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 16px 12px', borderBottom: '2px solid #111', backgroundColor: '#f8f8f4', position: 'sticky', top: 0, zIndex: 10 }}>
           <div><button onClick={() => router.back()} style={{ fontSize: 12, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>← 戻る</button></div>
-          <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>キャラを作る</div>
+          <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>MEORAを作る</div>
           <div />
         </div>
 
@@ -192,14 +192,14 @@ export default function CharacterNewPage() {
             </div>
           </div>
 
-          {/* キャラ名 */}
+          {/* MEORA名 */}
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
-            {sectionLabel('キャラ名')}
+            {sectionLabel('MEORA名')}
             <input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="キャラの名前を入力"
+              placeholder="MEORAの名前を入力"
               maxLength={20}
               style={inputStyle}
             />
@@ -266,9 +266,9 @@ export default function CharacterNewPage() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 16px 16px', background: '#111', border: '2px solid #111', boxShadow: '4px 4px 0 #555' }}>
             <div style={{ background: 'rgba(255,255,255,0.06)', border: '2px solid rgba(255,255,255,0.2)', padding: 16, marginBottom: 12 }}>
               {useDefault ? (
-                <img src="/icon_default.png" alt={name || 'キャラ'} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
+                <img src="/icon_default.png" alt={name || 'MEORA'} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
               ) : previewSrc ? (
-                <img src={previewSrc} alt={name || 'キャラ'} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
+                <img src={previewSrc} alt={name || 'MEORA'} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
               ) : (
                 <div style={{ width: 100, height: 100, border: '2px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
                   画像なし
@@ -276,7 +276,7 @@ export default function CharacterNewPage() {
               )}
             </div>
             <div style={{ color: '#fff', fontSize: 16, fontWeight: 800, letterSpacing: '0.04em' }}>
-              {name || 'あなたのキャラ'}
+              {name || 'あなたのMEORA'}
             </div>
           </div>
 
@@ -284,7 +284,7 @@ export default function CharacterNewPage() {
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
             {sectionLabel('性格・口調')}
             <div style={{ fontSize: 12, color: '#666', lineHeight: 1.6, marginBottom: 10 }}>
-              ここに書いた内容がキャラの話し方になります。
+              ここに書いた内容がMEORAの話し方になります。
             </div>
             <div style={{ fontSize: 12, color: '#888', lineHeight: 1.6, marginBottom: 10 }}>
               テンプレートを使って性格や口調を指定できます。
@@ -313,7 +313,7 @@ export default function CharacterNewPage() {
             disabled={!canSave}
             style={{ width: '100%', background: canSave ? '#111' : '#999', color: '#fff', border: `2px solid ${canSave ? '#111' : '#999'}`, boxShadow: canSave ? '4px 4px 0 #555' : 'none', padding: '16px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.08em', cursor: canSave ? 'pointer' : 'not-allowed', borderRadius: 0, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
           >
-            キャラを作る →
+            MEORAを作る →
           </button>
         </div>
       </div>

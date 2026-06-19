@@ -7,7 +7,7 @@ import { resolveAuth } from '@/lib/auth';
 import { InheritPersonaCopy } from '@/components/InheritPersonaCopy';
 import { Lang, Dict, DICT, LANGS, LANG_LABELS, loadLang, saveLang, DEFAULT_LANG } from '@/lib/i18n';
 
-// オンボーディングで作成する自分のキャラの下書き型。
+// オンボーディングで作成する自分のMEORAの下書き型。
 type CharDraft = {
   name: string;
   sprites: Sprite[];
@@ -71,7 +71,7 @@ function withBreaks(text: string) {
 }
 
 // ===== スプラッシュ (step 0) =====
-// メインキャラは top_icon_1〜4.png を 1→2→3→4 の順でループ切り替えして
+// メインMEORAは top_icon_1〜4.png を 1→2→3→4 の順でループ切り替えして
 // 目に動き（目パチ）を出す。StepSplash 表示中ずっとループし続ける。
 const SPLASH_FRAMES = ['/top_icon_1.png', '/top_icon_2.png', '/top_icon_3.png', '/top_icon_4.png'];
 
@@ -379,7 +379,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
 
   const handleGoogleLogin = async () => {
     setError('');
-    // OAuth後に戻ってきたときstep 3（自分のキャラ作成）から再開できるよう先に保存
+    // OAuth後に戻ってきたときstep 3（自分のMEORA作成）から再開できるよう先に保存
     localStorage.setItem('meora-onboarding-step', '3');
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
@@ -556,7 +556,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
 }
 
 // ===== 自分のキャラクター作成 (step 3) =====
-// クリエイターのキャラ登録(IP登録フォーム)に準拠。ただし販売/価格/公開などの
+// クリエイターのMEORA登録(IP登録フォーム)に準拠。ただし販売/価格/公開などの
 // 項目は出さない(非売・プライベート)。
 function StepCharacterCreate({
   draft,
@@ -704,7 +704,7 @@ function StepCharacterCreate({
             </div>
           </div>
 
-          {/* キャラ名 */}
+          {/* MEORA名 */}
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
             {sectionLabel(t.charNameLabel, true)}
             <input
@@ -902,8 +902,8 @@ export default function OnboardingPage() {
     };
   }, [router]);
 
-  // キャラ作成（最終ステップ）完了 → 自作キャラを保存してホームへ。
-  // 自作キャラは userCreated:true / sellable:false（非売・プライベート）で
+  // MEORA作成（最終ステップ）完了 → 自作MEORAを保存してホームへ。
+  // 自作MEORAは userCreated:true / sellable:false（非売・プライベート）で
   // state.characters に追加する。販売・価格・公開などのフィールドは持たせない。
   // userName はオンボーディングで集めなくなったため未設定のまま（既存値があれば維持）。
   const handleFinish = () => {
@@ -912,7 +912,7 @@ export default function OnboardingPage() {
     const idleSprite = charDraft.sprites.find(s => s.type === 'idle') ?? charDraft.sprites[0];
     const newChar: Character = {
       id: `user-${Date.now()}`,
-      name: charDraft.name.trim() || 'マイキャラ',
+      name: charDraft.name.trim() || 'マイMEORA',
       role: '',
       job: '',
       color: '#111',
@@ -944,7 +944,7 @@ export default function OnboardingPage() {
     );
   }
 
-  // step routing: 0=スプラッシュ / 1=アプリ説明 / 2=アカウント作成 / 3=自分のキャラ作成
+  // step routing: 0=スプラッシュ / 1=アプリ説明 / 2=アカウント作成 / 3=自分のMEORA作成
   if (step === 0) return <StepSplash onNext={() => advanceStep(1)} lang={lang} setLang={setLang} t={t} />;
   if (step === 1) return <StepIntro onNext={() => advanceStep(2)} onBack={() => advanceStep(0)} t={t} />;
   if (step === 2) return <StepAccount onNext={() => advanceStep(3)} onBack={() => advanceStep(1)} t={t} />;

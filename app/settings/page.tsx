@@ -69,7 +69,7 @@ export default function SettingsPage() {
     : [];
 
   const typeLabel = (type: string) =>
-    type === 'character' ? 'キャラ' : type === 'food' ? 'お食事' : 'スキン';
+    type === 'character' ? 'MEORA' : type === 'food' ? 'お食事' : 'スキン';
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 'calc(96px + env(safe-area-inset-bottom))' }}>
@@ -81,15 +81,15 @@ export default function SettingsPage() {
 
       <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-        {/* 自分のキャラを編集 */}
+        {/* 自分のMEORAを編集 */}
         <div className="card" style={{ padding: '20px 16px' }}>
-          <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 800 }}>自分のキャラを編集</h2>
+          <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 800 }}>自分のMEORAを編集</h2>
           <p style={{ margin: '0 0 14px', fontSize: 12, color: '#888', lineHeight: 1.6 }}>
             名前・写真・性格・口調を編集できます。
           </p>
           {editable.length === 0 ? (
             <div style={{ fontSize: 13, color: '#888', lineHeight: 1.7 }}>
-              まだキャラがいません。
+              まだMEORAがいません。
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', border: '2px solid #111', boxShadow: '4px 4px 0 #111', background: '#fff' }}>

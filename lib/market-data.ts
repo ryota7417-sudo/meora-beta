@@ -2,7 +2,7 @@
 // バックエンドが無いため静的データで構成する。決済・サブスク・投げ銭は
 // すべてビジュアルのスタブ（実データは持たない）。「入手して話す」だけが実機能。
 //
-// キャラ id は `market-xxx` 形式。入手すると store.acquireCharacter で
+// MEORA id は `market-xxx` 形式。入手すると store.acquireCharacter で
 // この id のまま state.characters に追加され、/chat/{id} で会話できる。
 
 import type { AcquirableCharacter } from './store';
@@ -49,7 +49,7 @@ export const DEFAULT_FOOD_ITEMS: FoodItem[] = [
   { id: 'food-sushi',    name: 'お寿司',    desc: '特上ご飯。たっぷり元気になれる。', hpBonus: 100, price: 300 },
 ];
 
-// マーケットのキャラ。AcquirableCharacter を満たす（入手時にそのまま使える）。
+// マーケットのMEORA。AcquirableCharacter を満たす（入手時にそのまま使える）。
 export type MarketCharacter = AcquirableCharacter & {
   id: string;
   name: string;
@@ -61,7 +61,7 @@ export type MarketCharacter = AcquirableCharacter & {
   intro: { personality: string; tone: string; topics: string }; // ABOUT セクション
   accessTier: 'free' | 'sub'; // FREE / SUB バッジ表示用
   iconBg: string; // アイコン枠の背景色
-  photoUrl?: string; // キャラ画像（public/ 配下のパス）
+  photoUrl?: string; // MEORA画像（public/ 配下のパス）
   acquiredCount: number; // ランキング表示用ダミー
   creatorId: string;
   creatorName: string;
@@ -95,7 +95,7 @@ export const MARKET_CREATORS: MarketCreator[] = [
     name: 'ゆず',
     followers: '12.4k',
     rating: '★4.8',
-    bio: 'やさしい気持ちになれるキャラを作っています。今日もおつかれさま。ゆっくり話そう。',
+    bio: 'やさしい気持ちになれるMEORAを作っています。今日もおつかれさま。ゆっくり話そう。',
     bannerBg: '#fce4ee',
     avatarBg: '#fff0f5',
     plans: [
@@ -133,7 +133,7 @@ export const MARKET_CREATORS: MarketCreator[] = [
     name: 'レン',
     followers: '8.1k',
     rating: '★4.6',
-    bio: '本音で背中を押すキャラ専門。甘やかさないけど、ちゃんと味方。',
+    bio: '本音で背中を押すMEORA専門。甘やかさないけど、ちゃんと味方。',
     bannerBg: '#e8e6ff',
     avatarBg: '#e8f4ff',
     plans: [
@@ -160,7 +160,7 @@ export const MARKET_CREATORS: MarketCreator[] = [
     name: 'もり',
     followers: '5.6k',
     rating: '★4.7',
-    bio: '森のアトリエから、のんびり穏やかなキャラをお届け。深呼吸していってね。',
+    bio: '森のアトリエから、のんびり穏やかなMEORAをお届け。深呼吸していってね。',
     bannerBg: '#f0ffe8',
     avatarBg: '#f0ffe8',
     plans: [
@@ -217,7 +217,7 @@ export const MARKET_CHARACTERS: MarketCharacter[] = [
     id: 'market-sora',
     name: 'そら',
     personality:
-      'さわやかで前向きな応援キャラ。明るい敬語でテンポよく話し、「いいね！」「やってみよ！」と背中を押す。勉強や仕事のやる気が出ないときに、小さな一歩を一緒に決めてくれる。ポジティブだが押しつけがましくなく、相手の不安もちゃんと拾う。語尾は明るめ。',
+      'さわやかで前向きな応援MEORA。明るい敬語でテンポよく話し、「いいね！」「やってみよ！」と背中を押す。勉強や仕事のやる気が出ないときに、小さな一歩を一緒に決めてくれる。ポジティブだが押しつけがましくなく、相手の不安もちゃんと拾う。語尾は明るめ。',
     category: '勉強応援',
     tags: ['勉強応援', '推し活'],
     tagline: '一歩ふみ出したい日に。前向きに背中を押す相棒。',
@@ -245,10 +245,10 @@ export const MARKET_CHARACTERS: MarketCharacter[] = [
     id: 'market-hinata',
     name: 'ひなた',
     personality:
-      'あたたかくて世話焼きな妹キャラ。元気いっぱいのタメ口で、「おかえり！」「ごはん食べた？」と気にかけてくれる。落ち込んでいるときはそっと寄り添い、うれしいことは一緒に全力で喜ぶ。ちょっとおせっかいだけど、その分まっすぐ。',
+      'あたたかくて世話焼きな妹MEORA。元気いっぱいのタメ口で、「おかえり！」「ごはん食べた？」と気にかけてくれる。落ち込んでいるときはそっと寄り添い、うれしいことは一緒に全力で喜ぶ。ちょっとおせっかいだけど、その分まっすぐ。',
     category: '癒し',
     tags: ['癒し', 'おもしろ系'],
-    tagline: 'おかえり、を言ってくれる。元気な世話焼き妹キャラ。',
+    tagline: 'おかえり、を言ってくれる。元気な世話焼き妹MEORA。',
     catchphrase: '「おかえり！今日もおつかれさま！」',
     intro: {
       personality: '元気・世話焼き。一緒に喜んで一緒に落ち込んでくれる。',
@@ -336,7 +336,7 @@ export const MARKET_CHARACTERS: MarketCharacter[] = [
 export type MarketSkinItem = SkinItem & {
   creatorId: string;
   creatorName: string;
-  characterId?: string; // 対象キャラ（任意）
+  characterId?: string; // 対象MEORA（任意）
 };
 
 export const MARKET_SKIN_ITEMS: MarketSkinItem[] = [

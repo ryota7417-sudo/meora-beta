@@ -1,5 +1,5 @@
 // MEORA オンボーディングの多言語辞書。
-// 対象はオンボーディング(スプラッシュ / 説明スライド / アカウント作成 / キャラ作成)の
+// 対象はオンボーディング(スプラッシュ / 説明スライド / アカウント作成 / MEORA作成)の
 // 表示テキストのみ。マーケット・チャット・ダッシュボード・設定は対象外。
 //
 // 「MEORA」ロゴは全言語共通でそのまま。読みのみ各言語で切り替える。
@@ -63,10 +63,10 @@ export type Dict = {
   login: string; // 「ログイン」
   step1of2: string; // 「STEP 1/2」
 
-  // --- キャラ作成 (step3) ---
-  charCreateTitle: string; // 「キャラを作ろう」
-  charPreviewName: string; // 「あなたのキャラ」
-  charNameLabel: string; // 「キャラ名」
+  // --- MEORA作成 (step3) ---
+  charCreateTitle: string; // 「MEORAを作ろう」
+  charPreviewName: string; // 「あなたのMEORA」
+  charNameLabel: string; // 「MEORA名」
   required: string; // 「必須」
   charNamePlaceholder: string; // 「例: moco」
   photoLabel: string; // 「写真」
@@ -76,7 +76,7 @@ export type Dict = {
   photoSelectShort: string; // プレビュー内「写真を選択」
   photoHint: string; // 「お好きな画像を…(任意)」
   // --- スプライト登録（歩く庭用・最大5枚） ---
-  spritesLabel: string; // 「キャラ画像（最大5枚）」
+  spritesLabel: string; // 「MEORA画像（最大5枚）」
   spritesHint: string; // 「種類を選んで画像を登録すると、ホームの庭を歩きます。(任意)」
   spriteAdd: string; // 「画像を追加」
   spriteKindLabel: string; // 「種類」
@@ -148,9 +148,9 @@ const ja: Dict = {
   login: 'ログイン',
   step1of2: 'STEP 1/2',
 
-  charCreateTitle: 'キャラを作ろう',
-  charPreviewName: 'あなたのキャラ',
-  charNameLabel: 'キャラ名',
+  charCreateTitle: 'MEORAを作ろう',
+  charPreviewName: 'あなたのMEORA',
+  charNameLabel: 'MEORA名',
   required: '必須',
   charNamePlaceholder: '例: moco',
   photoLabel: '写真',
@@ -158,9 +158,9 @@ const ja: Dict = {
   photoChange: '写真を変更 →',
   photoDelete: '写真を削除',
   photoSelectShort: '写真を選択',
-  photoHint: 'お好きな画像をキャラのアイコンにできます。(任意)',
-  spritesLabel: 'キャラ画像（最大5枚）',
-  spritesHint: '種類を選んで画像を登録すると、ホームをキャラが歩きます。(任意)',
+  photoHint: 'お好きな画像をMEORAのアイコンにできます。(任意)',
+  spritesLabel: 'MEORA画像（最大5枚）',
+  spritesHint: '種類を選んで画像を登録すると、ホームをMEORAが歩きます。(任意)',
   spriteAdd: '＋ 画像を追加',
   spriteKindLabel: '種類',
   spriteWalkRight: '右に歩く',
@@ -171,7 +171,7 @@ const ja: Dict = {
   personalityLabel: '性格・口調',
   personalityPlaceholder:
     '例: おっとり聞き上手。やわらかい敬語まじりのタメ口で話す。否定せず受け止める。',
-  personalityHint: 'ここに書いた内容がキャラの話し方になります。',
+  personalityHint: 'ここに書いた内容がMEORAの話し方になります。',
   categoryLabel: 'カテゴリ',
   categoryNone: '（選択しない）',
   catHeal: '癒し',

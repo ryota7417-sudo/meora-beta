@@ -8,7 +8,7 @@ import { CharacterYard } from '@/components/ui/CharacterYard';
 import { createClient } from '@/lib/supabase';
 import { resolveAuth } from '@/lib/auth';
 
-// トーク一覧用のキャラごとプレビュー型
+// トーク一覧用のMEORAごとプレビュー型
 type ChatPreview = {
   text: string;   // 最後のメッセージ本文（無ければ空文字）
   ts: number;     // 最後のメッセージの timestamp（無ければ 0）
@@ -70,7 +70,7 @@ export default function DashboardPage() {
         router.replace('/onboarding');
         return;
       }
-      // 各キャラのトーク履歴から最後のメッセージ・時刻を集計
+      // 各MEORAのトーク履歴から最後のメッセージ・時刻を集計
       const map: Record<string, ChatPreview> = {};
       s.characters.forEach(c => {
         const history = loadChatHistory(c.id);
@@ -130,7 +130,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* 上部: キャラが歩く庭（空きスペースを広く占有） */}
+      {/* 上部: MEORAが歩く庭（空きスペースを広く占有） */}
       <div style={{ flex: 1, minHeight: 180, position: 'relative' }}>
         <CharacterYard characters={state.characters} />
       </div>
@@ -160,10 +160,10 @@ export default function DashboardPage() {
           {/* 約3行分(69px/行)の高さに制限してスクロール。＋ボタンは下に固定で残す。 */}
           <div style={{ display: 'flex', flexDirection: 'column', border: '2px solid #111', boxShadow: '4px 4px 0 #111', background: '#fff', maxHeight: 207, overflowY: 'auto' }}>
 
-            {/* キャラ未所持の空状態 */}
+            {/* MEORA未所持の空状態 */}
             {state.characters.length === 0 && (
               <div style={{ padding: '20px 16px', textAlign: 'center', color: '#888', fontSize: 13, lineHeight: 1.7, borderBottom: '1px solid #ddd' }}>
-                まだキャラがいません。<br />下のボタンからキャラを探す/作ることができます。
+                まだMEORAがいません。<br />下のボタンからMEORAを探す/作ることができます。
               </div>
             )}
 
@@ -187,7 +187,7 @@ export default function DashboardPage() {
                     color: 'inherit',
                   }}
                 >
-                  {/* キャラアイコン（写真があれば写真、無ければイニシャル） */}
+                  {/* MEORAアイコン（写真があれば写真、無ければイニシャル） */}
                   <div style={{ width: 44, height: 44, border: '2px solid #111', flexShrink: 0, background: '#f0f0ea', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                     <CharAvatar photo={char.photo} name={char.name} size={40} />
                   </div>
@@ -211,7 +211,7 @@ export default function DashboardPage() {
               );
             })}
 
-            {/* ＋ 自分のキャラを作る */}
+            {/* ＋ 自分のMEORAを作る */}
             <div
               style={{ display: 'flex', alignItems: 'center', padding: '12px 12px', gap: 11, cursor: 'pointer', background: '#f7f5f0', borderBottom: '1px solid #ddd' }}
               onClick={() => router.push('/character/new')}
@@ -222,11 +222,11 @@ export default function DashboardPage() {
                   <line x1="4" y1="11" x2="18" y2="11" stroke="#111" strokeWidth="2.4" strokeLinecap="round"/>
                 </svg>
               </div>
-              <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.02em' }}>自分のキャラを作る</span>
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.02em' }}>自分のMEORAを作る</span>
               <span style={{ flexShrink: 0, color: '#bbb', fontSize: 18, fontWeight: 800, lineHeight: 1 }}>›</span>
             </div>
 
-            {/* ＋ キャラを探す（クリエイターマーケットへ） */}
+            {/* ＋ MEORAを探す（クリエイターマーケットへ） */}
             <div
               style={{ display: 'flex', alignItems: 'center', padding: '12px 12px', gap: 11, cursor: 'pointer', background: '#f7f5f0' }}
               onClick={() => router.push('/market')}
@@ -237,7 +237,7 @@ export default function DashboardPage() {
                   <path d="M4 20 C4 16 18 16 18 20" stroke="#111" strokeWidth="2.2" strokeLinecap="round"/>
                 </svg>
               </div>
-              <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.02em' }}>マーケットでキャラを探す</span>
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.02em' }}>マーケットでMEORAを探す</span>
               <span style={{ flexShrink: 0, color: '#bbb', fontSize: 18, fontWeight: 800, lineHeight: 1 }}>›</span>
             </div>
 
