@@ -30,12 +30,14 @@ export type Dict = {
   // version 行は「v0.1.0 · MEORA」で全言語共通のため辞書に含めない。
 
   // --- 説明スライド (step1) ---
-  slide1Title: string; // num はコード側で 01 / 03 等を共通生成
+  slide1Title: string; // num はコード側で 01 / 04 等を共通生成
   slide1Body: string;
   slide2Title: string; // 改行は \n で表現
   slide2Body: string;
   slide3Title: string;
   slide3Body: string;
+  slide4Title: string;
+  slide4Body: string;
   navBack: string; // 「← 戻る」
   navSkip: string; // 「スキップ →」
   navNext: string; // 「次へ →」
@@ -112,13 +114,16 @@ const ja: Dict = {
 
   slide1Title: 'キャラクターと話そう',
   slide1Body:
-    '気軽に話せるキャラクターのMEORA（ミオラ）だよ。自分だけのMEORAを作ったり、好きなMEORAを見つけたら一緒に過ごそう。',
-  slide2Title: 'お腹がすいたら\nごはんで回復',
+    '気軽に生成AIと話せるキャラクターのMEORA（ミオラ）だよ。自分だけのMEORAを作ったり、好きなMEORAを見つけたら一緒に過ごせるよ。',
+  slide2Title: '何ができるの？',
   slide2Body:
-    'MEORAには「満腹度」があります。お話するとお腹がすきますが、毎日お食事が届いて回復します。',
-  slide3Title: 'マーケットで\nキャラクターを追加しよう',
+    '雑談をしたり、悩みを聞いてもらったりできるよ。困りごとでもなんでも聞いていいからね。',
+  slide3Title: 'お腹がすいたら\nごはんで回復',
   slide3Body:
-    'クリエイターが作ったMEORAをマーケットで見つけられます。お気に入りのMEORAと出会おう。',
+    'MEORAには「満腹度」があります。お話するとお腹が空いて満腹度が下がります。満腹度が0になると、MEORAが疲れてしまってお話を聞くことができなくなります。でも安心してください！お食事のおにぎりが毎日届いて満腹度を回復することができます。',
+  slide4Title: 'マーケットで\nキャラクターを追加しよう',
+  slide4Body:
+    'クリエイターが作ったMEORAをマーケットで探せます。お気に入りのMEORAと出会って一緒に過ごそう。',
   navBack: '← 戻る',
   navSkip: 'スキップ →',
   navNext: '次へ →',
@@ -201,13 +206,16 @@ const en: Dict = {
 
   slide1Title: 'Talk with your character',
   slide1Body:
-    'MEORA (Miora) is a character you can chat with anytime. Create your very own MEORA, or find one you love and spend time together.',
-  slide2Title: 'Hungry? A meal\nbrings them back',
+    'MEORA (Miora) is a character powered by AI that you can chat with anytime. Create your very own MEORA, or find one you love and spend time together.',
+  slide2Title: 'What can MEORA do?',
   slide2Body:
-    'Every MEORA has a "fullness" level. Chatting makes them hungry, but a meal arrives each day to restore it.',
-  slide3Title: 'Add new characters\nfrom the Market',
+    'You can have casual chats or talk about your worries. Feel free to ask anything — MEORA is always here to listen.',
+  slide3Title: 'Hungry? A meal\nbrings them back',
   slide3Body:
-    'Discover MEORAs made by creators in the Market. Find a favorite and meet your new companion.',
+    'Every MEORA has a "fullness" level. Chatting makes them hungry and their fullness drops. When it hits zero, your MEORA gets tired and can\'t chat anymore. But don\'t worry! A rice ball meal arrives every day to restore their fullness.',
+  slide4Title: 'Add new characters\nfrom the Market',
+  slide4Body:
+    'Discover MEORAs made by creators in the Market. Find a favorite and spend time together.',
   navBack: '← Back',
   navSkip: 'Skip →',
   navNext: 'Next →',
@@ -290,13 +298,16 @@ const ko: Dict = {
 
   slide1Title: '캐릭터와 이야기해요',
   slide1Body:
-    '편하게 이야기할 수 있는 캐릭터 MEORA(미오라)예요. 나만의 MEORA를 만들거나, 마음에 드는 MEORA를 찾아 함께 지내요.',
-  slide2Title: '배가 고프면\n밥으로 회복',
+    '생성 AI로 편하게 이야기할 수 있는 캐릭터 MEORA(미오라)예요. 나만의 MEORA를 만들거나, 마음에 드는 MEORA를 찾아 함께 지낼 수 있어요.',
+  slide2Title: '무엇을 할 수 있나요?',
   slide2Body:
-    'MEORA에게는 "포만감"이 있어요. 대화를 나누면 배가 고파지지만, 매일 식사가 도착해 회복돼요.',
-  slide3Title: '마켓에서\n캐릭터를 추가해요',
+    '수다를 떨거나 고민을 들어줄 수 있어요. 뭐든 편하게 물어봐도 괜찮아요.',
+  slide3Title: '배가 고프면\n밥으로 회복',
   slide3Body:
-    '크리에이터가 만든 MEORA를 마켓에서 찾을 수 있어요. 마음에 드는 MEORA와 만나보세요.',
+    'MEORA에게는 "포만감"이 있어요. 대화를 나누면 배가 고파져 포만감이 줄어들어요. 포만감이 0이 되면 MEORA가 지쳐서 이야기를 들을 수 없게 돼요. 하지만 안심하세요! 매일 주먹밥이 도착해 포만감을 회복할 수 있어요.',
+  slide4Title: '마켓에서\n캐릭터를 추가해요',
+  slide4Body:
+    '크리에이터가 만든 MEORA를 마켓에서 찾을 수 있어요. 마음에 드는 MEORA와 만나 함께 지내요.',
   navBack: '← 뒤로',
   navSkip: '건너뛰기 →',
   navNext: '다음 →',
@@ -379,13 +390,16 @@ const zhHant: Dict = {
 
   slide1Title: '與角色聊聊吧',
   slide1Body:
-    'MEORA（米歐拉）是能輕鬆聊天的角色。打造專屬於你的 MEORA，或找到喜歡的 MEORA，一起共度時光吧。',
-  slide2Title: '肚子餓了\n用餐就能回復',
+    'MEORA（米歐拉）是能輕鬆與生成式 AI 聊天的角色。打造專屬於你的 MEORA，或找到喜歡的 MEORA，一起共度時光吧。',
+  slide2Title: '能做什麼呢？',
   slide2Body:
-    '每個 MEORA 都有「飽足度」。聊天會讓牠肚子餓，但每天都會送來餐點幫牠回復。',
-  slide3Title: '在市集\n新增角色',
+    '可以閒聊，也可以傾訴煩惱。什麼都可以問，MEORA 隨時在這裡聽你說。',
+  slide3Title: '肚子餓了\n用餐就能回復',
   slide3Body:
-    '在市集裡能找到創作者打造的 MEORA。遇見你喜歡的 MEORA，認識新夥伴吧。',
+    '每個 MEORA 都有「飽足度」。聊天會讓牠肚子餓，飽足度會下降。當飽足度歸零時，MEORA 會累到無法聊天。但請放心！每天都會送來飯糰，幫牠恢復飽足度。',
+  slide4Title: '在市集\n新增角色',
+  slide4Body:
+    '在市集裡能找到創作者打造的 MEORA。遇見你喜歡的 MEORA，一起共度時光吧。',
   navBack: '← 返回',
   navSkip: '略過 →',
   navNext: '下一步 →',

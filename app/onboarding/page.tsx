@@ -211,12 +211,12 @@ function StepSplash({
 // ===== アプリ説明 (step 1) =====
 function StepIntro({ onNext, onBack, t }: { onNext: () => void; onBack: () => void; t: Dict }) {
   const [current, setCurrent] = useState(0);
-  const total = 3;
+  const total = 4;
 
   // slides defined after hooks
   const slides = [
     {
-      num: '01 / 03',
+      num: '01 / 04',
       title: t.slide1Title,
       body: t.slide1Body,
       icon: (
@@ -233,9 +233,25 @@ function StepIntro({ onNext, onBack, t }: { onNext: () => void; onBack: () => vo
       ),
     },
     {
-      num: '02 / 03',
+      num: '02 / 04',
       title: t.slide2Title,
       body: t.slide2Body,
+      icon: (
+        <svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="44" cy="38" r="24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"/>
+          <path d="M36 30 C36 24 42 20 48 22 C54 24 54 32 48 34 L44 36 L44 42" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+          <circle cx="44" cy="50" r="2" fill="#fff"/>
+          <line x1="20" y1="68" x2="28" y2="60" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round"/>
+          <line x1="60" y1="68" x2="68" y2="60" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round"/>
+          <circle cx="20" cy="72" r="3" fill="rgba(255,255,255,0.25)"/>
+          <circle cx="68" cy="64" r="2.5" fill="rgba(255,255,255,0.25)"/>
+        </svg>
+      ),
+    },
+    {
+      num: '03 / 04',
+      title: t.slide3Title,
+      body: t.slide3Body,
       icon: (
         <svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M44 72 C44 72 14 54 14 32 C14 22 22 14 32 16 C37 17 41 20 44 24 C47 20 51 17 56 16 C66 14 74 22 74 32 C74 54 44 72 44 72Z" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinejoin="round"/>
@@ -247,9 +263,9 @@ function StepIntro({ onNext, onBack, t }: { onNext: () => void; onBack: () => vo
       ),
     },
     {
-      num: '03 / 03',
-      title: t.slide3Title,
-      body: t.slide3Body,
+      num: '04 / 04',
+      title: t.slide4Title,
+      body: t.slide4Body,
       icon: (
         // eslint-disable-next-line @next/next/no-img-element
         <img src="/top_icon_line_3.png" alt="" style={{ height: 120, width: 'auto', display: 'block' }} />
@@ -323,7 +339,7 @@ function StepIntro({ onNext, onBack, t }: { onNext: () => void; onBack: () => vo
 
         {/* PROGRESS DOTS */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, padding: '24px 0 0' }}>
-          {[0, 1, 2].map(i => (
+          {[0, 1, 2, 3].map(i => (
             <div key={i} style={{ width: 8, height: 8, border: '2px solid rgba(255,255,255,0.35)', background: i === current ? '#fff' : 'transparent', borderColor: i === current ? '#fff' : 'rgba(255,255,255,0.35)', transition: 'background 0.2s, border-color 0.2s' }}/>
           ))}
         </div>
@@ -359,6 +375,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleGoogleLogin = async () => {
     setError('');
@@ -387,7 +404,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     if (signUpError) {
       setError(signUpError.message);
     } else {
-      onNext();
+      setEmailSent(true);
     }
   };
 
@@ -401,6 +418,43 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     alignItems: 'flex-start',
     padding: '24px 16px 48px',
   } as const;
+
+  if (emailSent) {
+    return (
+      <div style={light}>
+        <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 0 12px', marginBottom: 20, borderBottom: '2px solid #111' }}>
+            <div />
+            <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>メール送信完了</div>
+            <div />
+          </div>
+
+          <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '28px 20px', margin: '0 0 20px', textAlign: 'center' }}>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>✉️</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#111', marginBottom: 16, lineHeight: 1.6 }}>
+              確認メールを送信しました
+            </div>
+            <div style={{ fontSize: 14, color: '#555', lineHeight: 1.8, marginBottom: 20 }}>
+              <span style={{ fontWeight: 700, color: '#111' }}>{email}</span> 宛に
+              <br />登録確認メールを送信しました。
+              <br />メール内のリンクをクリックして
+              <br />登録を完了してください。
+            </div>
+            <div style={{ fontSize: 12, color: '#999', lineHeight: 1.7, padding: '14px', background: '#f8f8f4', border: '1px solid #ddd' }}>
+              メールが届かない場合は、迷惑メールフォルダをご確認ください。
+            </div>
+          </div>
+
+          <button
+            onClick={onNext}
+            style={{ width: '100%', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #555', padding: '14px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
+          >
+            次へ進む →
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={light}>
@@ -581,7 +635,19 @@ function StepCharacterCreate({
   // プレビュー用の代表画像: idle(止まる) → 先頭スプライト の順。
   const previewSprite = draft.sprites.find(s => s.type === 'idle') ?? draft.sprites[0];
 
+  const [useDefault, setUseDefault] = useState(false);
+
   const canFinish = draft.name.trim().length > 0;
+
+  const handleSelectDefault = () => {
+    setUseDefault(true);
+    setSpriteByType('idle', '/icon_default.png');
+  };
+
+  const handleDeselectDefault = () => {
+    setUseDefault(false);
+    removeSpriteByType('idle');
+  };
 
   return (
     <div style={light}>
@@ -604,29 +670,39 @@ function StepCharacterCreate({
           ))}
         </div>
 
-        {/* プレビュー */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 16px 16px', background: '#111', margin: '14px 16px 0', border: '2px solid #111', boxShadow: '4px 4px 0 #555' }}>
-          <div style={{ background: 'rgba(255,255,255,0.06)', border: '2px solid rgba(255,255,255,0.2)', padding: 16, marginBottom: 12 }}>
-            {previewSprite ? (
-              <img src={previewSprite.dataUrl} alt={draft.name || t.charPreviewName} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
-            ) : (
-              <div style={{ width: 100, height: 100, border: '2px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: 'rgba(255,255,255,0.5)' }}>
-                <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="7" width="28" height="22" stroke="rgba(255,255,255,0.5)" strokeWidth="2"/>
-                  <path d="M11 7 L13 4 L21 4 L23 7" stroke="rgba(255,255,255,0.5)" strokeWidth="2" fill="none" strokeLinejoin="round"/>
-                  <circle cx="17" cy="18" r="6" stroke="rgba(255,255,255,0.5)" strokeWidth="2"/>
-                </svg>
-                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>{t.photoSelectShort}</span>
-              </div>
-            )}
-          </div>
-          <div style={{ color: '#fff', fontSize: 16, fontWeight: 800, letterSpacing: '0.04em' }}>
-            {draft.name || t.charPreviewName}
-          </div>
-        </div>
-
         {/* 入力セクション */}
         <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+          {/* デフォルトキャラクター */}
+          <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
+            {sectionLabel('デフォルトキャラクター')}
+            <div style={{ fontSize: 12, color: '#666', lineHeight: 1.6, marginBottom: 12 }}>
+              オリジナルのキャラクターを作らなくても、デフォルトのMEORAですぐに始められます。
+            </div>
+            <div
+              onClick={useDefault ? handleDeselectDefault : handleSelectDefault}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 14, padding: 12,
+                border: useDefault ? '3px solid #111' : '2px solid #ccc',
+                background: useDefault ? '#f0f0e8' : '#f8f8f4',
+                cursor: 'pointer',
+                transition: 'border 0.15s, background 0.15s',
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icon_default.png" alt="デフォルトMEORA" style={{ width: 64, height: 64, objectFit: 'contain', display: 'block' }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#111', marginBottom: 4 }}>MEORA</div>
+                <div style={{ fontSize: 11, color: '#888' }}>デフォルトキャラクター</div>
+              </div>
+              <div style={{
+                width: 24, height: 24, border: '2px solid #111', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: useDefault ? '#111' : '#fff',
+              }}>
+                {useDefault && <span style={{ color: '#fff', fontSize: 14, fontWeight: 900, lineHeight: 1 }}>✓</span>}
+              </div>
+            </div>
+          </div>
 
           {/* キャラ名 */}
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
@@ -647,6 +723,7 @@ function StepCharacterCreate({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {SPRITE_ROWS.map(({ type, label }) => {
                 const src = getSpriteByType(type);
+                const isDefaultIdle = useDefault && type === 'idle';
                 return (
                   <div key={type}>
                     <input
@@ -658,7 +735,9 @@ function StepCharacterCreate({
                     />
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, border: '1.5px solid #111', padding: 10, background: '#f8f8f4' }}>
                       <div style={{ flexShrink: 0, width: 54, height: 54, border: '2px solid #111', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                        {src ? (
+                        {isDefaultIdle ? (
+                          <img src="/icon_default.png" alt={label} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                        ) : src ? (
                           <img src={src} alt={label} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
                         ) : (
                           <span style={{ fontSize: 9, color: '#bbb', fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.4 }}>画像<br/>なし</span>
@@ -668,13 +747,15 @@ function StepCharacterCreate({
                         <div style={{ fontSize: 12, fontWeight: 800, color: '#111', letterSpacing: '0.04em' }}>{label}</div>
                       </div>
                       <div style={{ flexShrink: 0, display: 'flex', gap: 6 }}>
-                        <button
-                          onClick={() => fileRefs.current[type]?.click()}
-                          style={{ padding: '7px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em', whiteSpace: 'nowrap' }}
-                        >
-                          {src ? '変更' : '設定'}
-                        </button>
-                        {src && (
+                        {!isDefaultIdle && (
+                          <button
+                            onClick={() => fileRefs.current[type]?.click()}
+                            style={{ padding: '7px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em', whiteSpace: 'nowrap' }}
+                          >
+                            {src ? '変更' : '設定'}
+                          </button>
+                        )}
+                        {src && !isDefaultIdle && (
                           <button
                             onClick={() => removeSpriteByType(type)}
                             style={{ padding: '7px 10px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em' }}
@@ -693,9 +774,38 @@ function StepCharacterCreate({
             </div>
           </div>
 
+          {/* プレビュー（見た目の下に配置） */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 16px 16px', background: '#111', border: '2px solid #111', boxShadow: '4px 4px 0 #555' }}>
+            <div style={{ background: 'rgba(255,255,255,0.06)', border: '2px solid rgba(255,255,255,0.2)', padding: 16, marginBottom: 12 }}>
+              {useDefault ? (
+                <img src="/icon_default.png" alt={draft.name || t.charPreviewName} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
+              ) : previewSprite ? (
+                <img src={previewSprite.dataUrl} alt={draft.name || t.charPreviewName} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
+              ) : (
+                <div style={{ width: 100, height: 100, border: '2px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: 'rgba(255,255,255,0.5)' }}>
+                  <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="7" width="28" height="22" stroke="rgba(255,255,255,0.5)" strokeWidth="2"/>
+                    <path d="M11 7 L13 4 L21 4 L23 7" stroke="rgba(255,255,255,0.5)" strokeWidth="2" fill="none" strokeLinejoin="round"/>
+                    <circle cx="17" cy="18" r="6" stroke="rgba(255,255,255,0.5)" strokeWidth="2"/>
+                  </svg>
+                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>{t.photoSelectShort}</span>
+                </div>
+              )}
+            </div>
+            <div style={{ color: '#fff', fontSize: 16, fontWeight: 800, letterSpacing: '0.04em' }}>
+              {draft.name || t.charPreviewName}
+            </div>
+          </div>
+
           {/* 性格・口調 */}
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
             {sectionLabel(t.personalityLabel)}
+            <div style={{ fontSize: 12, color: '#666', lineHeight: 1.6, marginBottom: 10 }}>
+              {t.personalityHint}
+            </div>
+            <div style={{ fontSize: 12, color: '#888', lineHeight: 1.6, marginBottom: 10 }}>
+              テンプレートを使って性格や口調を指定できます。
+            </div>
             <button
               onClick={() => setDraft(d => ({ ...d, personality: d.personality ? d.personality : PERSONALITY_TEMPLATE }))}
               style={{ marginBottom: 10, padding: '6px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.04em' }}
@@ -709,12 +819,10 @@ function StepCharacterCreate({
               rows={7}
               style={{ ...inputStyle, resize: 'vertical', minHeight: 120, lineHeight: 1.7 }}
             />
-            <div style={{ fontSize: 11, color: '#999', marginTop: 8, letterSpacing: '0.02em', lineHeight: 1.5 }}>
-              {t.personalityHint}
-            </div>
-            {/* いま使っているAIの個性を引き継ぐ（プロンプトコピー） */}
-            <InheritPersonaCopy lang={lang} />
           </div>
+
+          {/* いま使っているAIの個性を引き継ぐ（プロンプトコピー） */}
+          <InheritPersonaCopy lang={lang} />
 
           {/* 完了ボタン（ホームへ） */}
           <button

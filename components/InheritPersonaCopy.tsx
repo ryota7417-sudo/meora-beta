@@ -34,22 +34,24 @@ export function InheritPersonaCopy({ lang = DEFAULT_LANG }: { lang?: Lang }) {
   };
 
   return (
-    <div style={{ background: '#111', border: '2px solid #111', boxShadow: '4px 4px 0 #555', padding: '14px 14px', marginTop: 4 }}>
-      <div style={{ fontSize: 12, fontWeight: 800, color: '#fff', letterSpacing: '0.04em', marginBottom: 8, lineHeight: 1.5 }}>
+    <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#666', marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
         {t.inheritTitle}
       </div>
-      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, marginBottom: 12 }}>
-        {t.inheritSteps}
+      <div style={{ fontSize: 12, color: '#666', lineHeight: 2.0, marginBottom: 14 }}>
+        <div>① このプロンプトをコピー</div>
+        <div>② いつも使っているAI(ChatGPT等)に貼り付け・送信</div>
+        <div>③ 返ってきた文章を上の「性格・口調」に貼り付け</div>
       </div>
       <button
         type="button"
         onClick={handleCopy}
         style={{
           width: '100%',
-          background: copied ? '#4caf50' : '#fff',
-          color: copied ? '#fff' : '#111',
-          border: '2px solid #fff',
-          boxShadow: '3px 3px 0 rgba(255,255,255,0.3)',
+          background: copied ? '#4caf50' : '#111',
+          color: '#fff',
+          border: '2px solid #111',
+          boxShadow: copied ? 'none' : '4px 4px 0 #555',
           padding: '11px 14px',
           fontSize: 13,
           fontWeight: 800,
