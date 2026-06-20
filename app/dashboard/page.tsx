@@ -46,6 +46,30 @@ export default function DashboardPage() {
   const [dailyClaimed, setDailyClaimed] = useState(false);
   const [feedTarget, setFeedTarget] = useState<string | null>(null);
   const [feedMessage, setFeedMessage] = useState('');
+  const [overflowWarning, setOverflowWarning] = useState<{ itemId: string; charId: string } | null>(null);
+
+  const doFeed = (itemId: string, charId: string) => {
+    if (!state) return;
+    const item = inventory.find(i => i.id === itemId);
+    if (!item) return;
+    const char = state.characters.find(c => c.id === charId);
+    if (!char) return;
+    const newInv = consumeItem(inventory, itemId);
+    saveInventory(newInv);
+    setInventory(newInv);
+    const newState = {
+      ...state,
+      characters: state.characters.map(c =>
+        c.id === charId ? { ...c, hp: Math.min(c.maxHp, c.hp + item.effect) } : c
+      ),
+    };
+    saveState(newState);
+    setState(newState);
+    setFeedTarget(null);
+    setOverflowWarning(null);
+    setFeedMessage(`${char.name}に${item.name}をあげました！`);
+    setTimeout(() => setFeedMessage(''), 3000);
+  };
 
   useEffect(() => {
     const supabase = createClient();
@@ -133,13 +157,34 @@ export default function DashboardPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
             onClick={() => {
-              // 初回オープン時におにぎり付与
               if (canClaimDailyOnigiri()) {
                 const updated = addItem(loadInventory(), 'onigiri', 1);
                 saveInventory(updated);
                 setInventory(updated);
                 markDailyOnigiriClaimed();
                 setDailyClaimed(true);
+                // 自動使用: HPが最も低いMEORAに自動であげる
+                if (state && state.characters.length > 0) {
+                  const onigiri = updated.find(i => i.id === 'onigiri');
+                  if (onigiri) {
+                    const hungriest = [...state.characters].sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0];
+                    if (hungriest.hp < hungriest.maxHp) {
+                      const newInv = consumeItem(updated, 'onigiri');
+                      saveInventory(newInv);
+                      setInventory(newInv);
+                      const newState = {
+                        ...state,
+                        characters: state.characters.map(c =>
+                          c.id === hungriest.id ? { ...c, hp: Math.min(c.maxHp, c.hp + onigiri.effect) } : c
+                        ),
+                      };
+                      saveState(newState);
+                      setState(newState);
+                      setFeedMessage(`毎日のおにぎりを${hungriest.name}にあげました！`);
+                      setTimeout(() => setFeedMessage(''), 3000);
+                    }
+                  }
+                }
               }
               setShowInventory(true);
             }}
@@ -320,6 +365,34 @@ export default function DashboardPage() {
               </div>
             )}
 
+            {overflowWarning && state && (() => {
+              const char = state.characters.find(c => c.id === overflowWarning.charId);
+              return char ? (
+                <div style={{ background: '#fff8e1', border: '2px solid #111', boxShadow: '3px 3px 0 #111', padding: '16px', marginBottom: 12 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#111', lineHeight: 1.7, marginBottom: 14 }}>
+                    今ごはんをあげると最大値を超えてしまいます。超えた分は加算されません。本当にあげますか？
+                  </div>
+                  <div style={{ fontSize: 11, color: '#888', marginBottom: 14 }}>
+                    {char.name}の満腹度: {char.hp} / {char.maxHp}
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => doFeed(overflowWarning.itemId, overflowWarning.charId)}
+                      style={{ flex: 1, background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', padding: '10px', fontSize: 13, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
+                    >
+                      いいよ
+                    </button>
+                    <button
+                      onClick={() => { setOverflowWarning(null); setFeedTarget(null); }}
+                      style={{ flex: 1, background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', padding: '10px', fontSize: 13, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
+                    >
+                      まだあげない
+                    </button>
+                  </div>
+                </div>
+              ) : null;
+            })()}
+
             {inventory.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '24px 0', color: '#888', fontSize: 13 }}>
                 持ち物がありません
@@ -354,22 +427,15 @@ export default function DashboardPage() {
                           <button
                             key={char.id}
                             onClick={() => {
-                              // アイテム消費
-                              const newInv = consumeItem(inventory, item.id);
-                              saveInventory(newInv);
-                              setInventory(newInv);
-                              // HP回復
-                              const newState = {
-                                ...state,
-                                characters: state.characters.map(c =>
-                                  c.id === char.id ? { ...c, hp: Math.min(c.maxHp, c.hp + item.effect) } : c
-                                ),
-                              };
-                              saveState(newState);
-                              setState(newState);
-                              setFeedTarget(null);
-                              setFeedMessage(`${char.name}に${item.name}をあげました！`);
-                              setTimeout(() => setFeedMessage(''), 3000);
+                              if (char.hp + item.effect > char.maxHp && char.hp < char.maxHp) {
+                                setOverflowWarning({ itemId: item.id, charId: char.id });
+                              } else if (char.hp >= char.maxHp) {
+                                setFeedMessage(`${char.name}はもう満腹です！`);
+                                setFeedTarget(null);
+                                setTimeout(() => setFeedMessage(''), 3000);
+                              } else {
+                                doFeed(item.id, char.id);
+                              }
                             }}
                             style={{
                               background: '#fff', border: '1.5px solid #111', padding: '4px 10px',
