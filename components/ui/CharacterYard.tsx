@@ -60,6 +60,7 @@ type Mover = {
   x: number;
   y: number;
   vx: number; // px/sec（符号で向き）
+  vy: number; // y方向速度（px/sec）
   dir: 'left' | 'right';
   state: 'walk' | 'idle';
   // 次に walk/idle を切替える時刻（performance.now() ベース・ms）
@@ -197,7 +198,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
 
     const movers: Mover[] = list.map((char, i) => {
       const dir: 'left' | 'right' = Math.random() < 0.5 ? 'left' : 'right';
-      const baseSpeed = isNight ? rand(1, 3) : isSleepy ? rand(3, 6) : rand(6, 14);
+      const baseSpeed = isNight ? rand(1, 3) : isSleepy ? rand(3, 6) : rand(15, 30);
       const speed = baseSpeed;
       // 重なりすぎない初期配置: 横方向に概ね等間隔 + ランダムゆらぎ。
       const slot = list.length > 0 ? (W - SPRITE_W) / list.length : 0;
@@ -211,6 +212,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
         x,
         y,
         vx: dir === 'right' ? speed : -speed,
+        vy: rand(-0.3, 0.3) * (isNight ? 0.2 : 1),
         dir,
         state: isNight ? 'idle' as const : 'walk' as const,
         nextStateChangeAt: now + rand(2000, 5000),
@@ -287,13 +289,18 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
             m.nextStateChangeAt = t + (m.state === 'walk' ? rand(3000, 6000) : rand(2000, 5000));
           } else {
             m.state = m.state === 'walk' ? 'idle' : 'walk';
-            m.nextStateChangeAt = t + (m.state === 'walk' ? rand(6000, 12000) : rand(800, 2000));
+            m.nextStateChangeAt = t + (m.state === 'walk' ? rand(3000, 8000) : rand(1000, 3000));
+          }
+          // walk開始時にy方向速度をランダムに設定
+          if (m.state === 'walk') {
+            m.vy = rand(-0.5, 0.5);
           }
         }
 
         // 移動（walk のときだけ）。
         if (m.state === 'walk') {
           m.x += m.vx * dtSec;
+          m.y += m.vy * dtSec;
           // 端で反転（スプライト幅を考慮してクランプ）。
           if (m.x <= 0) {
             m.x = 0;
@@ -303,6 +310,16 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
             m.x = maxX;
             m.vx = -Math.abs(m.vx);
             m.dir = 'left';
+          }
+          // y方向の端で反転（コンテナの高さに応じたバンド内に収める）。
+          const bandTop = Math.max(8, H * 0.35);
+          const bandBottom = Math.max(bandTop + 1, H - SPRITE_H - 8);
+          if (m.y <= bandTop) {
+            m.y = bandTop;
+            m.vy = Math.abs(m.vy);
+          } else if (m.y >= bandBottom) {
+            m.y = bandBottom;
+            m.vy = -Math.abs(m.vy);
           }
         }
 
@@ -355,6 +372,20 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
     // 差分判定は lastViewsRef を使うため views を依存に入れない（ref中心設計）。
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idsKey]);
+
+  // ボビング（上下揺れ）アニメーション用CSSキーフレームを一度だけ注入。
+  useEffect(() => {
+    if (document.getElementById('meora-yard-keyframes')) return;
+    const style = document.createElement('style');
+    style.id = 'meora-yard-keyframes';
+    style.textContent = `
+      @keyframes meora-bob {
+        0%, 100% { margin-top: 0; }
+        50% { margin-top: -4px; }
+      }
+    `;
+    document.head.appendChild(style);
+  }, []);
 
   // 背景（白 + 方眼紙グリッド明色版）。
   const yardBg: React.CSSProperties = {
@@ -449,6 +480,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
+              animation: view.state === 'walk' ? 'meora-bob 0.4s ease-in-out infinite' : 'none',
             }}
           >
             {/* 吹き出し（白背景・黒太枠・Nosutaru・絵文字なし）。頭上に表示。 */}

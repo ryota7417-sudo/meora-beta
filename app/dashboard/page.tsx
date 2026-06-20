@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { loadState, AppState, loadChatHistory } from '@/lib/store';
+import { loadState, AppState, loadChatHistory, loadInventory, saveInventory, addItem, consumeItem, canClaimDailyOnigiri, markDailyOnigiriClaimed, saveState, Item } from '@/lib/store';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { CharAvatar } from '@/components/ui/CharacterSvg';
 import { CharacterYard } from '@/components/ui/CharacterYard';
@@ -41,6 +41,11 @@ export default function DashboardPage() {
   const router = useRouter();
   const [state, setState] = useState<AppState | null>(null);
   const [previews, setPreviews] = useState<Record<string, ChatPreview>>({});
+  const [inventory, setInventory] = useState<Item[]>([]);
+  const [showInventory, setShowInventory] = useState(false);
+  const [dailyClaimed, setDailyClaimed] = useState(false);
+  const [feedTarget, setFeedTarget] = useState<string | null>(null);
+  const [feedMessage, setFeedMessage] = useState('');
 
   useEffect(() => {
     const supabase = createClient();
@@ -81,6 +86,8 @@ export default function DashboardPage() {
       });
       setPreviews(map);
       setState(s);
+      setInventory(loadInventory());
+      setDailyClaimed(!canClaimDailyOnigiri());
     });
 
     return () => {
@@ -124,6 +131,41 @@ export default function DashboardPage() {
           MEORA
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={() => {
+              // 初回オープン時におにぎり付与
+              if (canClaimDailyOnigiri()) {
+                const updated = addItem(loadInventory(), 'onigiri', 1);
+                saveInventory(updated);
+                setInventory(updated);
+                markDailyOnigiriClaimed();
+                setDailyClaimed(true);
+              }
+              setShowInventory(true);
+            }}
+            style={{
+              background: '#fff',
+              color: '#111',
+              border: '2px solid #111',
+              boxShadow: '2px 2px 0 #f7f5f0',
+              padding: '2px 8px',
+              fontSize: 11,
+              fontWeight: 800,
+              cursor: 'pointer',
+              borderRadius: 0,
+              fontFamily: 'inherit',
+              position: 'relative',
+            }}
+          >
+            持ち物
+            {!dailyClaimed && (
+              <span style={{
+                position: 'absolute', top: -4, right: -4,
+                width: 8, height: 8, borderRadius: '50%',
+                background: '#e53935', border: '1px solid #111',
+              }} />
+            )}
+          </button>
           <span style={{ background: '#f5a623', color: '#111', fontSize: 10, fontWeight: 800, padding: '2px 7px', border: '1.5px solid #111', boxShadow: '2px 2px 0 #f7f5f0', letterSpacing: '0.05em' }}>
             BETA
           </span>
@@ -245,6 +287,114 @@ export default function DashboardPage() {
         </div>
 
       </main>
+
+      {/* 持ち物オーバーレイ */}
+      {showInventory && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 300,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+        }} onClick={() => { setShowInventory(false); setFeedTarget(null); setFeedMessage(''); }}>
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 390,
+              background: '#f8f8f4',
+              border: '2px solid #111',
+              borderBottom: 'none',
+              boxShadow: '0 -4px 0 #111',
+              padding: '20px 16px calc(80px + env(safe-area-inset-bottom))',
+              maxHeight: '70vh',
+              overflowY: 'auto',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800 }}>持ち物</h2>
+              <button onClick={() => { setShowInventory(false); setFeedTarget(null); setFeedMessage(''); }}
+                style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#111', fontWeight: 800 }}>✕</button>
+            </div>
+
+            {feedMessage && (
+              <div style={{ background: '#e8f5e9', border: '2px solid #111', padding: '10px 14px', marginBottom: 12, fontSize: 13, fontWeight: 700, color: '#2e7d32' }}>
+                {feedMessage}
+              </div>
+            )}
+
+            {inventory.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '24px 0', color: '#888', fontSize: 13 }}>
+                持ち物がありません
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {inventory.map(item => (
+                  <div key={item.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    background: '#fff', border: '2px solid #111', boxShadow: '3px 3px 0 #111',
+                    padding: '12px',
+                  }}>
+                    <span style={{ fontSize: 28, flexShrink: 0 }}>{item.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 800 }}>{item.name}</div>
+                      <div style={{ fontSize: 11, color: '#888' }}>HP +{item.effect} / {item.count}個</div>
+                    </div>
+                    {feedTarget === null ? (
+                      <button
+                        onClick={() => setFeedTarget(item.id)}
+                        style={{
+                          background: '#111', color: '#fff', border: '2px solid #111',
+                          boxShadow: '2px 2px 0 #555', padding: '6px 12px',
+                          fontSize: 12, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit',
+                        }}
+                      >
+                        あげる
+                      </button>
+                    ) : feedTarget === item.id && state ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {state.characters.map(char => (
+                          <button
+                            key={char.id}
+                            onClick={() => {
+                              // アイテム消費
+                              const newInv = consumeItem(inventory, item.id);
+                              saveInventory(newInv);
+                              setInventory(newInv);
+                              // HP回復
+                              const newState = {
+                                ...state,
+                                characters: state.characters.map(c =>
+                                  c.id === char.id ? { ...c, hp: Math.min(c.maxHp, c.hp + item.effect) } : c
+                                ),
+                              };
+                              saveState(newState);
+                              setState(newState);
+                              setFeedTarget(null);
+                              setFeedMessage(`${char.name}に${item.name}をあげました！`);
+                              setTimeout(() => setFeedMessage(''), 3000);
+                            }}
+                            style={{
+                              background: '#fff', border: '1.5px solid #111', padding: '4px 10px',
+                              fontSize: 11, fontWeight: 800, cursor: 'pointer', borderRadius: 0,
+                              fontFamily: 'inherit', whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {char.name}
+                          </button>
+                        ))}
+                        <button
+                          onClick={() => setFeedTarget(null)}
+                          style={{ background: 'none', border: 'none', fontSize: 10, color: '#888', cursor: 'pointer', fontFamily: 'inherit' }}
+                        >
+                          キャンセル
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <BottomNav />
     </div>
