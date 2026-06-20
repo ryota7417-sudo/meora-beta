@@ -128,7 +128,7 @@ function StepSplash({
                   aria-pressed={active}
                   style={{
                     padding: '2px 6px',
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: 700,
                     border: '2px solid rgba(255,255,255,0.5)',
                     background: active ? 'rgba(255,255,255,0.9)' : 'transparent',
@@ -148,13 +148,13 @@ function StepSplash({
 
         {/* ロゴ */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 8 }}>
-          <span style={{ fontSize: 12, fontWeight: 400, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.18em', marginBottom: 6, textAlign: 'center' }}>
+          <span style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.18em', marginBottom: 6, textAlign: 'center' }}>
             {t.splashRuby}
           </span>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: 38, fontWeight: 900, letterSpacing: '0.08em', color: '#fff', lineHeight: 1, textAlign: 'center' }}>
+          <span style={{ fontFamily: 'var(--font-display)', fontSize: 40, fontWeight: 900, letterSpacing: '0.08em', color: '#fff', lineHeight: 1, textAlign: 'center' }}>
             MEORA
           </span>
-          <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em', marginTop: 10, textAlign: 'center' }}>
+          <span style={{ fontSize: 15, fontWeight: 400, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em', marginTop: 10, textAlign: 'center' }}>
             {t.splashTagline}
           </span>
         </div>
@@ -188,7 +188,7 @@ function StepSplash({
           color: '#111',
           border: '2px solid #fff',
           boxShadow: '4px 4px 0 rgba(255,255,255,0.35)',
-          fontSize: 17,
+          fontSize: 19,
           fontWeight: 800,
           letterSpacing: '0.1em',
           padding: '14px 48px',
@@ -200,7 +200,7 @@ function StepSplash({
           {t.start}
         </button>
 
-        <p style={{ marginTop: 28, fontSize: 11, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.05em', textAlign: 'center' }}>
+        <p style={{ marginTop: 28, fontSize: 13, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.05em', textAlign: 'center' }}>
           v0.1.0 · MEORA
         </p>
       </div>
@@ -306,10 +306,10 @@ function StepIntro({ onNext, onBack, t }: { onNext: () => void; onBack: () => vo
 
         {/* TOP BAR */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 20px 0', position: 'relative', zIndex: 1 }}>
-          <button onClick={onBack} style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.6)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+          <button onClick={onBack} style={{ fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,0.6)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
             {t.navBack}
           </button>
-          <button onClick={onNext} style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '0.04em' }}>
+          <button onClick={onNext} style={{ fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '0.04em' }}>
             {t.navSkip}
           </button>
         </div>
@@ -329,9 +329,9 @@ function StepIntro({ onNext, onBack, t }: { onNext: () => void; onBack: () => vo
                 <div style={{ width: 140, height: 140, border: '2px solid rgba(255,255,255,0.25)', boxShadow: '6px 6px 0 rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 36, flexShrink: 0 }}>
                   {slide.icon}
                 </div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 12 }}>{slide.num}</div>
-                <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.3, marginBottom: 16 }}>{withBreaks(slide.title)}</div>
-                <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.65)', textAlign: 'center', lineHeight: 1.8, letterSpacing: '0.02em', maxWidth: 340 }}>{slide.body}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 12 }}>{slide.num}</div>
+                <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.3, marginBottom: 16 }}>{withBreaks(slide.title)}</div>
+                <div style={{ fontSize: 16, color: 'rgba(255,255,255,0.65)', textAlign: 'center', lineHeight: 1.8, letterSpacing: '0.02em', maxWidth: 340 }}>{slide.body}</div>
               </div>
             ))}
           </div>
@@ -353,7 +353,7 @@ function StepIntro({ onNext, onBack, t }: { onNext: () => void; onBack: () => vo
             color: '#111',
             border: '2px solid #fff',
             boxShadow: '4px 4px 0 rgba(255,255,255,0.25)',
-            fontSize: 15,
+            fontSize: 17,
             fontWeight: 800,
             letterSpacing: '0.08em',
             padding: '14px 24px',
@@ -515,7 +515,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
 
   const passwordField = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>{t.passwordLabel}</label>
+      <label style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>{t.passwordLabel}</label>
       <div style={{ position: 'relative' }}>
         <input
           type={showPassword ? 'text' : 'password'}
@@ -524,17 +524,17 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
           onChange={e => setPassword(e.target.value)}
           required
           minLength={8}
-          style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 60px 12px 14px', fontSize: 15, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
+          style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 60px 12px 14px', fontSize: 17, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
         />
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '4px 8px', fontSize: 12, fontWeight: 700, color: '#888', cursor: 'pointer', fontFamily: 'inherit' }}
+          style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '4px 8px', fontSize: 14, fontWeight: 700, color: '#888', cursor: 'pointer', fontFamily: 'inherit' }}
         >
           {showPassword ? '非表示' : '表示'}
         </button>
       </div>
-      <span style={{ fontSize: 11, color: '#999', letterSpacing: '0.02em', marginTop: 2 }}>{t.passwordHint}</span>
+      <span style={{ fontSize: 13, color: '#999', letterSpacing: '0.02em', marginTop: 2 }}>{t.passwordHint}</span>
     </div>
   );
 
@@ -545,28 +545,28 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
         <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 0 12px', marginBottom: 20, borderBottom: '2px solid #111' }}>
             <div />
-            <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>メール送信完了</div>
+            <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>メール送信完了</div>
             <div />
           </div>
 
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '28px 20px', margin: '0 0 20px', textAlign: 'center' }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>✉️</div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#111', marginBottom: 16, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 42, marginBottom: 16 }}>✉️</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#111', marginBottom: 16, lineHeight: 1.6 }}>
               確認メールを送信しました
             </div>
-            <div style={{ fontSize: 14, color: '#555', lineHeight: 1.8, marginBottom: 20 }}>
+            <div style={{ fontSize: 16, color: '#555', lineHeight: 1.8, marginBottom: 20 }}>
               <span style={{ fontWeight: 700, color: '#111' }}>{email}</span> 宛に
               <br />登録確認メールを送信しました。
               <br />メール内のリンクをクリックして
               <br />登録を完了してください。
             </div>
-            <div style={{ fontSize: 12, color: '#999', lineHeight: 1.7, padding: '14px', background: '#f8f8f4', border: '1px solid #ddd' }}>
+            <div style={{ fontSize: 14, color: '#999', lineHeight: 1.7, padding: '14px', background: '#f8f8f4', border: '1px solid #ddd' }}>
               メールが届かない場合は、迷惑メールフォルダをご確認ください。
             </div>
           </div>
 
           {error && (
-            <div style={{ background: '#fff0f0', border: '2px solid #cc2222', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#cc2222', letterSpacing: '0.02em', lineHeight: 1.5 }}>
+            <div style={{ background: '#fff0f0', border: '2px solid #cc2222', padding: '10px 14px', marginBottom: 16, fontSize: 15, color: '#cc2222', letterSpacing: '0.02em', lineHeight: 1.5 }}>
               {error}
             </div>
           )}
@@ -574,26 +574,26 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
           <button
             onClick={handleVerifyAndProceed}
             disabled={loading}
-            style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '14px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, fontFamily: 'inherit', marginBottom: 20 }}
+            style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '14px 20px', fontSize: 18, fontWeight: 800, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, fontFamily: 'inherit', marginBottom: 20 }}
           >
             {loading ? t.processing : 'メールを確認しました'}
           </button>
 
           {showEmailChange ? (
             <form onSubmit={handleResendWithNewEmail} style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>新しいメールアドレス</label>
+              <label style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>新しいメールアドレス</label>
               <input
                 type="email"
                 value={newEmail}
                 onChange={e => setNewEmail(e.target.value)}
                 required
                 placeholder="new@example.com"
-                style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 15, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
+                style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 17, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
               />
               <button
                 type="submit"
                 disabled={loading}
-                style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '12px 20px', fontSize: 14, fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
+                style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '12px 20px', fontSize: 16, fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
               >
                 確認メールを再送信
               </button>
@@ -602,7 +602,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
             <div style={{ textAlign: 'center' }}>
               <button
                 onClick={() => setShowEmailChange(true)}
-                style={{ textDecoration: 'underline', textUnderlineOffset: 3, color: '#888', fontSize: 12, cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}
+                style={{ textDecoration: 'underline', textUnderlineOffset: 3, color: '#888', fontSize: 14, cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}
               >
                 メールアドレスが違う場合はこちら
               </button>
@@ -619,27 +619,27 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
       <div style={light}>
         <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 0 12px', marginBottom: 20, borderBottom: '2px solid #111' }}>
-            <div><button onClick={() => setAuthMode('signup')} style={{ fontSize: 12, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>← 戻る</button></div>
-            <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>アカウントの復旧</div>
+            <div><button onClick={() => setAuthMode('signup')} style={{ fontSize: 14, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>← 戻る</button></div>
+            <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>アカウントの復旧</div>
             <div />
           </div>
 
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '28px 20px', marginBottom: 16 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#111', marginBottom: 8 }}>パスワードを忘れた方</div>
-            <div style={{ fontSize: 13, color: '#666', lineHeight: 1.7, marginBottom: 16 }}>
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#111', marginBottom: 8 }}>パスワードを忘れた方</div>
+            <div style={{ fontSize: 15, color: '#666', lineHeight: 1.7, marginBottom: 16 }}>
               登録時のメールアドレスを覚えている場合は、パスワードをリセットできます。
             </div>
-            <button onClick={() => setAuthMode('reset')} style={{ width: '100%', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #555', padding: '12px 20px', fontSize: 15, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}>
+            <button onClick={() => setAuthMode('reset')} style={{ width: '100%', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #555', padding: '12px 20px', fontSize: 17, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}>
               パスワードをリセット →
             </button>
           </div>
 
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '28px 20px' }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#111', marginBottom: 8 }}>メールアドレスも忘れた方</div>
-            <div style={{ fontSize: 13, color: '#666', lineHeight: 1.7, marginBottom: 16 }}>
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#111', marginBottom: 8 }}>メールアドレスも忘れた方</div>
+            <div style={{ fontSize: 15, color: '#666', lineHeight: 1.7, marginBottom: 16 }}>
               メールアドレスも忘れてしまった場合は、新しいアカウントを作成してください。
             </div>
-            <button onClick={() => setAuthMode('signup')} style={{ width: '100%', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '12px 20px', fontSize: 15, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}>
+            <button onClick={() => setAuthMode('signup')} style={{ width: '100%', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '12px 20px', fontSize: 17, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}>
               新しいアカウントを作成 →
             </button>
           </div>
@@ -654,24 +654,24 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
       <div style={light}>
         <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 0 12px', marginBottom: 20, borderBottom: '2px solid #111' }}>
-            <div><button onClick={() => { setAuthMode('recovery'); setResetSent(false); setError(''); }} style={{ fontSize: 12, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>← 戻る</button></div>
-            <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>パスワードリセット</div>
+            <div><button onClick={() => { setAuthMode('recovery'); setResetSent(false); setError(''); }} style={{ fontSize: 14, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>← 戻る</button></div>
+            <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>パスワードリセット</div>
             <div />
           </div>
 
           {error && (
-            <div style={{ background: '#fff0f0', border: '2px solid #cc2222', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#cc2222', letterSpacing: '0.02em', lineHeight: 1.5 }}>
+            <div style={{ background: '#fff0f0', border: '2px solid #cc2222', padding: '10px 14px', marginBottom: 16, fontSize: 15, color: '#cc2222', letterSpacing: '0.02em', lineHeight: 1.5 }}>
               {error}
             </div>
           )}
 
           {resetSent ? (
             <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '28px 20px', textAlign: 'center' }}>
-              <div style={{ fontSize: 40, marginBottom: 16 }}>✉️</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: '#111', marginBottom: 16, lineHeight: 1.6 }}>
+              <div style={{ fontSize: 42, marginBottom: 16 }}>✉️</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#111', marginBottom: 16, lineHeight: 1.6 }}>
                 パスワードリセットメールを送信しました
               </div>
-              <div style={{ fontSize: 14, color: '#555', lineHeight: 1.8, marginBottom: 20 }}>
+              <div style={{ fontSize: 16, color: '#555', lineHeight: 1.8, marginBottom: 20 }}>
                 <span style={{ fontWeight: 700, color: '#111' }}>{email}</span> 宛に
                 <br />パスワードリセットメールを送信しました。
                 <br />メール内のリンクからパスワードを
@@ -679,7 +679,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
               </div>
               <button
                 onClick={() => { setAuthMode('login'); setResetSent(false); setError(''); }}
-                style={{ width: '100%', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #555', padding: '12px 20px', fontSize: 15, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit', marginTop: 8 }}
+                style={{ width: '100%', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #555', padding: '12px 20px', fontSize: 17, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit', marginTop: 8 }}
               >
                 ログインに戻る
               </button>
@@ -687,11 +687,11 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
           ) : (
             <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ fontSize: 13, color: '#666', lineHeight: 1.7, marginBottom: 4 }}>
+                <div style={{ fontSize: 15, color: '#666', lineHeight: 1.7, marginBottom: 4 }}>
                   登録時のメールアドレスを入力してください。パスワードリセット用のメールを送信します。
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>{t.emailLabel}</label>
+                  <label style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>{t.emailLabel}</label>
                   <input
                     type="email"
                     placeholder="you@example.com"
@@ -699,13 +699,13 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 15, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
+                    style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 17, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
-                  style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '14px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, marginTop: 4, fontFamily: 'inherit' }}
+                  style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '14px 20px', fontSize: 18, fontWeight: 800, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, marginTop: 4, fontFamily: 'inherit' }}
                 >
                   {loading ? t.processing : 'リセットメールを送信'}
                 </button>
@@ -726,23 +726,23 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
           {/* ヘッダー */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 0 12px', marginBottom: 20, borderBottom: '2px solid #111' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <button onClick={() => { setAuthMode('signup'); setError(''); }} style={{ fontSize: 12, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+              <button onClick={() => { setAuthMode('signup'); setError(''); }} style={{ fontSize: 14, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
                 ← 戻る
               </button>
             </div>
-            <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>ログイン</div>
+            <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>ログイン</div>
             <div />
           </div>
 
           {/* エラーメッセージ */}
           {error && (
-            <div style={{ background: '#fff0f0', border: '2px solid #cc2222', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#cc2222', letterSpacing: '0.02em', lineHeight: 1.5 }}>
+            <div style={{ background: '#fff0f0', border: '2px solid #cc2222', padding: '10px 14px', marginBottom: 16, fontSize: 15, color: '#cc2222', letterSpacing: '0.02em', lineHeight: 1.5 }}>
               {error}
             </div>
           )}
 
           {/* Google ログインボタン */}
-          <button onClick={handleGoogleLogin} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%', background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '14px 20px', fontSize: 15, fontWeight: 700, color: '#111', letterSpacing: '0.03em', cursor: 'pointer', borderRadius: 0, marginBottom: 20 }}>
+          <button onClick={handleGoogleLogin} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%', background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '14px 20px', fontSize: 17, fontWeight: 700, color: '#111', letterSpacing: '0.03em', cursor: 'pointer', borderRadius: 0, marginBottom: 20 }}>
             <svg style={{ width: 22, height: 22, flexShrink: 0 }} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -753,7 +753,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
           </button>
 
           {/* OR 区切り */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, color: '#999', fontSize: 12, letterSpacing: '0.08em' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, color: '#999', fontSize: 14, letterSpacing: '0.08em' }}>
             <div style={{ flex: 1, height: 1, background: '#bbb' }}/>
             <span>{t.orDivider}</span>
             <div style={{ flex: 1, height: 1, background: '#bbb' }}/>
@@ -762,7 +762,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
           {/* ログインフォーム */}
           <form style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 8 }} onSubmit={handleLogin}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>{t.emailLabel}</label>
+              <label style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>{t.emailLabel}</label>
               <input
                 type="email"
                 placeholder="you@example.com"
@@ -770,14 +770,14 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 15, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
+                style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 17, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
               />
             </div>
             {passwordField}
             <button
               type="submit"
               disabled={loading}
-              style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '14px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, marginTop: 8, fontFamily: 'inherit' }}
+              style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '14px 20px', fontSize: 18, fontWeight: 800, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, marginTop: 8, fontFamily: 'inherit' }}
             >
               {loading ? t.processing : 'ログイン'}
             </button>
@@ -785,13 +785,13 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
 
           {/* アカウント作成リンク + パスワード忘れ */}
           <div style={{ borderTop: '1px solid #ddd', marginTop: 28, paddingTop: 20, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
-            <div style={{ fontSize: 13, color: '#666', letterSpacing: '0.02em' }}>
+            <div style={{ fontSize: 15, color: '#666', letterSpacing: '0.02em' }}>
               アカウントをお持ちでない方は
-              <button onClick={() => { setAuthMode('signup'); setError(''); }} style={{ color: '#111', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', background: 'none', border: 'none', fontSize: 13, fontFamily: 'inherit' }}>
+              <button onClick={() => { setAuthMode('signup'); setError(''); }} style={{ color: '#111', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', background: 'none', border: 'none', fontSize: 15, fontFamily: 'inherit' }}>
                 アカウント作成
               </button>
             </div>
-            <button onClick={() => { setAuthMode('reset'); setError(''); }} style={{ color: '#888', fontSize: 12, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}>
+            <button onClick={() => { setAuthMode('reset'); setError(''); }} style={{ color: '#888', fontSize: 14, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}>
               パスワードを忘れた方はこちら
             </button>
           </div>
@@ -808,25 +808,25 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
         {/* ヘッダー */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 0 12px', marginBottom: 20, borderBottom: '2px solid #111' }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <button onClick={onBack} style={{ fontSize: 12, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+            <button onClick={onBack} style={{ fontSize: 14, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
               {t.navBack}
             </button>
           </div>
-          <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>{t.accountTitle}</div>
+          <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>{t.accountTitle}</div>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <span style={{ fontSize: 11, fontWeight: 700, background: '#111', color: '#fff', padding: '3px 8px', letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>{t.step1of2}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, background: '#111', color: '#fff', padding: '3px 8px', letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>{t.step1of2}</span>
           </div>
         </div>
 
         {/* エラーメッセージ */}
         {error && (
-          <div style={{ background: '#fff0f0', border: '2px solid #cc2222', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#cc2222', letterSpacing: '0.02em', lineHeight: 1.5 }}>
+          <div style={{ background: '#fff0f0', border: '2px solid #cc2222', padding: '10px 14px', marginBottom: 16, fontSize: 15, color: '#cc2222', letterSpacing: '0.02em', lineHeight: 1.5 }}>
             {error}
           </div>
         )}
 
         {/* Google ログインボタン */}
-        <button onClick={handleGoogleLogin} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%', background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '14px 20px', fontSize: 15, fontWeight: 700, color: '#111', letterSpacing: '0.03em', cursor: 'pointer', borderRadius: 0, marginBottom: 20 }}>
+        <button onClick={handleGoogleLogin} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%', background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '14px 20px', fontSize: 17, fontWeight: 700, color: '#111', letterSpacing: '0.03em', cursor: 'pointer', borderRadius: 0, marginBottom: 20 }}>
           <svg style={{ width: 22, height: 22, flexShrink: 0 }} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -837,7 +837,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
         </button>
 
         {/* OR 区切り */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, color: '#999', fontSize: 12, letterSpacing: '0.08em' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, color: '#999', fontSize: 14, letterSpacing: '0.08em' }}>
           <div style={{ flex: 1, height: 1, background: '#bbb' }}/>
           <span>{t.orDivider}</span>
           <div style={{ flex: 1, height: 1, background: '#bbb' }}/>
@@ -846,7 +846,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
         {/* フォーム */}
         <form style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 8 }} onSubmit={handleEmailSignUp}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>{t.emailLabel}</label>
+            <label style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>{t.emailLabel}</label>
             <input
               type="email"
               placeholder="you@example.com"
@@ -854,33 +854,33 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 15, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
+              style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 17, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
             />
           </div>
           {passwordField}
           <button
             type="submit"
             disabled={loading}
-            style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '14px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, marginTop: 8, fontFamily: 'inherit' }}
+            style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '14px 20px', fontSize: 18, fontWeight: 800, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, marginTop: 8, fontFamily: 'inherit' }}
           >
             {loading ? t.processing : t.createAccount}
           </button>
         </form>
 
         {/* 利用規約 */}
-        <p style={{ fontSize: 11, color: '#999', textAlign: 'center', marginTop: 12, lineHeight: 1.6, padding: '0 8px' }}>
+        <p style={{ fontSize: 13, color: '#999', textAlign: 'center', marginTop: 12, lineHeight: 1.6, padding: '0 8px' }}>
           {t.termsPrefix}<a href="#" style={{ color: '#555', textDecoration: 'underline' }}>{t.termsOfService}</a>{t.termsMiddle}<a href="#" style={{ color: '#555', textDecoration: 'underline' }}>{t.privacyPolicy}</a>{t.termsSuffix}
         </p>
 
         {/* ログインリンク + アカウント復旧 */}
         <div style={{ borderTop: '1px solid #ddd', marginTop: 28, paddingTop: 20, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
-          <div style={{ fontSize: 13, color: '#666', letterSpacing: '0.02em' }}>
+          <div style={{ fontSize: 15, color: '#666', letterSpacing: '0.02em' }}>
             {t.haveAccountPrefix}
-            <button onClick={() => { setAuthMode('login'); setError(''); }} style={{ color: '#111', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', background: 'none', border: 'none', fontSize: 13, fontFamily: 'inherit' }}>
+            <button onClick={() => { setAuthMode('login'); setError(''); }} style={{ color: '#111', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', background: 'none', border: 'none', fontSize: 15, fontFamily: 'inherit' }}>
               {t.login}
             </button>
           </div>
-          <button onClick={() => { setAuthMode('recovery'); setError(''); }} style={{ color: '#888', fontSize: 12, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}>
+          <button onClick={() => { setAuthMode('recovery'); setError(''); }} style={{ color: '#888', fontSize: 14, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}>
             メールアドレス・パスワードを忘れた方はこちら
           </button>
         </div>
@@ -919,7 +919,7 @@ function StepCharacterCreate({
   } as const;
 
   const sectionLabel = (text: string, required = false) => (
-    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#666', marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
+    <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#666', marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
       {text}
       {required && <span style={{ color: '#cc2222', marginLeft: 6 }}>{t.required}</span>}
     </div>
@@ -930,7 +930,7 @@ function StepCharacterCreate({
     border: '2px solid #111',
     background: '#f8f8f4',
     padding: '12px 14px',
-    fontSize: 15,
+    fontSize: 17,
     color: '#111',
     outline: 'none',
     borderRadius: 0,
@@ -989,9 +989,9 @@ function StepCharacterCreate({
 
         {/* ヘッダー */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 16px 12px', borderBottom: '2px solid #111', backgroundColor: '#f8f8f4', position: 'sticky', top: 0, zIndex: 10 }}>
-          <div><button onClick={onBack} style={{ fontSize: 12, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>{t.navBack}</button></div>
-          <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>{t.charCreateTitle}</div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}><span style={{ fontSize: 11, fontWeight: 700, background: '#111', color: '#fff', padding: '3px 8px', letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>{t.step2of2}</span></div>
+          <div><button onClick={onBack} style={{ fontSize: 14, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>{t.navBack}</button></div>
+          <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>{t.charCreateTitle}</div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}><span style={{ fontSize: 13, fontWeight: 700, background: '#111', color: '#fff', padding: '3px 8px', letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>{t.step2of2}</span></div>
         </div>
 
         {/* プログレスバー */}
@@ -1010,7 +1010,7 @@ function StepCharacterCreate({
           {/* デフォルトキャラクター */}
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
             {sectionLabel('デフォルトキャラクター')}
-            <div style={{ fontSize: 12, color: '#666', lineHeight: 1.6, marginBottom: 12 }}>
+            <div style={{ fontSize: 14, color: '#666', lineHeight: 1.6, marginBottom: 12 }}>
               オリジナルのキャラクターを作らなくても、デフォルトのMEORAですぐに始められます。
             </div>
             <div
@@ -1026,14 +1026,14 @@ function StepCharacterCreate({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/icon_default.png" alt="デフォルトMEORA" style={{ width: 64, height: 64, objectFit: 'contain', display: 'block' }} />
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: '#111', marginBottom: 4 }}>MEORA</div>
-                <div style={{ fontSize: 11, color: '#888' }}>デフォルトキャラクター</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#111', marginBottom: 4 }}>MEORA</div>
+                <div style={{ fontSize: 13, color: '#888' }}>デフォルトキャラクター</div>
               </div>
               <div style={{
                 width: 24, height: 24, border: '2px solid #111', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: useDefault ? '#111' : '#fff',
               }}>
-                {useDefault && <span style={{ color: '#fff', fontSize: 14, fontWeight: 900, lineHeight: 1 }}>✓</span>}
+                {useDefault && <span style={{ color: '#fff', fontSize: 16, fontWeight: 900, lineHeight: 1 }}>✓</span>}
               </div>
             </div>
           </div>
@@ -1074,17 +1074,17 @@ function StepCharacterCreate({
                         ) : src ? (
                           <img src={src} alt={label} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
                         ) : (
-                          <span style={{ fontSize: 9, color: '#bbb', fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.4 }}>画像<br/>なし</span>
+                          <span style={{ fontSize: 11, color: '#bbb', fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.4 }}>画像<br/>なし</span>
                         )}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 800, color: '#111', letterSpacing: '0.04em' }}>{label}</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.04em' }}>{label}</div>
                       </div>
                       <div style={{ flexShrink: 0, display: 'flex', gap: 6 }}>
                         {!isDefaultIdle && (
                           <button
                             onClick={() => fileRefs.current[type]?.click()}
-                            style={{ padding: '7px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em', whiteSpace: 'nowrap' }}
+                            style={{ padding: '7px 12px', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em', whiteSpace: 'nowrap' }}
                           >
                             {src ? '変更' : '設定'}
                           </button>
@@ -1092,7 +1092,7 @@ function StepCharacterCreate({
                         {src && !isDefaultIdle && (
                           <button
                             onClick={() => removeSpriteByType(type)}
-                            style={{ padding: '7px 10px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em' }}
+                            style={{ padding: '7px 10px', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em' }}
                           >
                             削除
                           </button>
@@ -1103,7 +1103,7 @@ function StepCharacterCreate({
                 );
               })}
             </div>
-            <div style={{ fontSize: 11, color: '#999', marginTop: 10, letterSpacing: '0.02em', lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: '#999', marginTop: 10, letterSpacing: '0.02em', lineHeight: 1.5 }}>
               透過PNGをそのまま設定できます。ホームでの歩き方向ごとに画像を設定できます。
             </div>
           </div>
@@ -1122,11 +1122,11 @@ function StepCharacterCreate({
                     <path d="M11 7 L13 4 L21 4 L23 7" stroke="rgba(255,255,255,0.5)" strokeWidth="2" fill="none" strokeLinejoin="round"/>
                     <circle cx="17" cy="18" r="6" stroke="rgba(255,255,255,0.5)" strokeWidth="2"/>
                   </svg>
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>{t.photoSelectShort}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>{t.photoSelectShort}</span>
                 </div>
               )}
             </div>
-            <div style={{ color: '#fff', fontSize: 16, fontWeight: 800, letterSpacing: '0.04em' }}>
+            <div style={{ color: '#fff', fontSize: 18, fontWeight: 800, letterSpacing: '0.04em' }}>
               {draft.name || t.charPreviewName}
             </div>
           </div>
@@ -1134,15 +1134,15 @@ function StepCharacterCreate({
           {/* 性格・口調 */}
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
             {sectionLabel(t.personalityLabel)}
-            <div style={{ fontSize: 12, color: '#666', lineHeight: 1.6, marginBottom: 10 }}>
+            <div style={{ fontSize: 14, color: '#666', lineHeight: 1.6, marginBottom: 10 }}>
               {t.personalityHint}
             </div>
-            <div style={{ fontSize: 12, color: '#888', lineHeight: 1.6, marginBottom: 10 }}>
+            <div style={{ fontSize: 14, color: '#888', lineHeight: 1.6, marginBottom: 10 }}>
               テンプレートを使って性格や口調を指定できます。
             </div>
             <button
               onClick={() => setDraft(d => ({ ...d, personality: d.personality ? d.personality : PERSONALITY_TEMPLATE }))}
-              style={{ marginBottom: 10, padding: '6px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.04em' }}
+              style={{ marginBottom: 10, padding: '6px 12px', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.04em' }}
             >
               テンプレートを挿入
             </button>
@@ -1162,7 +1162,7 @@ function StepCharacterCreate({
           <button
             onClick={onNext}
             disabled={!canFinish}
-            style={{ width: '100%', background: canFinish ? '#111' : '#999', color: '#fff', border: `2px solid ${canFinish ? '#111' : '#999'}`, boxShadow: canFinish ? '4px 4px 0 #555' : 'none', padding: '16px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.08em', cursor: canFinish ? 'pointer' : 'not-allowed', borderRadius: 0, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+            style={{ width: '100%', background: canFinish ? '#111' : '#999', color: '#fff', border: `2px solid ${canFinish ? '#111' : '#999'}`, boxShadow: canFinish ? '4px 4px 0 #555' : 'none', padding: '16px 20px', fontSize: 18, fontWeight: 800, letterSpacing: '0.08em', cursor: canFinish ? 'pointer' : 'not-allowed', borderRadius: 0, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
           >
             {t.start}
           </button>
@@ -1273,7 +1273,7 @@ export default function OnboardingPage() {
   if (step === null) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f5f0' }}>
-        <span style={{ fontSize: 14, color: '#888' }}>...</span>
+        <span style={{ fontSize: 16, color: '#888' }}>...</span>
       </div>
     );
   }

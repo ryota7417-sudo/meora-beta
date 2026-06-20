@@ -35,10 +35,10 @@ export function InheritPersonaCopy({ lang = DEFAULT_LANG }: { lang?: Lang }) {
 
   return (
     <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#666', marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
+      <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#666', marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
         {t.inheritTitle}
       </div>
-      <div style={{ fontSize: 12, color: '#666', lineHeight: 2.0, marginBottom: 14 }}>
+      <div style={{ fontSize: 14, color: '#666', lineHeight: 2.0, marginBottom: 14 }}>
         <div>①「プロンプトをコピー」を押す</div>
         <div>② いつも使っているAI(ChatGPT等)に貼り付け・送信</div>
         <div>③ 返ってきた文章を全てコピーし、上の「性格・口調」に貼り付け</div>
@@ -53,7 +53,7 @@ export function InheritPersonaCopy({ lang = DEFAULT_LANG }: { lang?: Lang }) {
           border: '2px solid #111',
           boxShadow: copied ? 'none' : '4px 4px 0 #555',
           padding: '11px 14px',
-          fontSize: 13,
+          fontSize: 15,
           fontWeight: 800,
           fontFamily: 'inherit',
           letterSpacing: '0.03em',

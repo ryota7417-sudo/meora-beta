@@ -83,7 +83,7 @@ export default function SettingsPage() {
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 'calc(96px + env(safe-area-inset-bottom))' }}>
       <div style={{ background: '#111', color: '#fff', padding: '14px 20px' }}>
-        <h1 style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 900 }}>
+        <h1 style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: 20, fontWeight: 900 }}>
           設定
         </h1>
       </div>
@@ -92,12 +92,12 @@ export default function SettingsPage() {
 
         {/* 自分のMEORAを編集 */}
         <div className="card" style={{ padding: '20px 16px' }}>
-          <h2 style={{ margin: '0 0 4px', fontSize: 15, fontWeight: 800 }}>自分のMEORAを編集</h2>
-          <p style={{ margin: '0 0 14px', fontSize: 12, color: '#888', lineHeight: 1.6 }}>
+          <h2 style={{ margin: '0 0 4px', fontSize: 17, fontWeight: 800 }}>自分のMEORAを編集</h2>
+          <p style={{ margin: '0 0 14px', fontSize: 14, color: '#888', lineHeight: 1.6 }}>
             名前・写真・性格・口調を編集できます。
           </p>
           {editable.length === 0 ? (
-            <div style={{ fontSize: 13, color: '#888', lineHeight: 1.7 }}>
+            <div style={{ fontSize: 15, color: '#888', lineHeight: 1.7 }}>
               まだMEORAがいません。
             </div>
           ) : (
@@ -111,14 +111,14 @@ export default function SettingsPage() {
                   <div style={{ width: 40, height: 40, border: '2px solid #111', flexShrink: 0, background: '#f0f0ea', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                     <CharAvatar photo={char.photo} name={char.name} size={36} />
                   </div>
-                  <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{char.name}</span>
+                  <span style={{ flex: 1, fontSize: 16, fontWeight: 800, color: '#111', letterSpacing: '0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{char.name}</span>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDeleteCharacter(char.id, char.name); }}
-                    style={{ flexShrink: 0, fontSize: 12, fontWeight: 800, background: '#fff', color: '#e53935', border: '2px solid #e53935', boxShadow: '2px 2px 0 #e53935', padding: '3px 8px', cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
+                    style={{ flexShrink: 0, fontSize: 14, fontWeight: 800, background: '#fff', color: '#e53935', border: '2px solid #e53935', boxShadow: '2px 2px 0 #e53935', padding: '3px 8px', cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
                   >
                     削除
                   </button>
-                  <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 800, color: '#111', background: '#f7f5f0', border: '2px solid #111', padding: '3px 8px' }}>編集 →</span>
+                  <span style={{ flexShrink: 0, fontSize: 14, fontWeight: 800, color: '#111', background: '#f7f5f0', border: '2px solid #111', padding: '3px 8px' }}>編集 →</span>
                 </div>
               ))}
             </div>
@@ -127,18 +127,18 @@ export default function SettingsPage() {
 
         {/* アカウント */}
         <div className="card" style={{ padding: '20px 16px' }}>
-          <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 800 }}>アカウント</h2>
+          <h2 style={{ margin: '0 0 14px', fontSize: 17, fontWeight: 800 }}>アカウント</h2>
 
           {/* ログイン中のアカウント表示 */}
           <div style={{ marginBottom: 14, padding: '12px', background: '#f7f5f0', border: '2px solid #111' }}>
-            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.12em', color: '#888', marginBottom: 4, textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.12em', color: '#888', marginBottom: 4, textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
               ログイン中
             </div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: '#111', wordBreak: 'break-all' }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#111', wordBreak: 'break-all' }}>
               {user ? user.email : '読み込み中...'}
             </div>
             {user?.user_metadata?.full_name && (
-              <div style={{ fontSize: 12, color: '#666', marginTop: 2 }}>
+              <div style={{ fontSize: 14, color: '#666', marginTop: 2 }}>
                 {user.user_metadata.full_name}
               </div>
             )}
@@ -155,7 +155,7 @@ export default function SettingsPage() {
               border: '2px solid #111',
               boxShadow: loggingOut ? 'none' : '3px 3px 0 #111',
               fontWeight: 800,
-              fontSize: 14,
+              fontSize: 16,
               cursor: loggingOut ? 'not-allowed' : 'pointer',
               opacity: loggingOut ? 0.6 : 1,
               transition: 'all 0.1s',
@@ -167,12 +167,12 @@ export default function SettingsPage() {
 
         {/* 購入履歴 */}
         <div className="card" style={{ padding: '20px 16px' }}>
-          <h2 style={{ margin: '0 0 14px', fontSize: 15, fontWeight: 800 }}>購入履歴</h2>
+          <h2 style={{ margin: '0 0 14px', fontSize: 17, fontWeight: 800 }}>購入履歴</h2>
 
           {purchasesLoading ? (
-            <div style={{ fontSize: 13, color: '#888', padding: '12px 0' }}>読み込み中...</div>
+            <div style={{ fontSize: 15, color: '#888', padding: '12px 0' }}>読み込み中...</div>
           ) : purchases.length === 0 ? (
-            <div style={{ fontSize: 13, color: '#888', lineHeight: 1.7, padding: '12px 0', textAlign: 'center' }}>
+            <div style={{ fontSize: 15, color: '#888', lineHeight: 1.7, padding: '12px 0', textAlign: 'center' }}>
               まだ購入履歴がありません
             </div>
           ) : (
@@ -193,20 +193,20 @@ export default function SettingsPage() {
                     {p.market_listings?.photo_url ? (
                       <img src={p.market_listings.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
-                      <span style={{ fontSize: 18 }}>🛍</span>
+                      <span style={{ fontSize: 20 }}>🛍</span>
                     )}
                   </div>
                   {/* 名前 + 種別 */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {p.market_listings?.name ?? 'アイテム'}
                     </div>
-                    <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
+                    <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>
                       {p.market_listings ? typeLabel(p.market_listings.type) : ''} · {formatDate(p.created_at)}
                     </div>
                   </div>
                   {/* 金額 */}
-                  <div style={{ flexShrink: 0, fontSize: 14, fontWeight: 800, color: '#111', fontFamily: 'var(--font-mono)' }}>
+                  <div style={{ flexShrink: 0, fontSize: 16, fontWeight: 800, color: '#111', fontFamily: 'var(--font-mono)' }}>
                     ¥{p.amount.toLocaleString()}
                   </div>
                 </div>
@@ -217,8 +217,8 @@ export default function SettingsPage() {
 
         {/* アプリについて */}
         <div className="card" style={{ padding: '20px 16px' }}>
-          <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 800 }}>アプリについて</h2>
-          <div style={{ fontSize: 13, color: '#555', lineHeight: 1.8 }}>
+          <h2 style={{ margin: '0 0 12px', fontSize: 17, fontWeight: 800 }}>アプリについて</h2>
+          <div style={{ fontSize: 15, color: '#555', lineHeight: 1.8 }}>
             <div>バージョン: 0.1.0</div>
             <div>MEORA — いつもそばに。僕と過ごすAI。</div>
           </div>
@@ -226,8 +226,8 @@ export default function SettingsPage() {
 
         {/* データ管理 */}
         <div className="card" style={{ padding: '20px 16px' }}>
-          <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 800 }}>データ管理</h2>
-          <p style={{ margin: '0 0 16px', fontSize: 13, color: '#555', lineHeight: 1.6 }}>
+          <h2 style={{ margin: '0 0 12px', fontSize: 17, fontWeight: 800 }}>データ管理</h2>
+          <p style={{ margin: '0 0 16px', fontSize: 15, color: '#555', lineHeight: 1.6 }}>
             全てのデータをリセットしてオンボーディングからやり直します。
           </p>
           <button
@@ -240,7 +240,7 @@ export default function SettingsPage() {
               border: '2px solid #e53935',
               boxShadow: confirmed ? 'none' : '3px 3px 0 #e53935',
               fontWeight: 800,
-              fontSize: 14,
+              fontSize: 16,
               cursor: 'pointer',
               transition: 'all 0.1s',
             }}
@@ -248,7 +248,7 @@ export default function SettingsPage() {
             {confirmed ? '本当にリセット（クリックで実行）' : 'データをリセット'}
           </button>
           {confirmed && (
-            <p style={{ margin: '8px 0 0', fontSize: 12, color: '#e53935', fontWeight: 600 }}>
+            <p style={{ margin: '8px 0 0', fontSize: 14, color: '#e53935', fontWeight: 600 }}>
               この操作は取り消せません
             </p>
           )}

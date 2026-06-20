@@ -14,18 +14,6 @@ import {
 } from '@/lib/store';
 import { CharAvatarChat } from '@/components/ui/CharacterSvg';
 
-// ジョブに対応するバッジ色
-const JOB_COLORS: Record<string, string> = {
-  'ライター': '#2196f3',
-  'デザイナー': '#9c27b0',
-  '秘書': '#388e3c',
-  'リサーチャー': '#f57c00',
-};
-
-function getJobColor(job: string): string {
-  return JOB_COLORS[job] || '#555';
-}
-
 // HP塗り色
 function getHpFillColor(pct: number) {
   if (pct > 50) return '#4caf50';
@@ -126,7 +114,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleSend();
     }
@@ -135,7 +123,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   if (!char || !appState) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8f8f4' }}>
-        <span style={{ fontSize: 14, color: '#888' }}>読み込み中...</span>
+        <span style={{ fontSize: 16, color: '#888' }}>読み込み中...</span>
       </div>
     );
   }
@@ -143,11 +131,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const dead = char.hp === 0;
   const pct = char.maxHp > 0 ? Math.max(0, Math.min(100, (char.hp / char.maxHp) * 100)) : 0;
 
-  const currentHour = new Date().getHours();
-  const isSleepy = currentHour === 23;
-  const isAsleep = currentHour >= 0 && currentHour < 5;
-  const isNightMode = isSleepy || isAsleep;
-  const jobColor = getJobColor(char.job || char.role);
   const hpFill = getHpFillColor(pct);
 
   // タイムスタンプ表示
@@ -190,7 +173,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           <button
             onClick={() => router.push('/dashboard')}
             style={{
-              fontSize: 11,
+              fontSize: 13,
               fontWeight: 800,
               color: '#111',
               background: '#fff',
@@ -210,23 +193,9 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             ← ダッシュボード
           </button>
 
-          {/* MEORA名 + ジョブ/カテゴリバッジ（無ければ非表示） */}
+          {/* MEORA名 */}
           <div style={{ position: 'absolute', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'none' }}>
-            <span style={{ fontSize: 18, fontWeight: 800, color: '#111', letterSpacing: '-0.3px', lineHeight: 1.1 }}>{char.name}</span>
-            {(char.job || char.role || char.category) && (
-              <span style={{
-                fontSize: 10,
-                fontWeight: 800,
-                color: '#fff',
-                background: jobColor,
-                border: '2px solid #111',
-                padding: '2px 8px',
-                letterSpacing: '0.5px',
-                borderRadius: 0,
-              }}>
-                {char.job || char.role || char.category}
-              </span>
-            )}
+            <span style={{ fontSize: 20, fontWeight: 800, color: '#111', letterSpacing: '-0.3px', lineHeight: 1.1 }}>{char.name}</span>
           </div>
         </header>
 
@@ -234,7 +203,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         <div style={{ padding: '10px 14px 6px', flexShrink: 0 }}>
           <div style={{ background: '#ffffff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 5 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: '#111', letterSpacing: 2, flexShrink: 0, textTransform: 'uppercase' }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#111', letterSpacing: 2, flexShrink: 0, textTransform: 'uppercase' }}>
                 {char.name}のお腹の様子
               </span>
               <div style={{ flex: 1, height: 14, background: '#e0e0dc', border: '2px solid #111', overflow: 'hidden', position: 'relative' }}>
@@ -242,39 +211,17 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                   <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(0,0,0,0.18) 5px, rgba(0,0,0,0.18) 6px)' }}/>
                 </div>
               </div>
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#111', flexShrink: 0, minWidth: 54, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#111', flexShrink: 0, minWidth: 54, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                 {char.hp} / {char.maxHp}
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <span style={{ fontSize: 11, color: dead ? '#e53935' : '#777', fontWeight: dead ? 700 : 500 }}>
+              <span style={{ fontSize: 13, color: dead ? '#e53935' : '#777', fontWeight: dead ? 700 : 500 }}>
                 {dead ? mealLabel : 'いっぱい話すとお腹がすくよ'}
               </span>
             </div>
           </div>
         </div>
-
-        {/* NIGHT MODE BANNER */}
-        {isNightMode && (
-          <div style={{ padding: '0 14px 4px', flexShrink: 0 }}>
-            <div style={{
-              background: isAsleep ? '#1a1a2e' : '#2d2d44',
-              border: '2px solid #111',
-              boxShadow: '4px 4px 0 #111',
-              padding: '10px 14px',
-              color: '#e0d8c8',
-              fontSize: 12,
-              fontWeight: 700,
-              textAlign: 'center',
-              letterSpacing: '0.04em',
-              lineHeight: 1.5,
-            }}>
-              {isAsleep
-                ? `${char.name}はぐっすり眠っています... zzz`
-                : `${char.name}は眠くなってきたみたい...`}
-            </div>
-          </div>
-        )}
 
         {/* CHAT AREA */}
         <div
@@ -282,7 +229,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           style={{ flex: 1, overflowY: 'auto', padding: 14, display: 'flex', flexDirection: 'column', gap: 16 }}
         >
           {messages.length === 0 && (
-            <div style={{ textAlign: 'center', color: '#999', fontSize: 11, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ textAlign: 'center', color: '#999', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.15)' }}/>
               <span>{new Date().getFullYear()}年{new Date().getMonth()+1}月{new Date().getDate()}日</span>
               <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.15)' }}/>
@@ -295,7 +242,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             return (
               <div key={i} style={{ display: 'contents' }}>
                 {showTs && (
-                  <div style={{ textAlign: 'center', fontSize: 11, color: '#999', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ textAlign: 'center', fontSize: 13, color: '#999', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.15)' }}/>
                     <span>{formatTimestamp(msg.timestamp)}</span>
                     <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.15)' }}/>
@@ -303,14 +250,14 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                 )}
                 {isUser ? (
                   <div style={{ display: 'flex', justifyContent: 'flex-end', maxWidth: '90%', alignSelf: 'flex-end' }}>
-                    <div style={{ background: '#111', color: '#fff', padding: '11px 13px', fontSize: 13.5, lineHeight: 1.68, border: '2px solid #111', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    <div style={{ background: '#111', color: '#fff', padding: '11px 13px', fontSize: 15.5, lineHeight: 1.68, border: '2px solid #111', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                       {msg.content}
                     </div>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, maxWidth: '90%', alignSelf: 'flex-start' }}>
                     <CharAvatarChat photo={char.photo} name={char.name} />
-                    <div style={{ background: '#ffffff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '11px 13px', fontSize: 13.5, lineHeight: 1.68, color: '#111', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    <div style={{ background: '#ffffff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '11px 13px', fontSize: 15.5, lineHeight: 1.68, color: '#111', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                       {msg.content}
                     </div>
                   </div>
@@ -322,7 +269,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           {loading && (
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, maxWidth: '90%', alignSelf: 'flex-start' }}>
               <CharAvatarChat photo={char.photo} name={char.name} />
-              <div style={{ background: '#ffffff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '11px 13px', fontSize: 13.5, lineHeight: 1.68, color: '#888' }}>
+              <div style={{ background: '#ffffff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '11px 13px', fontSize: 15.5, lineHeight: 1.68, color: '#888' }}>
                 入力中...
               </div>
             </div>
@@ -334,13 +281,13 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         {/* INPUT AREA */}
         <div style={{ background: '#ffffff', borderTop: '2px solid #111', padding: '11px 14px 14px', flexShrink: 0 }}>
           {dead ? (
-            <div style={{ textAlign: 'center', padding: 14, color: '#e53935', fontWeight: 700, fontSize: 14, border: '2px solid #e53935', background: '#fff5f5', lineHeight: 1.6 }}>
+            <div style={{ textAlign: 'center', padding: 14, color: '#e53935', fontWeight: 700, fontSize: 16, border: '2px solid #e53935', background: '#fff5f5', lineHeight: 1.6 }}>
               お腹がぺこぺこです<br/>{mealLabel}
             </div>
           ) : (
             <>
-              <div style={{ fontSize: 11, color: '#777', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fff', border: '2px solid #111', padding: '2px 7px', fontSize: 11, fontWeight: 800, color: '#111' }}>
+              <div style={{ fontSize: 13, color: '#777', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fff', border: '2px solid #111', padding: '2px 7px', fontSize: 13, fontWeight: 800, color: '#111' }}>
                   <span style={{ width: 7, height: 7, background: hpFill, border: '1.5px solid #333', display: 'inline-block', flexShrink: 0 }}/>
                   お腹: {char.hp}
                 </span>
@@ -361,7 +308,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                     maxHeight: 120,
                     padding: '10px 12px',
                     fontFamily: 'var(--font-body)',
-                    fontSize: 14,
+                    fontSize: 16,
                     color: '#111',
                     background: '#fff',
                     border: '2px solid #111',
@@ -387,7 +334,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                     boxShadow: '3px 3px 0 #111',
                     padding: '0 16px',
                     height: 52,
-                    fontSize: 13,
+                    fontSize: 15,
                     fontWeight: 800,
                     fontFamily: 'inherit',
                     cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',

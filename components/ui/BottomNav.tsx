@@ -66,7 +66,7 @@ export function BottomNav() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: 3,
-              fontSize: 10,
+              fontSize: 12,
               fontWeight: 700,
               color: active ? '#111' : '#999',
               textDecoration: 'none',

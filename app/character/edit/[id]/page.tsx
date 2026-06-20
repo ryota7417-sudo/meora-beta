@@ -137,7 +137,7 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
     border: '2px solid #111',
     background: '#f8f8f4',
     padding: '12px 14px',
-    fontSize: 15,
+    fontSize: 17,
     color: '#111',
     outline: 'none',
     borderRadius: 0,
@@ -145,7 +145,7 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
   } as const;
 
   const sectionLabel = (text: string) => (
-    <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#666', marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
+    <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#666', marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
       {text}
     </div>
   );
@@ -153,7 +153,7 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
   if (!appState) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8f8f4' }}>
-        <span style={{ fontSize: 14, color: '#888' }}>読み込み中...</span>
+        <span style={{ fontSize: 16, color: '#888' }}>読み込み中...</span>
       </div>
     );
   }
@@ -166,8 +166,8 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
 
         {/* ヘッダー */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 16px 12px', borderBottom: '2px solid #111', backgroundColor: '#f8f8f4', position: 'sticky', top: 0, zIndex: 10 }}>
-          <div><button onClick={() => router.back()} style={{ fontSize: 12, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>← 戻る</button></div>
-          <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>MEORAを編集</div>
+          <div><button onClick={() => router.back()} style={{ fontSize: 14, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>← 戻る</button></div>
+          <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>MEORAを編集</div>
           <div />
         </div>
 
@@ -177,12 +177,12 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
             {previewSrc ? (
               <img src={previewSrc} alt={name || 'MEORA'} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
             ) : (
-              <div style={{ width: 100, height: 100, border: '2px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+              <div style={{ width: 100, height: 100, border: '2px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
                 画像なし
               </div>
             )}
           </div>
-          <div style={{ color: '#fff', fontSize: 16, fontWeight: 800, letterSpacing: '0.04em' }}>
+          <div style={{ color: '#fff', fontSize: 18, fontWeight: 800, letterSpacing: '0.04em' }}>
             {name || 'あなたのMEORA'}
           </div>
         </div>
@@ -217,25 +217,25 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
                         {src ? (
                           <img src={src} alt={label} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
                         ) : (
-                          <span style={{ fontSize: 9, color: '#bbb', fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.4 }}>画像<br/>なし</span>
+                          <span style={{ fontSize: 11, color: '#bbb', fontWeight: 700, fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.4 }}>画像<br/>なし</span>
                         )}
                       </div>
                       {/* ラベル */}
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 800, color: '#111', letterSpacing: '0.04em' }}>{label}</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.04em' }}>{label}</div>
                       </div>
                       {/* ボタン群 */}
                       <div style={{ flexShrink: 0, display: 'flex', gap: 6 }}>
                         <button
                           onClick={() => fileRefs.current[type]?.click()}
-                          style={{ padding: '7px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em', whiteSpace: 'nowrap' }}
+                          style={{ padding: '7px 12px', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em', whiteSpace: 'nowrap' }}
                         >
                           {src ? '変更' : '設定'}
                         </button>
                         {src && (
                           <button
                             onClick={() => handleSpriteRemove(type)}
-                            style={{ padding: '7px 10px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em' }}
+                            style={{ padding: '7px 10px', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.02em' }}
                           >
                             削除
                           </button>
@@ -246,7 +246,7 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
                 );
               })}
             </div>
-            <div style={{ fontSize: 11, color: '#999', marginTop: 10, letterSpacing: '0.02em', lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: '#999', marginTop: 10, letterSpacing: '0.02em', lineHeight: 1.5 }}>
               透過PNGをそのまま設定できます。ホームでの歩き方向ごとに画像を設定できます。
             </div>
           </div>
@@ -257,7 +257,7 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
             {/* テンプレート挿入ボタン */}
             <button
               onClick={() => setPersonality(prev => prev ? prev : PERSONALITY_TEMPLATE)}
-              style={{ marginBottom: 10, padding: '6px 12px', fontSize: 11, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.04em' }}
+              style={{ marginBottom: 10, padding: '6px 12px', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.04em' }}
             >
               テンプレートを挿入
             </button>
@@ -268,7 +268,7 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
               rows={7}
               style={{ ...inputStyle, resize: 'vertical', minHeight: 120, lineHeight: 1.7 }}
             />
-            <div style={{ fontSize: 11, color: '#999', marginTop: 8, letterSpacing: '0.02em', lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: '#999', marginTop: 8, letterSpacing: '0.02em', lineHeight: 1.5 }}>
               ここに書いた内容がMEORAの話し方になります。
             </div>
             <InheritPersonaCopy />
@@ -278,7 +278,7 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
           <button
             onClick={handleSave}
             disabled={!canSave}
-            style={{ width: '100%', background: canSave ? '#111' : '#999', color: '#fff', border: `2px solid ${canSave ? '#111' : '#999'}`, boxShadow: canSave ? '4px 4px 0 #555' : 'none', padding: '16px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.08em', cursor: canSave ? 'pointer' : 'not-allowed', borderRadius: 0, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+            style={{ width: '100%', background: canSave ? '#111' : '#999', color: '#fff', border: `2px solid ${canSave ? '#111' : '#999'}`, boxShadow: canSave ? '4px 4px 0 #555' : 'none', padding: '16px 20px', fontSize: 18, fontWeight: 800, letterSpacing: '0.08em', cursor: canSave ? 'pointer' : 'not-allowed', borderRadius: 0, fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
           >
             保存する →
           </button>

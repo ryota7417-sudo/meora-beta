@@ -3,16 +3,17 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { CharAvatar } from '@/components/ui/CharacterSvg';
+import { ComingSoonToast } from '@/components/ui/ComingSoonToast';
 import {
   MARKET_CREATORS,
   PICKUP_CHARACTERS,
-  RANKING_CHARACTERS,
   DEFAULT_FOOD_ITEMS,
   MARKET_SKIN_ITEMS,
   type MarketCharacter,
   type FoodItem,
   type MarketSkinItem,
 } from '@/lib/market-data';
+import { loadState, saveState, acquireCharacter } from '@/lib/store';
 import { createClient } from '@/lib/supabase';
 
 type DbListing = {
@@ -43,7 +44,7 @@ type TabType = 'character' | 'food' | 'skin';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', color: '#7a746c', textTransform: 'uppercase', padding: '18px 16px 8px', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-mono)' }}>
+    <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.14em', color: '#7a746c', textTransform: 'uppercase', padding: '18px 16px 8px', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-mono)' }}>
       {children}
       <span style={{ flex: 1, height: 1, background: '#cfcabf' }} />
     </div>
@@ -64,6 +65,7 @@ export default function MarketPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('character');
   const [dbListings, setDbListings] = useState<DbListing[]>([]);
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -107,10 +109,10 @@ export default function MarketPage() {
     <div style={{ ...PAPER_BG, minHeight: '100vh', maxWidth: 390, margin: '0 auto', paddingBottom: 'calc(96px + env(safe-area-inset-bottom))', color: '#111' }}>
       {/* HEADER */}
       <div style={{ background: '#111', padding: '11px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 100, borderBottom: '2px solid #111' }}>
-        <span style={{ color: '#f7f5f0', fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: 'var(--font-display)' }}>
+        <span style={{ color: '#f7f5f0', fontSize: 15, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: 'var(--font-display)' }}>
           MEORA MARKET
         </span>
-        <span style={{ background: '#e8568a', color: '#fff', fontSize: 9, fontWeight: 800, padding: '2px 7px', border: '1.5px solid #fff', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
+        <span style={{ background: '#e8568a', color: '#fff', fontSize: 11, fontWeight: 800, padding: '2px 7px', border: '1.5px solid #fff', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
           BETA
         </span>
       </div>
@@ -124,7 +126,7 @@ export default function MarketPage() {
           </svg>
           <input
             placeholder="MEORA・お店・タグで探す"
-            style={{ border: 'none', outline: 'none', flex: 1, fontSize: 13, fontFamily: 'inherit', background: 'transparent', color: '#111' }}
+            style={{ border: 'none', outline: 'none', flex: 1, fontSize: 15, fontFamily: 'inherit', background: 'transparent', color: '#111' }}
           />
         </div>
       </div>
@@ -140,7 +142,7 @@ export default function MarketPage() {
               style={{
                 flex: 1,
                 padding: '10px 0',
-                fontSize: 13,
+                fontSize: 15,
                 fontWeight: 800,
                 fontFamily: 'inherit',
                 background: on ? '#111' : '#fff',
@@ -166,7 +168,11 @@ export default function MarketPage() {
           <SectionLabel>PICK UP</SectionLabel>
           <div style={{ padding: '0 14px', display: 'flex', flexDirection: 'column', gap: 14 }}>
             {PICKUP_CHARACTERS.map((char) => (
-              <PickupCard key={char.id} char={char} onClick={() => goChar(char.id)} />
+              <PickupCard key={char.id} char={char} onCardClick={() => goChar(char.id)} onAcquire={() => {
+                const state = loadState();
+                saveState(acquireCharacter(state, char));
+                router.push(`/chat/${char.id}`);
+              }} onBuy={() => setToast('購入機能は近日対応予定です')} />
             ))}
           </div>
 
@@ -176,37 +182,15 @@ export default function MarketPage() {
             {MARKET_CREATORS.map((creator) => (
               <div key={creator.id} onClick={() => goShop(creator.id)} style={{ flexShrink: 0, width: 96, textAlign: 'center', cursor: 'pointer' }}>
                 <div style={{ width: 64, height: 64, border: '2px solid #111', boxShadow: '3px 3px 0 #111', margin: '0 auto 6px', background: creator.avatarBg, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  <img src="/characters/market_creator_default.png" alt={creator.name} width={64} height={64} style={{ objectFit: 'cover' }} />
+                  <img src={creator.avatarUrl || '/characters/market_creator_default.png'} alt={creator.name} width={64} height={64} style={{ objectFit: 'cover' }} />
                 </div>
-                <div style={{ fontSize: 11, fontWeight: 800, lineHeight: 1.2 }}>{creator.name}</div>
-                <div style={{ fontSize: 9, color: '#7a746c', marginTop: 2 }}>{creator.followers} フォロー</div>
+                <div style={{ fontSize: 13, fontWeight: 800, lineHeight: 1.2 }}>{creator.name}</div>
+                <div style={{ fontSize: 11, color: '#7a746c', marginTop: 2 }}>{creator.followers} フォロー</div>
               </div>
             ))}
           </div>
 
-          {/* RANKING */}
-          <SectionLabel>RANKING — 今週</SectionLabel>
-          <div style={{ margin: '0 14px', border: '2px solid #111', boxShadow: '4px 4px 0 #111', background: '#fff' }}>
-            {RANKING_CHARACTERS.map((char, i) => {
-              const isLast = i === RANKING_CHARACTERS.length - 1;
-              const top = i < 3;
-              return (
-                <div key={char.id} onClick={() => goChar(char.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderBottom: isLast ? 'none' : '1px solid #ddd', cursor: 'pointer' }}>
-                  <span style={{ fontSize: 14, fontWeight: 800, width: 22, textAlign: 'center', color: top ? '#e8568a' : '#111' }}>{i + 1}</span>
-                  <div style={{ width: 38, height: 38, border: '2px solid #111', flexShrink: 0, background: char.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                    <CharacterIcon char={char} size={38} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{char.name}</div>
-                    <div style={{ fontSize: 10, color: '#7a746c', marginTop: 1 }}>@{char.creatorId}</div>
-                  </div>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#555', textAlign: 'right', flexShrink: 0 }}>
-                    入手 {char.acquiredCount.toLocaleString()}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {/* RANKING: アーカイブ済み → archive/ranking-section.tsx */}
 
           {/* クリエイター出品MEORA (Supabase Realtime) */}
           {dbChars.length > 0 && (
@@ -227,11 +211,11 @@ export default function MarketPage() {
         <>
           <SectionLabel>お食事アイテム</SectionLabel>
           <div style={{ padding: '0 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ fontSize: 12, color: '#7a746c', lineHeight: 1.6, padding: '0 2px 8px' }}>
+            <div style={{ fontSize: 14, color: '#7a746c', lineHeight: 1.6, padding: '0 2px 8px' }}>
               MEORAに食事を与えて満腹度を回復しましょう。毎日おにぎり1個が無料で届きます。
             </div>
-            {DEFAULT_FOOD_ITEMS.map(item => (
-              <FoodCard key={item.id} item={item} />
+            {DEFAULT_FOOD_ITEMS.filter(item => item.price > 0).map(item => (
+              <FoodCard key={item.id} item={item} onTap={() => setToast('お食事購入は近日対応予定です')} />
             ))}
           </div>
 
@@ -248,7 +232,7 @@ export default function MarketPage() {
             <>
               <SectionLabel>クリエイターのお食事</SectionLabel>
               <div style={{ padding: '0 14px' }}>
-                <div style={{ border: '2px solid #111', background: '#fff', boxShadow: '4px 4px 0 #111', padding: '16px 14px', textAlign: 'center', color: '#888', fontSize: 12 }}>
+                <div style={{ border: '2px solid #111', background: '#fff', boxShadow: '4px 4px 0 #111', padding: '16px 14px', textAlign: 'center', color: '#888', fontSize: 14 }}>
                   COMING SOON
                 </div>
               </div>
@@ -262,11 +246,11 @@ export default function MarketPage() {
         <>
           <SectionLabel>スキンアイテム</SectionLabel>
           <div style={{ padding: '0 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ fontSize: 12, color: '#7a746c', lineHeight: 1.6, padding: '0 2px 8px' }}>
+            <div style={{ fontSize: 14, color: '#7a746c', lineHeight: 1.6, padding: '0 2px 8px' }}>
               MEORAの見た目を変えるスキンです。クリエイターが出品しています。
             </div>
             {MARKET_SKIN_ITEMS.map(item => (
-              <SkinCard key={item.id} item={item} />
+              <SkinCard key={item.id} item={item} onTap={() => setToast('スキン購入は近日対応予定です')} />
             ))}
             {dbSkins.map(listing => (
               <DbSkinCard key={listing.id} listing={listing} />
@@ -276,6 +260,7 @@ export default function MarketPage() {
       )}
 
       <BottomNav />
+      <ComingSoonToast message={toast} onClose={() => setToast(null)} />
     </div>
   );
 }
@@ -291,22 +276,22 @@ function DbCharCard({ listing }: { listing: DbListing }) {
             : <CharAvatar name={listing.name} size={64} />}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.2 }}>{listing.name}</div>
+          <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.01em', lineHeight: 1.2 }}>{listing.name}</div>
           {listing.description && (
-            <div style={{ fontSize: 12, color: '#555', marginTop: 4, lineHeight: 1.4 }}>{listing.description}</div>
+            <div style={{ fontSize: 14, color: '#555', marginTop: 4, lineHeight: 1.4 }}>{listing.description}</div>
           )}
-          <div style={{ fontSize: 10, color: '#7a746c', marginTop: 6 }}>
+          <div style={{ fontSize: 12, color: '#7a746c', marginTop: 6 }}>
             by <b style={{ color: '#111', fontWeight: 700 }}>@{listing.creator_profiles?.display_name ?? '???'}</b>
           </div>
         </div>
       </div>
       <div style={{ borderTop: '2px solid #111', display: 'flex' }}>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '9px 12px' }}>
-          <span style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>
+          <span style={{ fontSize: 15, fontWeight: 800, color: '#111' }}>
             {listing.price === 0 ? '無料' : `${listing.price.toLocaleString()}円`}
           </span>
         </div>
-        <div style={{ flexShrink: 0, background: '#111', color: '#fff', fontSize: 12, fontWeight: 800, padding: '0 16px', display: 'flex', alignItems: 'center', borderLeft: '2px solid #111' }}>
+        <div style={{ flexShrink: 0, background: '#111', color: '#fff', fontSize: 14, fontWeight: 800, padding: '0 16px', display: 'flex', alignItems: 'center', borderLeft: '2px solid #111' }}>
           話す ›
         </div>
       </div>
@@ -320,16 +305,16 @@ function DbFoodCard({ listing }: { listing: DbListing }) {
       <div style={{ flexShrink: 0, width: 52, height: 52, border: '2px solid #111', background: '#f7f5f0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 800 }}>
+        <div style={{ fontSize: 16, fontWeight: 800 }}>
           {listing.name}
           {listing.hp_bonus != null && (
-            <span style={{ fontSize: 11, fontWeight: 800, color: '#e8568a', marginLeft: 6, fontFamily: 'var(--font-mono)' }}>+{listing.hp_bonus} HP</span>
+            <span style={{ fontSize: 13, fontWeight: 800, color: '#e8568a', marginLeft: 6, fontFamily: 'var(--font-mono)' }}>+{listing.hp_bonus} HP</span>
           )}
         </div>
-        {listing.description && <div style={{ fontSize: 11, color: '#7a746c', marginTop: 2 }}>{listing.description}</div>}
-        <div style={{ fontSize: 10, color: '#7a746c', marginTop: 2 }}>by @{listing.creator_profiles?.display_name ?? '???'}</div>
+        {listing.description && <div style={{ fontSize: 13, color: '#7a746c', marginTop: 2 }}>{listing.description}</div>}
+        <div style={{ fontSize: 12, color: '#7a746c', marginTop: 2 }}>by @{listing.creator_profiles?.display_name ?? '???'}</div>
       </div>
-      <div style={{ flexShrink: 0, fontSize: 13, fontWeight: 800 }}>{listing.price}円</div>
+      <div style={{ flexShrink: 0, fontSize: 15, fontWeight: 800 }}>{listing.price}円</div>
     </div>
   );
 }
@@ -344,75 +329,68 @@ function DbSkinCard({ listing }: { listing: DbListing }) {
           : <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="4" y="8" width="20" height="14" stroke="#111" strokeWidth="2"/><circle cx="14" cy="15" r="4" stroke="#111" strokeWidth="1.5"/><line x1="4" y1="8" x2="14" y2="4" stroke="#111" strokeWidth="1.5"/><line x1="24" y1="8" x2="14" y2="4" stroke="#111" strokeWidth="1.5"/></svg>}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 800 }}>{listing.name}</div>
-        {listing.description && <div style={{ fontSize: 11, color: '#7a746c', marginTop: 2 }}>{listing.description}</div>}
-        <div style={{ fontSize: 10, color: '#7a746c', marginTop: 2 }}>by @{listing.creator_profiles?.display_name ?? '???'}</div>
+        <div style={{ fontSize: 16, fontWeight: 800 }}>{listing.name}</div>
+        {listing.description && <div style={{ fontSize: 13, color: '#7a746c', marginTop: 2 }}>{listing.description}</div>}
+        <div style={{ fontSize: 12, color: '#7a746c', marginTop: 2 }}>by @{listing.creator_profiles?.display_name ?? '???'}</div>
       </div>
-      <div style={{ flexShrink: 0, fontSize: 13, fontWeight: 800 }}>{listing.price}円</div>
+      <div style={{ flexShrink: 0, fontSize: 15, fontWeight: 800 }}>{listing.price}円</div>
     </div>
   );
 }
 
-function PickupCard({ char, onClick }: { char: MarketCharacter; onClick: () => void }) {
-  const isFree = char.accessTier === 'free';
+function PickupCard({ char, onCardClick, onAcquire, onBuy }: { char: MarketCharacter; onCardClick: () => void; onAcquire: () => void; onBuy: () => void }) {
+  const hasBuyPrice = char.buyPrice != null && char.buyPrice > 0;
   return (
-    <div onClick={onClick} style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', overflow: 'hidden', cursor: 'pointer' }}>
+    <div onClick={onCardClick} style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', overflow: 'hidden', cursor: 'pointer' }}>
       <div style={{ display: 'flex', gap: 12, padding: '14px 14px 10px' }}>
         <div style={{ width: 64, height: 64, border: '2px solid #111', flexShrink: 0, background: char.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           <CharacterIcon char={char} size={64} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+          <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
             {char.name}
-            <span style={{ display: 'inline-block', background: isFree ? '#3db33d' : '#f5a623', color: isFree ? '#fff' : '#111', fontSize: 9, fontWeight: 800, padding: '2px 7px', border: '1.5px solid #111', letterSpacing: '0.06em', marginLeft: 6, verticalAlign: 1, fontFamily: 'var(--font-mono)' }}>
-              {isFree ? 'FREE' : 'SUB'}
-            </span>
           </div>
-          <div style={{ fontSize: 12, color: '#3a3530', marginTop: 4, lineHeight: 1.4 }}>{char.tagline}</div>
-          <div style={{ fontSize: 10, color: '#7a746c', marginTop: 6 }}>
+          <div style={{ fontSize: 14, color: '#3a3530', marginTop: 4, lineHeight: 1.4 }}>{char.tagline}</div>
+          <div style={{ fontSize: 12, color: '#7a746c', marginTop: 6 }}>
             by <b style={{ color: '#111', fontWeight: 700 }}>@{char.creatorId}</b>
           </div>
         </div>
       </div>
       <div style={{ borderTop: '2px solid #111', display: 'flex' }}>
-        <div style={{ flex: 1, flexShrink: 0, background: '#111', color: '#fff', fontSize: 12, fontWeight: 800, padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', letterSpacing: '0.02em' }}>
-          {isFree ? '無料で話す' : '話す'} ›
-        </div>
+        <button
+          onClick={(e) => { e.stopPropagation(); hasBuyPrice ? onBuy() : onAcquire(); }}
+          style={{ flex: 1, background: '#111', color: '#fff', fontSize: 14, fontWeight: 800, padding: '11px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', letterSpacing: '0.02em', border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 0 }}
+        >
+          {hasBuyPrice ? `¥${char.buyPrice!.toLocaleString()} で購入する` : '入手して話す'} →
+        </button>
       </div>
     </div>
   );
 }
 
-function FoodCard({ item }: { item: FoodItem }) {
-  const isFree = item.price === 0;
+function FoodCard({ item, onTap }: { item: FoodItem; onTap: () => void }) {
   return (
-    <div onClick={() => alert('リリース時に実装予定です')} style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px', cursor: 'pointer' }}>
+    <div onClick={onTap} style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px', cursor: 'pointer' }}>
       {/* アイコン */}
       <div style={{ flexShrink: 0, width: 52, height: 52, border: '2px solid #111', background: '#f7f5f0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '0.02em' }}>
+        <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.02em' }}>
           {item.name}
-          <span style={{ fontSize: 11, fontWeight: 800, color: '#e8568a', marginLeft: 6, fontFamily: 'var(--font-mono)' }}>+{item.hpBonus} HP</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: '#e8568a', marginLeft: 6, fontFamily: 'var(--font-mono)' }}>+{item.hpBonus} HP</span>
         </div>
-        <div style={{ fontSize: 11, color: '#7a746c', marginTop: 2, lineHeight: 1.4 }}>{item.desc}</div>
+        <div style={{ fontSize: 13, color: '#7a746c', marginTop: 2, lineHeight: 1.4 }}>{item.desc}</div>
       </div>
       <div style={{ flexShrink: 0, textAlign: 'right' }}>
-        {isFree ? (
-          <div style={{ background: '#3db33d', color: '#fff', fontSize: 10, fontWeight: 800, padding: '4px 10px', border: '1.5px solid #111', letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>
-            毎日無料
-          </div>
-        ) : (
-          <div style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>{item.price}円</div>
-        )}
+        <div style={{ fontSize: 15, fontWeight: 800, color: '#111' }}>{item.price}円</div>
       </div>
     </div>
   );
 }
 
-function SkinCard({ item }: { item: MarketSkinItem }) {
+function SkinCard({ item, onTap }: { item: MarketSkinItem; onTap: () => void }) {
   return (
-    <div onClick={() => alert('リリース時に実装予定です')} style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px', cursor: 'pointer' }}>
+    <div onClick={onTap} style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px', cursor: 'pointer' }}>
       <div style={{ flexShrink: 0, width: 52, height: 52, border: '2px solid #111', background: '#f7f5f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
           <rect x="4" y="8" width="20" height="14" stroke="#111" strokeWidth="2"/>
@@ -422,12 +400,12 @@ function SkinCard({ item }: { item: MarketSkinItem }) {
         </svg>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '0.02em' }}>{item.name}</div>
-        <div style={{ fontSize: 11, color: '#7a746c', marginTop: 2, lineHeight: 1.4 }}>{item.desc}</div>
-        <div style={{ fontSize: 10, color: '#7a746c', marginTop: 3 }}>by @{item.creatorId}</div>
+        <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.02em' }}>{item.name}</div>
+        <div style={{ fontSize: 13, color: '#7a746c', marginTop: 2, lineHeight: 1.4 }}>{item.desc}</div>
+        <div style={{ fontSize: 12, color: '#7a746c', marginTop: 3 }}>by @{item.creatorId}</div>
       </div>
       <div style={{ flexShrink: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>{item.price}円</div>
+        <div style={{ fontSize: 15, fontWeight: 800, color: '#111' }}>{item.price}円</div>
       </div>
     </div>
   );

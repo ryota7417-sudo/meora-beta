@@ -123,7 +123,7 @@ export default function DashboardPage() {
   if (!state) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f5f0' }}>
-        <span style={{ fontSize: 14, color: '#888' }}>読み込み中...</span>
+        <span style={{ fontSize: 16, color: '#888' }}>読み込み中...</span>
       </div>
     );
   }
@@ -152,10 +152,10 @@ export default function DashboardPage() {
         borderBottom: '2px solid #111',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ color: '#f7f5f0', fontSize: 13, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'var(--font-display)' }}>
+          <span style={{ color: '#f7f5f0', fontSize: 15, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'var(--font-display)' }}>
             MEORA
           </span>
-          <span style={{ background: '#f5a623', color: '#111', fontSize: 10, fontWeight: 800, padding: '2px 7px', border: '1.5px solid #111', boxShadow: '2px 2px 0 #f7f5f0', letterSpacing: '0.05em' }}>
+          <span style={{ background: '#f5a623', color: '#111', fontSize: 12, fontWeight: 800, padding: '2px 7px', border: '1.5px solid #111', boxShadow: '2px 2px 0 #f7f5f0', letterSpacing: '0.05em' }}>
             BETA
           </span>
         </div>
@@ -199,7 +199,7 @@ export default function DashboardPage() {
               border: '2px solid #111',
               boxShadow: '2px 2px 0 #f7f5f0',
               padding: '2px 8px',
-              fontSize: 11,
+              fontSize: 13,
               fontWeight: 800,
               cursor: 'pointer',
               borderRadius: 0,
@@ -242,7 +242,7 @@ export default function DashboardPage() {
 
         {/* トーク一覧（LINE / ChatGPT ライク・最大3行分の高さでスクロール） */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', color: '#7a746c', textTransform: 'uppercase', fontFamily: 'var(--font-mono)', padding: '0 2px' }}>
+          <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.14em', color: '#7a746c', textTransform: 'uppercase', fontFamily: 'var(--font-mono)', padding: '0 2px' }}>
             トーク
           </span>
 
@@ -251,7 +251,7 @@ export default function DashboardPage() {
 
             {/* MEORA未所持の空状態 */}
             {state.characters.length === 0 && (
-              <div style={{ padding: '20px 16px', textAlign: 'center', color: '#888', fontSize: 13, lineHeight: 1.7, borderBottom: '1px solid #ddd' }}>
+              <div style={{ padding: '20px 16px', textAlign: 'center', color: '#888', fontSize: 15, lineHeight: 1.7, borderBottom: '1px solid #ddd' }}>
                 まだMEORAがいません。<br />下のボタンからMEORAを探す/作ることができます。
               </div>
             )}
@@ -284,18 +284,18 @@ export default function DashboardPage() {
                   {/* 名前 + プレビュー */}
                   <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{char.name}</span>
+                      <span style={{ fontSize: 16, fontWeight: 800, color: '#111', letterSpacing: '0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{char.name}</span>
                       {timeLabel && (
-                        <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, color: '#999', fontFamily: 'var(--font-mono)', letterSpacing: '0.02em' }}>{timeLabel}</span>
+                        <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 700, color: '#999', fontFamily: 'var(--font-mono)', letterSpacing: '0.02em' }}>{timeLabel}</span>
                       )}
                     </div>
-                    <span style={{ fontSize: 12, color: hasHistory ? '#666' : '#aaa', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontStyle: hasHistory ? 'normal' : 'italic' }}>
+                    <span style={{ fontSize: 14, color: hasHistory ? '#666' : '#aaa', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontStyle: hasHistory ? 'normal' : 'italic' }}>
                       {previewText}
                     </span>
                   </div>
 
                   {/* 矢印 */}
-                  <span style={{ flexShrink: 0, color: '#bbb', fontSize: 18, fontWeight: 800, lineHeight: 1 }}>›</span>
+                  <span style={{ flexShrink: 0, color: '#bbb', fontSize: 20, fontWeight: 800, lineHeight: 1 }}>›</span>
                 </div>
               );
             })}
@@ -312,8 +312,8 @@ export default function DashboardPage() {
                     <line x1="4" y1="11" x2="18" y2="11" stroke="#111" strokeWidth="2.4" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.02em' }}>自分のMEORAを作る</span>
-                <span style={{ flexShrink: 0, color: '#bbb', fontSize: 18, fontWeight: 800, lineHeight: 1 }}>›</span>
+                <span style={{ flex: 1, fontSize: 16, fontWeight: 800, color: '#111', letterSpacing: '0.02em' }}>自分のMEORAを作る</span>
+                <span style={{ flexShrink: 0, color: '#bbb', fontSize: 20, fontWeight: 800, lineHeight: 1 }}>›</span>
               </div>
             )}
 
@@ -328,8 +328,8 @@ export default function DashboardPage() {
                   <path d="M4 20 C4 16 18 16 18 20" stroke="#111" strokeWidth="2.2" strokeLinecap="round"/>
                 </svg>
               </div>
-              <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.02em' }}>マーケットでMEORAを探す</span>
-              <span style={{ flexShrink: 0, color: '#bbb', fontSize: 18, fontWeight: 800, lineHeight: 1 }}>›</span>
+              <span style={{ flex: 1, fontSize: 16, fontWeight: 800, color: '#111', letterSpacing: '0.02em' }}>マーケットでMEORAを探す</span>
+              <span style={{ flexShrink: 0, color: '#bbb', fontSize: 20, fontWeight: 800, lineHeight: 1 }}>›</span>
             </div>
 
           </div>
@@ -358,13 +358,13 @@ export default function DashboardPage() {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800 }}>持ち物</h2>
+              <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800 }}>持ち物</h2>
               <button onClick={() => { setShowInventory(false); setFeedTarget(null); setFeedMessage(''); }}
-                style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#111', fontWeight: 800 }}>✕</button>
+                style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#111', fontWeight: 800 }}>✕</button>
             </div>
 
             {feedMessage && (
-              <div style={{ background: '#e8f5e9', border: '2px solid #111', padding: '10px 14px', marginBottom: 12, fontSize: 13, fontWeight: 700, color: '#2e7d32' }}>
+              <div style={{ background: '#e8f5e9', border: '2px solid #111', padding: '10px 14px', marginBottom: 12, fontSize: 15, fontWeight: 700, color: '#2e7d32' }}>
                 {feedMessage}
               </div>
             )}
@@ -373,22 +373,22 @@ export default function DashboardPage() {
               const char = state.characters.find(c => c.id === overflowWarning.charId);
               return char ? (
                 <div style={{ background: '#fff8e1', border: '2px solid #111', boxShadow: '3px 3px 0 #111', padding: '16px', marginBottom: 12 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#111', lineHeight: 1.7, marginBottom: 14 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: '#111', lineHeight: 1.7, marginBottom: 14 }}>
                     今ごはんをあげると最大値を超えてしまいます。超えた分は加算されません。本当にあげますか？
                   </div>
-                  <div style={{ fontSize: 11, color: '#888', marginBottom: 14 }}>
+                  <div style={{ fontSize: 13, color: '#888', marginBottom: 14 }}>
                     {char.name}の満腹度: {char.hp} / {char.maxHp}
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button
                       onClick={() => doFeed(overflowWarning.itemId, overflowWarning.charId)}
-                      style={{ flex: 1, background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', padding: '10px', fontSize: 13, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
+                      style={{ flex: 1, background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', padding: '10px', fontSize: 15, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
                     >
                       いいよ
                     </button>
                     <button
                       onClick={() => { setOverflowWarning(null); setFeedTarget(null); }}
-                      style={{ flex: 1, background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', padding: '10px', fontSize: 13, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
+                      style={{ flex: 1, background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', padding: '10px', fontSize: 15, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
                     >
                       まだあげない
                     </button>
@@ -398,7 +398,7 @@ export default function DashboardPage() {
             })()}
 
             {inventory.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '24px 0', color: '#888', fontSize: 13 }}>
+              <div style={{ textAlign: 'center', padding: '24px 0', color: '#888', fontSize: 15 }}>
                 持ち物がありません
               </div>
             ) : (
@@ -409,10 +409,10 @@ export default function DashboardPage() {
                     background: '#fff', border: '2px solid #111', boxShadow: '3px 3px 0 #111',
                     padding: '12px',
                   }}>
-                    <span style={{ fontSize: 28, flexShrink: 0 }}>{item.icon}</span>
+                    <span style={{ fontSize: 30, flexShrink: 0 }}>{item.icon}</span>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, fontWeight: 800 }}>{item.name}</div>
-                      <div style={{ fontSize: 11, color: '#888' }}>HP +{item.effect} / {item.count}個</div>
+                      <div style={{ fontSize: 16, fontWeight: 800 }}>{item.name}</div>
+                      <div style={{ fontSize: 13, color: '#888' }}>HP +{item.effect} / {item.count}個</div>
                     </div>
                     {feedTarget === null ? (
                       <button
@@ -420,7 +420,7 @@ export default function DashboardPage() {
                         style={{
                           background: '#111', color: '#fff', border: '2px solid #111',
                           boxShadow: '2px 2px 0 #555', padding: '6px 12px',
-                          fontSize: 12, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit',
+                          fontSize: 14, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit',
                         }}
                       >
                         あげる
@@ -443,7 +443,7 @@ export default function DashboardPage() {
                             }}
                             style={{
                               background: '#fff', border: '1.5px solid #111', padding: '4px 10px',
-                              fontSize: 11, fontWeight: 800, cursor: 'pointer', borderRadius: 0,
+                              fontSize: 13, fontWeight: 800, cursor: 'pointer', borderRadius: 0,
                               fontFamily: 'inherit', whiteSpace: 'nowrap',
                             }}
                           >
@@ -452,7 +452,7 @@ export default function DashboardPage() {
                         ))}
                         <button
                           onClick={() => setFeedTarget(null)}
-                          style={{ background: 'none', border: 'none', fontSize: 10, color: '#888', cursor: 'pointer', fontFamily: 'inherit' }}
+                          style={{ background: 'none', border: 'none', fontSize: 12, color: '#888', cursor: 'pointer', fontFamily: 'inherit' }}
                         >
                           キャンセル
                         </button>

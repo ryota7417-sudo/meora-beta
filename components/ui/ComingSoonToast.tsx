@@ -50,10 +50,10 @@ export function ComingSoonToast({
         <div style={{ width: 54, height: 54, margin: '0 auto 10px', border: '2px solid #111', boxShadow: '3px 3px 0 #111', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <WrenchIcon size={28} color="#111" />
         </div>
-        <div style={{ fontSize: 16, fontWeight: 800, color: '#111', marginBottom: 6 }}>
+        <div style={{ fontSize: 18, fontWeight: 800, color: '#111', marginBottom: 6 }}>
           準備中（近日対応）
         </div>
-        <div style={{ fontSize: 12, color: '#555', lineHeight: 1.6, marginBottom: 16 }}>{message}</div>
+        <div style={{ fontSize: 14, color: '#555', lineHeight: 1.6, marginBottom: 16 }}>{message}</div>
         <button
           onClick={onClose}
           style={{
@@ -62,7 +62,7 @@ export function ComingSoonToast({
             color: '#fff',
             border: '2px solid #111',
             boxShadow: '3px 3px 0 #555',
-            fontSize: 13,
+            fontSize: 15,
             fontWeight: 800,
             padding: '10px 0',
             cursor: 'pointer',

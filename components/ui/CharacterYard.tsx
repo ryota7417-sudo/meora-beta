@@ -37,20 +37,20 @@ const TALK_LINES = [
   'えへへ',
 ];
 
-const SLEEPY_TALK_LINES = [
-  'zzz...',
-  'むにゃ…',
-  'すぅ…すぅ…',
-  'おやすみ…',
-  'ふぁ〜…ねむい…',
-  'もう関東ねよ…?',
-  'あしたね…zzz',
+const LATE_NIGHT_LINES = [
+  'もう遅いよ、そろそろ寝なよ',
+  'おやすみの時間だよ〜',
+  '明日もあるでしょ？寝よ？',
+  'スマホ置いて、目つぶって',
+  '夜ふかしはお肌の敵だよ',
+  'ちゃんと寝た方がいいよ',
+  '今日はもうおしまい！おやすみ！',
+  '寝ないと明日つらいよ〜',
 ];
 
 function getTalkLines(): string[] {
   const h = new Date().getHours();
-  if (h >= 0 && h < 5) return SLEEPY_TALK_LINES;
-  if (h === 23) return [...TALK_LINES.slice(3, 5), ...SLEEPY_TALK_LINES];
+  if (h >= 0 && h < 5) return LATE_NIGHT_LINES;
   return TALK_LINES;
 }
 
@@ -151,7 +151,7 @@ function SpriteVisual({ char, view }: { char: Character; view: View }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: 800,
         boxShadow: '2px 2px 0 rgba(0,0,0,0.3)',
         fontFamily: 'var(--font-display)',
@@ -192,14 +192,9 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
     const bandTop = Math.max(8, H * 0.35);
     const bandBottom = Math.max(bandTop + 1, H - SPRITE_H - 8);
 
-    const hour = new Date().getHours();
-    const isNight = hour >= 0 && hour < 5;
-    const isSleepy = hour === 23;
-
     const movers: Mover[] = list.map((char, i) => {
       const dir: 'left' | 'right' = Math.random() < 0.5 ? 'left' : 'right';
-      const baseSpeed = isNight ? rand(1, 3) : isSleepy ? rand(3, 6) : rand(15, 30);
-      const speed = baseSpeed;
+      const speed = rand(35, 60);
       // 重なりすぎない初期配置: 横方向に概ね等間隔 + ランダムゆらぎ。
       const slot = list.length > 0 ? (W - SPRITE_W) / list.length : 0;
       const x = Math.min(
@@ -212,9 +207,9 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
         x,
         y,
         vx: dir === 'right' ? speed : -speed,
-        vy: rand(-0.3, 0.3) * (isNight ? 0.2 : 1),
+        vy: rand(-0.3, 0.3),
         dir,
-        state: isNight ? 'idle' as const : 'walk' as const,
+        state: 'walk' as const,
         nextStateChangeAt: now + rand(2000, 5000),
         nextTalkAt: now + rand(2500, 9000),
         talkUntil: 0,
@@ -256,8 +251,11 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
 
     const tick = (t: number) => {
       rafRef.current = requestAnimationFrame(tick);
-      const last = lastTickRef.current || t;
-      const dt = t - last;
+      if (!lastTickRef.current) {
+        lastTickRef.current = t;
+        return;
+      }
+      const dt = t - lastTickRef.current;
       if (dt < THROTTLE) return;
       lastTickRef.current = t;
 
@@ -276,21 +274,9 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
       for (const m of movers) {
         const prevView = lastViewsRef.current[m.char.id];
 
-        // walk/idle 切替。深夜はほぼidle（寝ている）。
         if (t >= m.nextStateChangeAt) {
-          const h = new Date().getHours();
-          const night = h >= 0 && h < 5;
-          const sleepy = h === 23;
-          if (night) {
-            m.state = Math.random() < 0.9 ? 'idle' : 'walk';
-            m.nextStateChangeAt = t + (m.state === 'walk' ? rand(1500, 3000) : rand(5000, 12000));
-          } else if (sleepy) {
-            m.state = m.state === 'walk' ? 'idle' : 'walk';
-            m.nextStateChangeAt = t + (m.state === 'walk' ? rand(3000, 6000) : rand(2000, 5000));
-          } else {
-            m.state = m.state === 'walk' ? 'idle' : 'walk';
-            m.nextStateChangeAt = t + (m.state === 'walk' ? rand(3000, 8000) : rand(1000, 3000));
-          }
+          m.state = m.state === 'walk' ? 'idle' : 'walk';
+          m.nextStateChangeAt = t + (m.state === 'walk' ? rand(5000, 12000) : rand(800, 2000));
           // walk開始時にy方向速度をランダムに設定
           if (m.state === 'walk') {
             m.vy = rand(-0.5, 0.5);
@@ -419,7 +405,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
         >
           <span
             style={{
-              fontSize: 13,
+              fontSize: 15,
               fontWeight: 800,
               color: 'rgba(0,0,0,0.55)',
               letterSpacing: '0.06em',
@@ -429,7 +415,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
           >
             まだホームにMEORAがいません
           </span>
-          <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', letterSpacing: '0.04em', lineHeight: 1.7 }}>
+          <span style={{ fontSize: 13, color: 'rgba(0,0,0,0.35)', letterSpacing: '0.04em', lineHeight: 1.7 }}>
             下からMEORAを作る / 探すと、ここを歩きはじめます
           </span>
         </div>
@@ -495,7 +481,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
                   border: '2px solid #111',
                   boxShadow: '2px 2px 0 #111',
                   padding: '4px 8px',
-                  fontSize: 11,
+                  fontSize: 13,
                   fontWeight: 700,
                   color: '#111',
                   whiteSpace: 'nowrap',

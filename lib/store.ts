@@ -182,10 +182,19 @@ export type AcquirableCharacter = {
 // マーケットのMEORAを state.characters に追加する（=入手）。
 // すでに同じ id を持つMEORAがいれば重複追加せず、そのまま state を返す（重複入手防止）。
 // 追加されるMEORAは userCreated:false / sellable:false。hp 等は自作MEORAと同じデフォルト。
+// photoUrl が設定されている場合、idle / walkRight スプライトとして自動マッピングする。
+// walkLeft は設定せず、CharacterYard が walkRight を CSS 反転して使う。
 export function acquireCharacter(state: AppState, marketChar: AcquirableCharacter): AppState {
   if (state.characters.some((c) => c.id === marketChar.id)) {
     return state;
   }
+  // photoUrl があればスプライト配列を自動生成
+  const sprites: Sprite[] = marketChar.photoUrl
+    ? [
+        { type: 'idle', dataUrl: marketChar.photoUrl },
+        { type: 'walkRight', dataUrl: marketChar.photoUrl },
+      ]
+    : [];
   const newChar: Character = {
     id: marketChar.id,
     name: marketChar.name,
@@ -198,6 +207,7 @@ export function acquireCharacter(state: AppState, marketChar: AcquirableCharacte
     personality: marketChar.personality,
     category: marketChar.category,
     photo: marketChar.photoUrl,
+    sprites: sprites.length > 0 ? sprites : undefined,
     userCreated: false,
     sellable: false,
   };

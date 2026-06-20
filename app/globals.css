@@ -20,7 +20,7 @@
 
 body {
   font-family: var(--font-body);
-  font-size: 18px;
+  font-size: 20px;
   background-color: var(--bg);
   background-image:
     linear-gradient(var(--grid-color) 1px, transparent 1px),
@@ -45,7 +45,7 @@ body {
   border: 2px solid #111;
   box-shadow: 4px 4px 0 #555;
   padding: 14px 20px;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 800;
   cursor: pointer;
   transition: transform 0.05s, box-shadow 0.05s;

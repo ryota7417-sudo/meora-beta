@@ -95,26 +95,25 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = buildSystemPrompt({ name, personality, userName });
 
-    // OpenAI の messages 形式に整形:
+    // OpenAI Responses API の input 形式に整形:
     // system(安全ブロック+MEORA設定) + これまでの会話履歴 + 最新ユーザー発話。
-    const chatMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-      { role: 'system', content: systemPrompt },
+    const chatMessages = [
+      { role: 'system' as const, content: systemPrompt },
       ...(messages as IncomingMessage[]).map((m) => ({
         role: m.role === 'assistant' ? ('assistant' as const) : ('user' as const),
         content: m.content,
       })),
     ];
 
-    // gpt-5系の仕様に合わせる:
-    // - max_tokens ではなく max_completion_tokens を使う
-    // - temperature 等のサンプリングパラメータは送らない（非対応、デフォルトに任せる）
-    const response = await client.chat.completions.create({
+    // Responses API を使用: web_search_preview を有効化
+    const response = await client.responses.create({
       model: 'gpt-5.4-mini',
-      max_completion_tokens: 300,
-      messages: chatMessages,
+      max_output_tokens: 300,
+      tools: [{ type: 'web_search_preview' }],
+      input: chatMessages,
     });
 
-    const text = response.choices[0]?.message?.content ?? '';
+    const text = response.output_text ?? '';
 
     // アプリ側ガードレール:
     // 直近のユーザー発話に危機ワードが含まれていたら、モデル出力とは別に
