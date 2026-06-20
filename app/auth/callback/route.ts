@@ -6,12 +6,8 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const { searchParams } = url;
   const code = searchParams.get('code');
+  const next = searchParams.get('next');
 
-  // リダイレクト先のオリジンは request.url から作らない。
-  // dev サーバーを --hostname 0.0.0.0 で起動していると new URL(request.url).origin が
-  // "http://0.0.0.0:3000" を返し、ブラウザ(localhost)とは別ドメインになるため
-  // localhost ドメインに保存したセッション cookie が読めずログインがループする。
-  // ブラウザが実際に送ってきた Host(x-forwarded-host 優先)からオリジンを組み立てる。
   const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? url.host;
   const proto = request.headers.get('x-forwarded-proto') ?? url.protocol.replace(':', '');
   const origin = `${proto}://${host}`;
@@ -33,6 +29,10 @@ export async function GET(request: NextRequest) {
       }
     );
     await supabase.auth.exchangeCodeForSession(code);
+  }
+
+  if (next === 'reset-password') {
+    return NextResponse.redirect(`${origin}/reset-password`);
   }
   return NextResponse.redirect(`${origin}/onboarding`);
 }

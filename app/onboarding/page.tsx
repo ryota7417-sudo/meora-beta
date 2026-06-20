@@ -400,7 +400,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     setError('');
     setLoading(true);
     const supabase = createClient();
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
@@ -408,6 +408,8 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     setLoading(false);
     if (signUpError) {
       setError(signUpError.message);
+    } else if (data.user?.identities?.length === 0) {
+      setError('このメールアドレスはすでに登録されています。ログインしてください。');
     } else {
       setEmailSent(true);
     }
@@ -473,7 +475,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     setLoading(true);
     const supabase = createClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/auth/callback',
+      redirectTo: window.location.origin + '/auth/callback?next=reset-password',
     });
     setLoading(false);
     if (resetError) {
@@ -557,7 +559,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
             disabled={loading}
             style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '14px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, fontFamily: 'inherit', marginBottom: 20 }}
           >
-            {loading ? t.processing : 'メールを確認しました。進む →'}
+            {loading ? t.processing : 'メールを確認しました'}
           </button>
 
           {showEmailChange ? (
