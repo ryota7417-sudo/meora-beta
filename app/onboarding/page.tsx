@@ -409,8 +409,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     if (signUpError) {
       setError(signUpError.message);
     } else {
-      localStorage.setItem('meora-onboarding-step', '3');
-      onNext();
+      setEmailSent(true);
     }
   };
 
