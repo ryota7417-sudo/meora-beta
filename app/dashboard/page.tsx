@@ -151,9 +151,14 @@ export default function DashboardPage() {
         zIndex: 100,
         borderBottom: '2px solid #111',
       }}>
-        <span style={{ color: '#f7f5f0', fontSize: 13, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'var(--font-display)' }}>
-          MEORA
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: '#f7f5f0', fontSize: 13, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: 'var(--font-display)' }}>
+            MEORA
+          </span>
+          <span style={{ background: '#f5a623', color: '#111', fontSize: 10, fontWeight: 800, padding: '2px 7px', border: '1.5px solid #111', boxShadow: '2px 2px 0 #f7f5f0', letterSpacing: '0.05em' }}>
+            BETA
+          </span>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
             onClick={() => {
@@ -211,9 +216,6 @@ export default function DashboardPage() {
               }} />
             )}
           </button>
-          <span style={{ background: '#f5a623', color: '#111', fontSize: 10, fontWeight: 800, padding: '2px 7px', border: '1.5px solid #111', boxShadow: '2px 2px 0 #f7f5f0', letterSpacing: '0.05em' }}>
-            BETA
-          </span>
         </div>
       </header>
 
