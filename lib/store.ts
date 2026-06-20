@@ -148,6 +148,18 @@ export function mealCountdownLabel(now: Date = new Date()): string {
   return `お食事到着まであと ${hours}時間 ${minutes}分`;
 }
 
+export function removeCharacter(state: AppState, characterId: string): AppState {
+  return {
+    ...state,
+    characters: state.characters.filter(c => c.id !== characterId),
+  };
+}
+
+export function deleteChatHistory(characterId: string) {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(`meora-chat-${characterId}`);
+}
+
 export function consumeHp(state: AppState, characterId: string, amount: number): AppState {
   return {
     ...state,

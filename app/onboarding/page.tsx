@@ -376,6 +376,11 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [authMode, setAuthMode] = useState<'signup' | 'login' | 'recovery' | 'reset'>('signup');
+  const [showEmailChange, setShowEmailChange] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [resetSent, setResetSent] = useState(false);
 
   const handleGoogleLogin = async () => {
     setError('');
@@ -408,6 +413,76 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     }
   };
 
+  const handleVerifyAndProceed = async () => {
+    setError('');
+    setLoading(true);
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user?.email_confirmed_at) {
+      onNext();
+    } else {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setError('メールの確認が完了していません。メール内のリンクをクリックしてから、もう一度お試しください。');
+      } else if (data.user?.email_confirmed_at) {
+        onNext();
+      } else {
+        setError('メールの確認が完了していません。メール内のリンクをクリックしてから、もう一度お試しください。');
+      }
+    }
+    setLoading(false);
+  };
+
+  const handleResendWithNewEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    const supabase = createClient();
+    const { error: signUpError } = await supabase.auth.signUp({
+      email: newEmail,
+      password,
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    });
+    setLoading(false);
+    if (signUpError) {
+      setError(signUpError.message);
+    } else {
+      setEmail(newEmail);
+      setShowEmailChange(false);
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    const supabase = createClient();
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (signInError) {
+      setError('メールアドレスまたはパスワードが違います。');
+    } else {
+      localStorage.setItem('meora-onboarding-step', '3');
+      onNext();
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    const supabase = createClient();
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/auth/callback',
+    });
+    setLoading(false);
+    if (resetError) {
+      setError(resetError.message);
+    } else {
+      setResetSent(true);
+    }
+  };
+
   const light = {
     backgroundColor: '#f8f8f4',
     backgroundImage: 'linear-gradient(rgba(0,0,0,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.06) 1px, transparent 1px)',
@@ -419,6 +494,32 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     padding: '24px 16px 48px',
   } as const;
 
+  const passwordField = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>{t.passwordLabel}</label>
+      <div style={{ position: 'relative' }}>
+        <input
+          type={showPassword ? 'text' : 'password'}
+          placeholder={t.passwordPlaceholder}
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+          minLength={8}
+          style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 60px 12px 14px', fontSize: 15, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', padding: '4px 8px', fontSize: 12, fontWeight: 700, color: '#888', cursor: 'pointer', fontFamily: 'inherit' }}
+        >
+          {showPassword ? '非表示' : '表示'}
+        </button>
+      </div>
+      <span style={{ fontSize: 11, color: '#999', letterSpacing: '0.02em', marginTop: 2 }}>{t.passwordHint}</span>
+    </div>
+  );
+
+  // --- メール確認画面 ---
   if (emailSent) {
     return (
       <div style={light}>
@@ -445,17 +546,242 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
             </div>
           </div>
 
+          {error && (
+            <div style={{ background: '#fff0f0', border: '2px solid #cc2222', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#cc2222', letterSpacing: '0.02em', lineHeight: 1.5 }}>
+              {error}
+            </div>
+          )}
+
           <button
-            onClick={onNext}
-            style={{ width: '100%', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #555', padding: '14px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.06em', cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
+            onClick={handleVerifyAndProceed}
+            disabled={loading}
+            style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '14px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, fontFamily: 'inherit', marginBottom: 20 }}
           >
-            次へ進む →
+            {loading ? t.processing : 'メールを確認しました。進む →'}
           </button>
+
+          {showEmailChange ? (
+            <form onSubmit={handleResendWithNewEmail} style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>新しいメールアドレス</label>
+              <input
+                type="email"
+                value={newEmail}
+                onChange={e => setNewEmail(e.target.value)}
+                required
+                placeholder="new@example.com"
+                style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 15, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '12px 20px', fontSize: 14, fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
+              >
+                確認メールを再送信
+              </button>
+            </form>
+          ) : (
+            <div style={{ textAlign: 'center' }}>
+              <button
+                onClick={() => setShowEmailChange(true)}
+                style={{ textDecoration: 'underline', textUnderlineOffset: 3, color: '#888', fontSize: 12, cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}
+              >
+                メールアドレスが違う場合はこちら
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
+  // --- アカウント復旧画面 ---
+  if (authMode === 'recovery') {
+    return (
+      <div style={light}>
+        <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 0 12px', marginBottom: 20, borderBottom: '2px solid #111' }}>
+            <div><button onClick={() => setAuthMode('signup')} style={{ fontSize: 12, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>← 戻る</button></div>
+            <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>アカウントの復旧</div>
+            <div />
+          </div>
+
+          <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '28px 20px', marginBottom: 16 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#111', marginBottom: 8 }}>パスワードを忘れた方</div>
+            <div style={{ fontSize: 13, color: '#666', lineHeight: 1.7, marginBottom: 16 }}>
+              登録時のメールアドレスを覚えている場合は、パスワードをリセットできます。
+            </div>
+            <button onClick={() => setAuthMode('reset')} style={{ width: '100%', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #555', padding: '12px 20px', fontSize: 15, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}>
+              パスワードをリセット →
+            </button>
+          </div>
+
+          <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '28px 20px' }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#111', marginBottom: 8 }}>メールアドレスも忘れた方</div>
+            <div style={{ fontSize: 13, color: '#666', lineHeight: 1.7, marginBottom: 16 }}>
+              メールアドレスも忘れてしまった場合は、新しいアカウントを作成してください。
+            </div>
+            <button onClick={() => setAuthMode('signup')} style={{ width: '100%', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '12px 20px', fontSize: 15, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}>
+              新しいアカウントを作成 →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- パスワードリセット画面 ---
+  if (authMode === 'reset') {
+    return (
+      <div style={light}>
+        <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 0 12px', marginBottom: 20, borderBottom: '2px solid #111' }}>
+            <div><button onClick={() => { setAuthMode('recovery'); setResetSent(false); setError(''); }} style={{ fontSize: 12, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>← 戻る</button></div>
+            <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>パスワードリセット</div>
+            <div />
+          </div>
+
+          {error && (
+            <div style={{ background: '#fff0f0', border: '2px solid #cc2222', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#cc2222', letterSpacing: '0.02em', lineHeight: 1.5 }}>
+              {error}
+            </div>
+          )}
+
+          {resetSent ? (
+            <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '28px 20px', textAlign: 'center' }}>
+              <div style={{ fontSize: 40, marginBottom: 16 }}>✉️</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: '#111', marginBottom: 16, lineHeight: 1.6 }}>
+                パスワードリセットメールを送信しました
+              </div>
+              <div style={{ fontSize: 14, color: '#555', lineHeight: 1.8, marginBottom: 20 }}>
+                <span style={{ fontWeight: 700, color: '#111' }}>{email}</span> 宛に
+                <br />パスワードリセットメールを送信しました。
+                <br />メール内のリンクからパスワードを
+                <br />再設定してください。
+              </div>
+              <button
+                onClick={() => { setAuthMode('login'); setResetSent(false); setError(''); }}
+                style={{ width: '100%', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #555', padding: '12px 20px', fontSize: 15, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit', marginTop: 8 }}
+              >
+                ログインに戻る
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ fontSize: 13, color: '#666', lineHeight: 1.7, marginBottom: 4 }}>
+                  登録時のメールアドレスを入力してください。パスワードリセット用のメールを送信します。
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>{t.emailLabel}</label>
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 15, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '14px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, marginTop: 4, fontFamily: 'inherit' }}
+                >
+                  {loading ? t.processing : 'リセットメールを送信'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // --- ログイン画面 ---
+  if (authMode === 'login') {
+    return (
+      <div style={light}>
+        <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column' }}>
+
+          {/* ヘッダー */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', padding: '14px 0 12px', marginBottom: 20, borderBottom: '2px solid #111' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <button onClick={() => { setAuthMode('signup'); setError(''); }} style={{ fontSize: 12, fontWeight: 600, color: '#111', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                ← 戻る
+              </button>
+            </div>
+            <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '0.04em', textAlign: 'center', whiteSpace: 'nowrap' }}>ログイン</div>
+            <div />
+          </div>
+
+          {/* エラーメッセージ */}
+          {error && (
+            <div style={{ background: '#fff0f0', border: '2px solid #cc2222', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#cc2222', letterSpacing: '0.02em', lineHeight: 1.5 }}>
+              {error}
+            </div>
+          )}
+
+          {/* Google ログインボタン */}
+          <button onClick={handleGoogleLogin} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, width: '100%', background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '14px 20px', fontSize: 15, fontWeight: 700, color: '#111', letterSpacing: '0.03em', cursor: 'pointer', borderRadius: 0, marginBottom: 20 }}>
+            <svg style={{ width: 22, height: 22, flexShrink: 0 }} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            <span>{t.googleLogin}</span>
+          </button>
+
+          {/* OR 区切り */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, color: '#999', fontSize: 12, letterSpacing: '0.08em' }}>
+            <div style={{ flex: 1, height: 1, background: '#bbb' }}/>
+            <span>{t.orDivider}</span>
+            <div style={{ flex: 1, height: 1, background: '#bbb' }}/>
+          </div>
+
+          {/* ログインフォーム */}
+          <form style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 8 }} onSubmit={handleLogin}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>{t.emailLabel}</label>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 15, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
+              />
+            </div>
+            {passwordField}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{ width: '100%', background: loading ? '#555' : '#111', color: '#fff', border: '2px solid #111', boxShadow: loading ? 'none' : '4px 4px 0 #555', padding: '14px 20px', fontSize: 16, fontWeight: 800, letterSpacing: '0.06em', cursor: loading ? 'not-allowed' : 'pointer', borderRadius: 0, marginTop: 8, fontFamily: 'inherit' }}
+            >
+              {loading ? t.processing : 'ログイン'}
+            </button>
+          </form>
+
+          {/* アカウント作成リンク + パスワード忘れ */}
+          <div style={{ borderTop: '1px solid #ddd', marginTop: 28, paddingTop: 20, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+            <div style={{ fontSize: 13, color: '#666', letterSpacing: '0.02em' }}>
+              アカウントをお持ちでない方は
+              <button onClick={() => { setAuthMode('signup'); setError(''); }} style={{ color: '#111', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', background: 'none', border: 'none', fontSize: 13, fontFamily: 'inherit' }}>
+                アカウント作成
+              </button>
+            </div>
+            <button onClick={() => { setAuthMode('reset'); setError(''); }} style={{ color: '#888', fontSize: 12, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}>
+              パスワードを忘れた方はこちら
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- サインアップ画面 (authMode === 'signup') ---
   return (
     <div style={light}>
       <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column' }}>
@@ -471,13 +797,6 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <span style={{ fontSize: 11, fontWeight: 700, background: '#111', color: '#fff', padding: '3px 8px', letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>{t.step1of2}</span>
           </div>
-        </div>
-
-        {/* プログレスドット */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, padding: '16px 0 28px' }}>
-          {[true, false].map((active, i) => (
-            <div key={i} style={{ width: 8, height: 8, border: '2px solid #111', background: active ? '#111' : 'transparent' }}/>
-          ))}
         </div>
 
         {/* エラーメッセージ */}
@@ -519,19 +838,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
               style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 15, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
             />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', color: '#111', textTransform: 'uppercase' }}>{t.passwordLabel}</label>
-            <input
-              type="password"
-              placeholder={t.passwordPlaceholder}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              minLength={8}
-              style={{ width: '100%', border: '2px solid #111', background: '#fff', padding: '12px 14px', fontSize: 15, color: '#111', outline: 'none', borderRadius: 0, fontFamily: 'inherit' }}
-            />
-            <span style={{ fontSize: 11, color: '#999', letterSpacing: '0.02em', marginTop: 2 }}>{t.passwordHint}</span>
-          </div>
+          {passwordField}
           <button
             type="submit"
             disabled={loading}
@@ -546,9 +853,17 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
           {t.termsPrefix}<a href="#" style={{ color: '#555', textDecoration: 'underline' }}>{t.termsOfService}</a>{t.termsMiddle}<a href="#" style={{ color: '#555', textDecoration: 'underline' }}>{t.privacyPolicy}</a>{t.termsSuffix}
         </p>
 
-        {/* ログインリンク */}
-        <div style={{ borderTop: '1px solid #ddd', marginTop: 28, paddingTop: 20, textAlign: 'center', fontSize: 13, color: '#666', letterSpacing: '0.02em' }}>
-          {t.haveAccountPrefix}<span style={{ color: '#111', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer' }}>{t.login}</span>
+        {/* ログインリンク + アカウント復旧 */}
+        <div style={{ borderTop: '1px solid #ddd', marginTop: 28, paddingTop: 20, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+          <div style={{ fontSize: 13, color: '#666', letterSpacing: '0.02em' }}>
+            {t.haveAccountPrefix}
+            <button onClick={() => { setAuthMode('login'); setError(''); }} style={{ color: '#111', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', background: 'none', border: 'none', fontSize: 13, fontFamily: 'inherit' }}>
+              {t.login}
+            </button>
+          </div>
+          <button onClick={() => { setAuthMode('recovery'); setError(''); }} style={{ color: '#888', fontSize: 12, textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}>
+            メールアドレス・パスワードを忘れた方はこちら
+          </button>
         </div>
       </div>
     </div>

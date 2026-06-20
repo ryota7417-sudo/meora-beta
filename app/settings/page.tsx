@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { CharAvatar } from '@/components/ui/CharacterSvg';
-import { loadState, AppState, Character } from '@/lib/store';
+import { loadState, saveState, removeCharacter, deleteChatHistory, AppState, Character } from '@/lib/store';
 import { createClient } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 
@@ -31,7 +31,7 @@ export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [purchasesLoading, setPurchasesLoading] = useState(true);
-  const [state] = useState<AppState | null>(() => loadState());
+  const [state, setLocalState] = useState<AppState | null>(() => loadState());
 
   useEffect(() => {
     const supabase = createClient();
@@ -60,6 +60,15 @@ export default function SettingsPage() {
     }
     localStorage.clear();
     router.replace('/onboarding');
+  };
+
+  const handleDeleteCharacter = (charId: string, charName: string) => {
+    if (!state) return;
+    if (!confirm(`${charName} を削除しますか？この操作は取り消せません。`)) return;
+    const newState = removeCharacter(state, charId);
+    saveState(newState);
+    deleteChatHistory(charId);
+    setLocalState(newState);
   };
 
   const editable: Character[] = state
@@ -103,6 +112,12 @@ export default function SettingsPage() {
                     <CharAvatar photo={char.photo} name={char.name} size={36} />
                   </div>
                   <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{char.name}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDeleteCharacter(char.id, char.name); }}
+                    style={{ flexShrink: 0, fontSize: 12, fontWeight: 800, background: '#fff', color: '#e53935', border: '2px solid #e53935', boxShadow: '2px 2px 0 #e53935', padding: '3px 8px', cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
+                  >
+                    削除
+                  </button>
                   <span style={{ flexShrink: 0, fontSize: 12, fontWeight: 800, color: '#111', background: '#f7f5f0', border: '2px solid #111', padding: '3px 8px' }}>編集 →</span>
                 </div>
               ))}
