@@ -475,7 +475,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     setLoading(true);
     const supabase = createClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/auth/callback?next=reset-password',
+      redirectTo: window.location.origin + '/auth/reset-callback',
     });
     setLoading(false);
     if (resetError) {
