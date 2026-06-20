@@ -12,6 +12,17 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
+  const translateAuthError = (msg: string): string => {
+    if (msg.match(/you can only request this after (\d+) seconds/i)) {
+      const sec = msg.match(/after (\d+) seconds/i)?.[1] ?? '30';
+      return `セキュリティのため、${sec}秒後にもう一度お試しください。`;
+    }
+    if (msg.match(/new password should be different/i)) return '新しいパスワードは以前と異なるものを設定してください。';
+    if (msg.match(/password should be at least/i)) return 'パスワードは8文字以上で入力してください。';
+    if (msg.match(/auth session missing/i)) return 'セッションが切れました。もう一度リセットメールのリンクをクリックしてください。';
+    return msg;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -28,7 +39,7 @@ export default function ResetPasswordPage() {
     const { error: updateError } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (updateError) {
-      setError(updateError.message);
+      setError(translateAuthError(updateError.message));
     } else {
       setDone(true);
     }

@@ -382,6 +382,23 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
   const [newEmail, setNewEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);
 
+  const translateAuthError = (msg: string): string => {
+    if (msg.match(/you can only request this after (\d+) seconds/i)) {
+      const sec = msg.match(/after (\d+) seconds/i)?.[1] ?? '30';
+      return `セキュリティのため、${sec}秒後にもう一度お試しください。`;
+    }
+    if (msg.match(/email rate limit exceeded/i)) return 'メール送信の上限に達しました。しばらく待ってからお試しください。';
+    if (msg.match(/user already registered/i)) return 'このメールアドレスはすでに登録されています。';
+    if (msg.match(/invalid login credentials/i)) return 'メールアドレスまたはパスワードが違います。';
+    if (msg.match(/email not confirmed/i)) return 'メールアドレスが確認されていません。確認メールのリンクをクリックしてください。';
+    if (msg.match(/password should be at least/i)) return 'パスワードは8文字以上で入力してください。';
+    if (msg.match(/unable to validate email/i)) return 'メールアドレスの形式が正しくありません。';
+    if (msg.match(/signup requires a valid password/i)) return 'パスワードを入力してください。';
+    if (msg.match(/new password should be different/i)) return '新しいパスワードは以前と異なるものを設定してください。';
+    if (msg.match(/auth session missing/i)) return 'セッションが切れました。もう一度リセットメールのリンクをクリックしてください。';
+    return msg;
+  };
+
   const handleGoogleLogin = async () => {
     setError('');
     // OAuth後に戻ってきたときstep 3（自分のMEORA作成）から再開できるよう先に保存
@@ -407,7 +424,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     });
     setLoading(false);
     if (signUpError) {
-      setError(signUpError.message);
+      setError(translateAuthError(signUpError.message));
     } else if (data.user?.identities?.length === 0) {
       setError('このメールアドレスはすでに登録されています。ログインしてください。');
     } else {
@@ -447,7 +464,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     });
     setLoading(false);
     if (signUpError) {
-      setError(signUpError.message);
+      setError(translateAuthError(signUpError.message));
     } else {
       setEmail(newEmail);
       setShowEmailChange(false);
@@ -479,7 +496,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     });
     setLoading(false);
     if (resetError) {
-      setError(resetError.message);
+      setError(translateAuthError(resetError.message));
     } else {
       setResetSent(true);
     }
