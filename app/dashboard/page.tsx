@@ -298,20 +298,22 @@ export default function DashboardPage() {
               );
             })}
 
-            {/* ＋ 自分のMEORAを作る */}
-            <div
-              style={{ display: 'flex', alignItems: 'center', padding: '12px 12px', gap: 11, cursor: 'pointer', background: '#f7f5f0', borderBottom: '1px solid #ddd' }}
-              onClick={() => router.push('/character/new')}
-            >
-              <div style={{ width: 44, height: 44, border: '2px dashed #111', flexShrink: 0, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <line x1="11" y1="4" x2="11" y2="18" stroke="#111" strokeWidth="2.4" strokeLinecap="round"/>
-                  <line x1="4" y1="11" x2="18" y2="11" stroke="#111" strokeWidth="2.4" strokeLinecap="round"/>
-                </svg>
+            {/* ＋ 自分のMEORAを作る（自作MEORAが無い場合のみ表示） */}
+            {!state.characters.some(c => c.userCreated) && (
+              <div
+                style={{ display: 'flex', alignItems: 'center', padding: '12px 12px', gap: 11, cursor: 'pointer', background: '#f7f5f0', borderBottom: '1px solid #ddd' }}
+                onClick={() => router.push('/character/new')}
+              >
+                <div style={{ width: 44, height: 44, border: '2px dashed #111', flexShrink: 0, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="11" y1="4" x2="11" y2="18" stroke="#111" strokeWidth="2.4" strokeLinecap="round"/>
+                    <line x1="4" y1="11" x2="18" y2="11" stroke="#111" strokeWidth="2.4" strokeLinecap="round"/>
+                  </svg>
+                </div>
+                <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.02em' }}>自分のMEORAを作る</span>
+                <span style={{ flexShrink: 0, color: '#bbb', fontSize: 18, fontWeight: 800, lineHeight: 1 }}>›</span>
               </div>
-              <span style={{ flex: 1, fontSize: 14, fontWeight: 800, color: '#111', letterSpacing: '0.02em' }}>自分のMEORAを作る</span>
-              <span style={{ flexShrink: 0, color: '#bbb', fontSize: 18, fontWeight: 800, lineHeight: 1 }}>›</span>
-            </div>
+            )}
 
             {/* ＋ MEORAを探す（クリエイターマーケットへ） */}
             <div

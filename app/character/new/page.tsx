@@ -48,6 +48,22 @@ function resizeImageToDataUrl(file: File, maxSize = 512): Promise<string> {
 
 export default function CharacterNewPage() {
   const router = useRouter();
+
+  const existingState = loadState();
+  if (existingState.characters.some(c => c.userCreated)) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f5f0', padding: 24 }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#111', marginBottom: 12 }}>自分のMEORAはすでに作成済みです</div>
+          <div style={{ fontSize: 13, color: '#888', marginBottom: 20 }}>設定画面から編集できます。</div>
+          <button onClick={() => router.replace('/dashboard')} style={{ background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #555', padding: '12px 24px', fontSize: 14, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}>
+            ホームに戻る
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const [name, setName] = useState('');
   const [spriteMap, setSpriteMap] = useState<Partial<Record<SpriteType, string>>>({});
   const [personality, setPersonality] = useState('');
