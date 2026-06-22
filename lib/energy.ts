@@ -67,7 +67,7 @@ export const ENERGY_CONFIG = {
   plans: {
     free: { id: 'free', label: '無料プラン', priceYen: 0, dailyMeals: ['onigiri'] },
     light: { id: 'light', label: 'ライトプラン', priceYen: 480, dailyMeals: ['onigiri', 'sandwich'] },
-    standard: { id: 'standard', label: 'スタンダードプラン', priceYen: 1480, dailyMeals: ['onigiri', 'sandwich', 'nikujaga'] },
+    standard: { id: 'standard', label: 'スタンダードプラン', priceYen: 980, dailyMeals: ['onigiri', 'sandwich', 'nikujaga'] },
   } as Record<PlanId, { id: PlanId; label: string; priceYen: number; dailyMeals: MealKey[] }>,
 
   // スポット購入できる食事（毎日配布とは別枠・失効しない）
