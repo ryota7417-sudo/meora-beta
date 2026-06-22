@@ -55,8 +55,8 @@ export const ENERGY_CONFIG = {
 
   // 食事アイテム（hp: 内部回復量 / meterRecovery: 見た目のメーター回復目盛り）
   meals: {
-    // おにぎりの回復量は会話量を増やすため10倍（1→10）。主に無料プランの1日あたり会話量が増える。
-    onigiri: { hp: 10, meterRecovery: 1, label: 'おにぎり' },
+    // おにぎりの回復量は会話量を増やすため5倍（1→5）。無料プランは1日5HP＝月のAPI原価上限を約¥50に抑える。
+    onigiri: { hp: 5, meterRecovery: 1, label: 'おにぎり' },
     sandwich: { hp: 11, meterRecovery: 2, label: 'サンドイッチ' },
     nikujaga: { hp: 18, meterRecovery: 3, label: '肉じゃが定食' },
     omurice: { hp: 150, meterRecovery: 3, label: 'オムライス' },
