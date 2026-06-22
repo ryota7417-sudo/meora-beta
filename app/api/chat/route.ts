@@ -130,7 +130,16 @@ export async function POST(req: NextRequest) {
     const crisisNotice = isCrisis ? CRISIS_NOTICE : null;
     const finalText = crisisNotice ? `${text}\n\n${crisisNotice}` : text;
 
-    return Response.json({ text: finalText, crisisNotice });
+    // 満腹度（HP）の従量消費に使うため、トークン usage をそのまま返す。
+    // Responses API は usage.input_tokens / output_tokens を返す。
+    const usage = response.usage
+      ? {
+          input_tokens: response.usage.input_tokens,
+          output_tokens: response.usage.output_tokens,
+        }
+      : null;
+
+    return Response.json({ text: finalText, crisisNotice, usage });
   } catch (error) {
     console.error('API chat error:', error);
     return Response.json({ error: 'Internal server error' }, { status: 500 });

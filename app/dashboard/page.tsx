@@ -1,7 +1,23 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { loadState, AppState, loadChatHistory, loadInventory, saveInventory, addItem, consumeItem, canClaimDailyOnigiri, markDailyOnigiriClaimed, saveState, Item } from '@/lib/store';
+import { loadState, AppState, loadChatHistory } from '@/lib/store';
+import {
+  Energy,
+  loadEnergy,
+  saveEnergy,
+  refreshEnergy,
+  purchaseSpot,
+  changePlan,
+  getMeterLevel,
+  getMeterStatusText,
+  getDailyMeals,
+  getPlan,
+  ENERGY_CONFIG,
+  PlanId,
+  SpotKey,
+  MealKey,
+} from '@/lib/energy';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { CharAvatar } from '@/components/ui/CharacterSvg';
 import { CharacterYard } from '@/components/ui/CharacterYard';
@@ -13,6 +29,45 @@ type ChatPreview = {
   text: string;   // 最後のメッセージ本文（無ければ空文字）
   ts: number;     // 最後のメッセージの timestamp（無ければ 0）
 };
+
+// モノクロSVGのお食事アイコン（色付き絵文字は使わない）
+function MealIcon({ mealKey }: { mealKey: MealKey }) {
+  const common = { width: 22, height: 22, fill: 'none', stroke: '#111', strokeWidth: 2 } as const;
+  switch (mealKey) {
+    case 'onigiri':
+      return <svg viewBox="0 0 24 24" {...common} strokeLinejoin="round"><path d="M12 4 4 19h16L12 4Z"/><rect x="9" y="13" width="6" height="5" fill="#111" stroke="none"/></svg>;
+    case 'sandwich':
+      return <svg viewBox="0 0 24 24" {...common} strokeLinejoin="round"><path d="M4 18 12 6l8 12H4Z"/><path d="M7 18h10"/></svg>;
+    case 'nikujaga':
+      return <svg viewBox="0 0 24 24" {...common}><path d="M4 13a8 4 0 0 0 16 0"/><path d="M4 13a8 4 0 0 1 16 0"/><path d="M6 17h12"/></svg>;
+    case 'omurice':
+      return <svg viewBox="0 0 24 24" {...common}><ellipse cx="12" cy="13" rx="9" ry="5"/><path d="M7 11c2-2 8-2 10 0"/></svg>;
+    case 'sushi':
+      return <svg viewBox="0 0 24 24" {...common}><rect x="4" y="9" width="16" height="7" rx="2"/><path d="M4 12h16"/></svg>;
+  }
+}
+
+// 携帯バッテリー風の満腹メーター（数値は表示しない）。
+function SatietyMeter({ energy, dark = false }: { energy: Energy; dark?: boolean }) {
+  const level = getMeterLevel(energy);
+  const border = dark ? '#fff' : '#111';
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+      <span style={{ display: 'inline-flex', gap: 3, padding: 3, border: `2px solid ${border}` }}>
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            style={{
+              width: 12, height: 14, border: `1px solid ${border}`,
+              background: i < level ? (level === 1 ? '#ffcf59' : '#e8568a') : 'transparent',
+            }}
+          />
+        ))}
+      </span>
+      <span style={{ width: 4, height: 11, marginLeft: 2, background: border }} />
+    </span>
+  );
+}
 
 // 時刻の簡易表記。
 // 当日: HH:MM / 前日: 昨日 / 同週(2〜6日前): 曜日 / それ以前: M/D
@@ -41,41 +96,35 @@ export default function DashboardPage() {
   const router = useRouter();
   const [state, setState] = useState<AppState | null>(null);
   const [previews, setPreviews] = useState<Record<string, ChatPreview>>({});
-  const [inventory, setInventory] = useState<Item[]>([]);
-  const [showInventory, setShowInventory] = useState(false);
-  const [dailyClaimed, setDailyClaimed] = useState(false);
-  const [feedTarget, setFeedTarget] = useState<string | null>(null);
-  const [feedMessage, setFeedMessage] = useState('');
-  const [overflowWarning, setOverflowWarning] = useState<{ itemId: string; charId: string } | null>(null);
+  const [energy, setEnergy] = useState<Energy | null>(null);
+  const [showKitchen, setShowKitchen] = useState(false);
+  const [toast, setToast] = useState('');
 
-  const doFeed = (itemId: string, charId: string) => {
-    if (!state) return;
-    const item = inventory.find(i => i.id === itemId);
-    if (!item) return;
-    const char = state.characters.find(c => c.id === charId);
-    if (!char) return;
-    const newInv = consumeItem(inventory, itemId);
-    saveInventory(newInv);
-    setInventory(newInv);
-    const newState = {
-      ...state,
-      characters: state.characters.map(c =>
-        c.id === charId ? { ...c, hp: Math.min(c.maxHp, c.hp + item.effect) } : c
-      ),
-    };
-    saveState(newState);
-    setState(newState);
-    setFeedTarget(null);
-    setOverflowWarning(null);
-    setFeedMessage(`${char.name}に${item.name}をあげました！`);
-    setTimeout(() => setFeedMessage(''), 3000);
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 3000);
+  };
+
+  const doPurchaseSpot = (spotKey: SpotKey) => {
+    const next = refreshEnergy(loadEnergy());
+    const res = purchaseSpot(next, spotKey);
+    if (!res) return;
+    saveEnergy(next);
+    setEnergy({ ...next });
+    showToast(`${ENERGY_CONFIG.meals[ENERGY_CONFIG.spotItems[spotKey].mealKey].label}を購入しました！（仮）`);
+  };
+
+  const doChangePlan = (planId: PlanId) => {
+    const next = changePlan(refreshEnergy(loadEnergy()), planId);
+    saveEnergy(next);
+    setEnergy({ ...next });
+    showToast(`${getPlan(planId).label}に変更しました（仮）`);
   };
 
   useEffect(() => {
     const supabase = createClient();
 
     // 認証解決は「肯定(session あり)は速攻採用 / 否定(null)は猶予と再確認の後に採用」。
-    // ログイン直後の一瞬の session=null による /onboarding への誤バウンスを防ぐ。
     const { promise, cancel } = resolveAuth(supabase, { graceMs: 1500 });
 
     let active = true;
@@ -83,8 +132,6 @@ export default function DashboardPage() {
       if (!active) return;
 
       if (!loggedIn) {
-        // 未ログイン確定時のみオンボーディングへ。
-        // オンボーディング完了済みの場合はstep 2（アカウント作成）から再開。
         const savedState = loadState();
         if (savedState.onboardingDone) {
           localStorage.setItem('meora-onboarding-step', '2');
@@ -93,13 +140,11 @@ export default function DashboardPage() {
         return;
       }
 
-      // ここからはログイン済み確定。
       const s = loadState();
       if (!s.onboardingDone) {
         router.replace('/onboarding');
         return;
       }
-      // 各MEORAのトーク履歴から最後のメッセージ・時刻を集計
       const map: Record<string, ChatPreview> = {};
       s.characters.forEach(c => {
         const history = loadChatHistory(c.id);
@@ -110,8 +155,10 @@ export default function DashboardPage() {
       });
       setPreviews(map);
       setState(s);
-      setInventory(loadInventory());
-      setDailyClaimed(!canClaimDailyOnigiri());
+      // 満腹度を最新化（毎朝5時の食事配布・24h失効を自動反映）して保存。
+      const e = refreshEnergy(loadEnergy());
+      saveEnergy(e);
+      setEnergy(e);
     });
 
     return () => {
@@ -120,13 +167,22 @@ export default function DashboardPage() {
     };
   }, [router]);
 
-  if (!state) {
+  if (!state || !energy) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f5f0' }}>
         <span style={{ fontSize: 16, color: '#888' }}>読み込み中...</span>
       </div>
     );
   }
+
+  const plan = getPlan(energy.plan);
+  const dailyMeals = getDailyMeals(energy.plan);
+  const spotEntries = (Object.keys(ENERGY_CONFIG.spotItems) as SpotKey[]).map((key) => ({
+    key,
+    ...ENERGY_CONFIG.spotItems[key],
+    ...ENERGY_CONFIG.meals[ENERGY_CONFIG.spotItems[key].mealKey],
+  }));
+  const plans = Object.values(ENERGY_CONFIG.plans);
 
   return (
     <div style={{
@@ -159,40 +215,13 @@ export default function DashboardPage() {
             BETA
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button onClick={() => setShowKitchen(true)} aria-label="満腹メーター・ごはん"
+            style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
+            <SatietyMeter energy={energy} dark />
+          </button>
           <button
-            onClick={() => {
-              if (canClaimDailyOnigiri()) {
-                const updated = addItem(loadInventory(), 'onigiri', 1);
-                saveInventory(updated);
-                setInventory(updated);
-                markDailyOnigiriClaimed();
-                setDailyClaimed(true);
-                // 自動使用: HPが最も低いMEORAに自動であげる
-                if (state && state.characters.length > 0) {
-                  const onigiri = updated.find(i => i.id === 'onigiri');
-                  if (onigiri) {
-                    const hungriest = [...state.characters].sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0];
-                    if (hungriest.hp < hungriest.maxHp) {
-                      const newInv = consumeItem(updated, 'onigiri');
-                      saveInventory(newInv);
-                      setInventory(newInv);
-                      const newState = {
-                        ...state,
-                        characters: state.characters.map(c =>
-                          c.id === hungriest.id ? { ...c, hp: Math.min(c.maxHp, c.hp + onigiri.effect) } : c
-                        ),
-                      };
-                      saveState(newState);
-                      setState(newState);
-                      setFeedMessage(`毎日のおにぎりを${hungriest.name}にあげました！`);
-                      setTimeout(() => setFeedMessage(''), 3000);
-                    }
-                  }
-                }
-              }
-              setShowInventory(true);
-            }}
+            onClick={() => setShowKitchen(true)}
             style={{
               background: '#fff',
               color: '#111',
@@ -204,17 +233,9 @@ export default function DashboardPage() {
               cursor: 'pointer',
               borderRadius: 0,
               fontFamily: 'inherit',
-              position: 'relative',
             }}
           >
-            持ち物
-            {!dailyClaimed && (
-              <span style={{
-                position: 'absolute', top: -4, right: -4,
-                width: 8, height: 8, borderRadius: '50%',
-                background: '#e53935', border: '1px solid #111',
-              }} />
-            )}
+            ごはん
           </button>
         </div>
       </header>
@@ -240,16 +261,14 @@ export default function DashboardPage() {
         borderTop: '2px solid #111',
       }}>
 
-        {/* トーク一覧（LINE / ChatGPT ライク・最大3行分の高さでスクロール） */}
+        {/* トーク一覧 */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.14em', color: '#7a746c', textTransform: 'uppercase', fontFamily: 'var(--font-mono)', padding: '0 2px' }}>
             トーク
           </span>
 
-          {/* 約3行分(69px/行)の高さに制限してスクロール。＋ボタンは下に固定で残す。 */}
           <div style={{ display: 'flex', flexDirection: 'column', border: '2px solid #111', boxShadow: '4px 4px 0 #111', background: '#fff', maxHeight: 207, overflowY: 'auto' }}>
 
-            {/* MEORA未所持の空状態 */}
             {state.characters.length === 0 && (
               <div style={{ padding: '20px 16px', textAlign: 'center', color: '#888', fontSize: 15, lineHeight: 1.7, borderBottom: '1px solid #ddd' }}>
                 まだMEORAがいません。<br />下のボタンからMEORAを探す/作ることができます。
@@ -276,12 +295,10 @@ export default function DashboardPage() {
                     color: 'inherit',
                   }}
                 >
-                  {/* MEORAアイコン（写真があれば写真、無ければイニシャル） */}
                   <div style={{ width: 44, height: 44, border: '2px solid #111', flexShrink: 0, background: '#f0f0ea', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                     <CharAvatar photo={char.photo} name={char.name} size={40} />
                   </div>
 
-                  {/* 名前 + プレビュー */}
                   <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
                       <span style={{ fontSize: 16, fontWeight: 800, color: '#111', letterSpacing: '0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{char.name}</span>
@@ -294,7 +311,6 @@ export default function DashboardPage() {
                     </span>
                   </div>
 
-                  {/* 矢印 */}
                   <span style={{ flexShrink: 0, color: '#bbb', fontSize: 20, fontWeight: 800, lineHeight: 1 }}>›</span>
                 </div>
               );
@@ -337,13 +353,13 @@ export default function DashboardPage() {
 
       </main>
 
-      {/* 持ち物オーバーレイ */}
-      {showInventory && (
+      {/* ごはん / ショップ オーバーレイ */}
+      {showKitchen && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 300,
           background: 'rgba(0,0,0,0.5)',
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        }} onClick={() => { setShowInventory(false); setFeedTarget(null); setFeedMessage(''); }}>
+        }} onClick={() => setShowKitchen(false)}>
           <div
             onClick={e => e.stopPropagation()}
             style={{
@@ -353,115 +369,90 @@ export default function DashboardPage() {
               borderBottom: 'none',
               boxShadow: '0 -4px 0 #111',
               padding: '20px 16px calc(80px + env(safe-area-inset-bottom))',
-              maxHeight: '70vh',
+              maxHeight: '80vh',
               overflowY: 'auto',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800 }}>持ち物</h2>
-              <button onClick={() => { setShowInventory(false); setFeedTarget(null); setFeedMessage(''); }}
+              <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800 }}>ごはん</h2>
+              <button onClick={() => setShowKitchen(false)}
                 style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#111', fontWeight: 800 }}>✕</button>
             </div>
 
-            {feedMessage && (
+            {toast && (
               <div style={{ background: '#e8f5e9', border: '2px solid #111', padding: '10px 14px', marginBottom: 12, fontSize: 15, fontWeight: 700, color: '#2e7d32' }}>
-                {feedMessage}
+                {toast}
               </div>
             )}
 
-            {overflowWarning && state && (() => {
-              const char = state.characters.find(c => c.id === overflowWarning.charId);
-              return char ? (
-                <div style={{ background: '#fff8e1', border: '2px solid #111', boxShadow: '3px 3px 0 #111', padding: '16px', marginBottom: 12 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#111', lineHeight: 1.7, marginBottom: 14 }}>
-                    今ごはんをあげると最大値を超えてしまいます。超えた分は加算されません。本当にあげますか？
-                  </div>
-                  <div style={{ fontSize: 13, color: '#888', marginBottom: 14 }}>
-                    {char.name}の満腹度: {char.hp} / {char.maxHp}
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      onClick={() => doFeed(overflowWarning.itemId, overflowWarning.charId)}
-                      style={{ flex: 1, background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', padding: '10px', fontSize: 15, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
-                    >
-                      いいよ
-                    </button>
-                    <button
-                      onClick={() => { setOverflowWarning(null); setFeedTarget(null); }}
-                      style={{ flex: 1, background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', padding: '10px', fontSize: 15, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
-                    >
-                      まだあげない
-                    </button>
-                  </div>
-                </div>
-              ) : null;
-            })()}
+            {/* 満腹メーター */}
+            <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: 14, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <SatietyMeter energy={energy} />
+              <strong style={{ fontSize: 16 }}>{getMeterStatusText(getMeterLevel(energy))}</strong>
+            </div>
 
-            {inventory.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '24px 0', color: '#888', fontSize: 15 }}>
-                持ち物がありません
-              </div>
-            ) : (
+            {/* 毎日のごはん */}
+            <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: 14, marginBottom: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#7a746c', marginBottom: 4 }}>毎日のごはん（{plan.label}）</div>
+              <p style={{ fontSize: 13, color: '#888', margin: '0 0 10px', lineHeight: 1.6 }}>毎朝5時に届きます。その日のうちに食べないと翌朝には新しい食事に切り替わります（貯められません）。</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {inventory.map(item => (
-                  <div key={item.id} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    background: '#fff', border: '2px solid #111', boxShadow: '3px 3px 0 #111',
-                    padding: '12px',
-                  }}>
-                    <span style={{ fontSize: 30, flexShrink: 0 }}>{item.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 16, fontWeight: 800 }}>{item.name}</div>
-                      <div style={{ fontSize: 13, color: '#888' }}>HP +{item.effect} / {item.count}個</div>
-                    </div>
-                    {feedTarget === null ? (
-                      <button
-                        onClick={() => setFeedTarget(item.id)}
-                        style={{
-                          background: '#111', color: '#fff', border: '2px solid #111',
-                          boxShadow: '2px 2px 0 #555', padding: '6px 12px',
-                          fontSize: 14, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit',
-                        }}
-                      >
-                        あげる
-                      </button>
-                    ) : feedTarget === item.id && state ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        {state.characters.map(char => (
-                          <button
-                            key={char.id}
-                            onClick={() => {
-                              if (char.hp + item.effect > char.maxHp && char.hp < char.maxHp) {
-                                setOverflowWarning({ itemId: item.id, charId: char.id });
-                              } else if (char.hp >= char.maxHp) {
-                                setFeedMessage(`${char.name}はもう満腹です！`);
-                                setFeedTarget(null);
-                                setTimeout(() => setFeedMessage(''), 3000);
-                              } else {
-                                doFeed(item.id, char.id);
-                              }
-                            }}
-                            style={{
-                              background: '#fff', border: '1.5px solid #111', padding: '4px 10px',
-                              fontSize: 13, fontWeight: 800, cursor: 'pointer', borderRadius: 0,
-                              fontFamily: 'inherit', whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {char.name}
-                          </button>
-                        ))}
-                        <button
-                          onClick={() => setFeedTarget(null)}
-                          style={{ background: 'none', border: 'none', fontSize: 12, color: '#888', cursor: 'pointer', fontFamily: 'inherit' }}
-                        >
-                          キャンセル
-                        </button>
-                      </div>
-                    ) : null}
+                {dailyMeals.map((meal) => (
+                  <div key={meal.key} style={{ display: 'flex', alignItems: 'center', gap: 10, border: '2px solid #111', padding: '8px 10px', background: '#fff' }}>
+                    <MealIcon mealKey={meal.key} />
+                    <span style={{ fontWeight: 800 }}>{meal.label}</span>
+                    <span style={{ marginLeft: 'auto', fontSize: 12, color: '#888' }}>満腹メーター +{meal.meterRecovery}</span>
                   </div>
                 ))}
               </div>
-            )}
+            </div>
+
+            {/* スポット購入 */}
+            <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: 14, marginBottom: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#7a746c', marginBottom: 4 }}>スポットで買えるごはん</div>
+              <p style={{ fontSize: 13, color: '#888', margin: '0 0 10px', lineHeight: 1.6 }}>買ったごはんは失効しません。毎日のごはんを使い切ったあとに消費されます。</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {spotEntries.map((item) => (
+                  <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 10, border: '2px solid #111', padding: '8px 10px', background: '#fff' }}>
+                    <MealIcon mealKey={item.mealKey} />
+                    <span style={{ fontWeight: 800 }}>{item.label}</span>
+                    <span style={{ marginLeft: 'auto', fontSize: 12, color: '#888' }}>満腹メーター +{item.meterRecovery}</span>
+                    <button onClick={() => doPurchaseSpot(item.key)}
+                      style={{ background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', padding: '6px 10px', fontSize: 13, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                      ¥{item.priceYen}で買う
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 12, color: '#aaa', margin: '10px 0 0' }}>※ 決済は準備中のため、いまは「仮購入」としてその場で反映されます。</p>
+            </div>
+
+            {/* プラン */}
+            <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#7a746c', marginBottom: 10 }}>プラン</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {plans.map((p) => {
+                  const active = p.id === energy.plan;
+                  const mealLabels = p.dailyMeals.map((k: MealKey) => ENERGY_CONFIG.meals[k].label).join('・');
+                  return (
+                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, border: active ? '2px solid #e8568a' : '2px solid #111', boxShadow: active ? '4px 4px 0 #e8568a' : 'none', padding: '10px 12px', background: '#fff' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <strong>{p.label}</strong>
+                        <span style={{ fontSize: 12, color: '#888' }}>{p.priceYen === 0 ? '無料' : `月額¥${p.priceYen}`}・毎日：{mealLabels}</span>
+                      </div>
+                      {active ? (
+                        <span style={{ fontSize: 12, fontWeight: 800, background: '#e8568a', color: '#fff', padding: '3px 8px', border: '2px solid #111' }}>利用中</span>
+                      ) : (
+                        <button onClick={() => doChangePlan(p.id)}
+                          style={{ background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', padding: '6px 10px', fontSize: 13, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                          {p.priceYen === 0 ? '無料に戻す' : 'このプランにする'}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <p style={{ fontSize: 12, color: '#aaa', margin: '10px 0 0' }}>※ 決済は準備中のため、プラン変更は「仮」としてその場で反映されます。</p>
+            </div>
           </div>
         </div>
       )}

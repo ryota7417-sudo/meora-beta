@@ -3,22 +3,62 @@ import { useEffect, useRef, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   loadState,
-  saveState,
-  consumeHp,
   loadChatHistory,
   saveChatHistory,
   ChatMessage,
   AppState,
   Character,
-  mealCountdownLabel,
 } from '@/lib/store';
+import {
+  Energy,
+  loadEnergy,
+  saveEnergy,
+  refreshEnergy,
+  consumeForExchange,
+  canReply,
+  getMeterLevel,
+  getMeterStatusText,
+  timeUntilNextMeal,
+} from '@/lib/energy';
 import { CharAvatarChat } from '@/components/ui/CharacterSvg';
 
-// HP塗り色
-function getHpFillColor(pct: number) {
-  if (pct > 50) return '#4caf50';
-  if (pct > 25) return '#ffc107';
-  return '#f44336';
+// 携帯バッテリー風の満腹メーター（3目盛り・数値は表示しない）。
+// タップで状態テキスト（満腹／少しお腹が空いている／お腹が空いている／空腹）を出す。
+function SatietyMeter({ energy }: { energy: Energy }) {
+  const [showStatus, setShowStatus] = useState(false);
+  const level = getMeterLevel(energy);
+  const status = getMeterStatusText(level);
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <button
+        onClick={() => setShowStatus((v) => !v)}
+        aria-label="満腹メーター"
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 0,
+          background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111',
+          padding: 4, cursor: 'pointer', borderRadius: 0,
+        }}
+      >
+        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+          <span style={{ display: 'inline-flex', gap: 3, padding: 3, border: '2px solid #111' }}>
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                style={{
+                  width: 14, height: 16, border: '1px solid #111',
+                  background: i < level ? (level === 1 ? '#ffcf59' : '#e8568a') : 'transparent',
+                }}
+              />
+            ))}
+          </span>
+          <span style={{ width: 4, height: 12, marginLeft: 2, background: '#111' }} />
+        </span>
+      </button>
+      {showStatus && (
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>{status}</span>
+      )}
+    </div>
+  );
 }
 
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
@@ -26,6 +66,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const router = useRouter();
   const [appState, setAppState] = useState<AppState | null>(null);
   const [char, setChar] = useState<Character | null>(null);
+  const [energy, setEnergy] = useState<Energy | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,7 +77,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [mealLabel, setMealLabel] = useState('');
 
   useEffect(() => {
-    const update = () => setMealLabel(mealCountdownLabel());
+    const update = () => {
+      const { hours, minutes } = timeUntilNextMeal();
+      setMealLabel(`お食事到着まであと ${hours}時間 ${minutes}分`);
+    };
     update();
     const timer = setInterval(update, 60000);
     return () => clearInterval(timer);
@@ -51,6 +95,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setAppState(s);
     setChar(found);
+    setEnergy(refreshEnergy(loadEnergy()));
     const history = loadChatHistory(id);
     setMessages(history);
   }, [id, router]);
@@ -62,9 +107,12 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   }, [messages, loading]);
 
   const handleSend = async () => {
-    if (!input.trim() || loading || !appState || !char || char.hp === 0) return;
+    if (!input.trim() || loading || !appState || !char || !energy) return;
+    // 内部HPが0なら新規返信は生成しない（空腹ゲート）
+    if (!canReply(energy)) return;
 
-    const userMsg: ChatMessage = { role: 'user', content: input.trim(), timestamp: Date.now() };
+    const userText = input.trim();
+    const userMsg: ChatMessage = { role: 'user', content: userText, timestamp: Date.now() };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInput('');
@@ -72,12 +120,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       textareaRef.current.style.height = 'auto';
     }
     setLoading(true);
-
-    // HP消費
-    const newState = consumeHp(appState, id, 5);
-    setAppState(newState);
-    setChar(newState.characters.find(c => c.id === id) ?? char);
-    saveState(newState);
 
     try {
       const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }));
@@ -94,10 +136,17 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
       if (!res.ok) throw new Error(`API error: ${res.status}`);
       const data = await res.json();
-      const aiMsg: ChatMessage = { role: 'assistant', content: data.text, timestamp: Date.now() };
+      const replyText: string = data.text ?? '';
+      const aiMsg: ChatMessage = { role: 'assistant', content: replyText, timestamp: Date.now() };
       const updated = [...newMessages, aiMsg];
       setMessages(updated);
       saveChatHistory(id, updated);
+
+      // 実トークン usage に応じて満腹度を消費（usage が無ければテキスト長から推定）。
+      const next = refreshEnergy(loadEnergy());
+      consumeForExchange(next, { usage: data.usage ?? undefined, userText, replyText });
+      saveEnergy(next);
+      setEnergy({ ...next });
     } catch (err) {
       console.error(err);
       const errMsg: ChatMessage = {
@@ -120,7 +169,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     }
   };
 
-  if (!char || !appState) {
+  if (!char || !appState || !energy) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8f8f4' }}>
         <span style={{ fontSize: 16, color: '#888' }}>読み込み中...</span>
@@ -128,10 +177,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     );
   }
 
-  const dead = char.hp === 0;
-  const pct = char.maxHp > 0 ? Math.max(0, Math.min(100, (char.hp / char.maxHp) * 100)) : 0;
-
-  const hpFill = getHpFillColor(pct);
+  const hungry = !canReply(energy);
 
   // タイムスタンプ表示
   const formatTimestamp = (ts: number) => {
@@ -199,27 +245,13 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           </div>
         </header>
 
-        {/* HP STATUS BAR */}
+        {/* 満腹メーター（数値は表示しない） */}
         <div style={{ padding: '10px 14px 6px', flexShrink: 0 }}>
-          <div style={{ background: '#ffffff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 5 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#111', letterSpacing: 2, flexShrink: 0, textTransform: 'uppercase' }}>
-                {char.name}のお腹の様子
-              </span>
-              <div style={{ flex: 1, height: 14, background: '#e0e0dc', border: '2px solid #111', overflow: 'hidden', position: 'relative' }}>
-                <div style={{ height: '100%', width: `${pct}%`, background: hpFill, position: 'relative' }}>
-                  <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(90deg, transparent, transparent 5px, rgba(0,0,0,0.18) 5px, rgba(0,0,0,0.18) 6px)' }}/>
-                </div>
-              </div>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#111', flexShrink: 0, minWidth: 54, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
-                {char.hp} / {char.maxHp}
-              </span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <span style={{ fontSize: 13, color: dead ? '#e53935' : '#777', fontWeight: dead ? 700 : 500 }}>
-                {dead ? mealLabel : 'いっぱい話すとお腹がすくよ'}
-              </span>
-            </div>
+          <div style={{ background: '#ffffff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 800, color: '#111', letterSpacing: 1, textTransform: 'uppercase' }}>
+              満腹メーター
+            </span>
+            <SatietyMeter energy={energy} />
           </div>
         </div>
 
@@ -280,18 +312,26 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
         {/* INPUT AREA */}
         <div style={{ background: '#ffffff', borderTop: '2px solid #111', padding: '11px 14px 14px', flexShrink: 0 }}>
-          {dead ? (
-            <div style={{ textAlign: 'center', padding: 14, color: '#e53935', fontWeight: 700, fontSize: 16, border: '2px solid #e53935', background: '#fff5f5', lineHeight: 1.6 }}>
-              お腹がぺこぺこです<br/>{mealLabel}
+          {hungry ? (
+            <div style={{ padding: 14, border: '2px solid #111', boxShadow: '4px 4px 0 #e8568a', background: '#fff', lineHeight: 1.7 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: '#111', marginBottom: 6 }}>
+                {char.name}はお腹がぺこぺこみたい…
+              </div>
+              <div style={{ fontSize: 14, color: '#444', marginBottom: 10 }}>
+                いまは新しいお返事ができません。{mealLabel}。<br/>
+                ごはんをあげるか、プランを見直すとまたお話できます。
+              </div>
+              <button
+                onClick={() => router.push('/dashboard')}
+                style={{ background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', padding: '8px 14px', fontSize: 14, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit' }}
+              >
+                ごはん / プランを見る ▶
+              </button>
             </div>
           ) : (
             <>
-              <div style={{ fontSize: 13, color: '#777', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fff', border: '2px solid #111', padding: '2px 7px', fontSize: 13, fontWeight: 800, color: '#111' }}>
-                  <span style={{ width: 7, height: 7, background: hpFill, border: '1.5px solid #333', display: 'inline-block', flexShrink: 0 }}/>
-                  お腹: {char.hp}
-                </span>
-                <span>話すとお腹がすく(-5)</span>
+              <div style={{ fontSize: 13, color: '#777', marginBottom: 8 }}>
+                いっぱい話すとお腹がすくよ
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
                 <textarea
