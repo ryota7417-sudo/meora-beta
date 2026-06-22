@@ -195,10 +195,6 @@ export default function DashboardPage() {
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button onClick={() => setShowKitchen(true)} aria-label="満腹メーター・ごはん"
-            style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
-            <SatietyMeter energy={energy} dark />
-          </button>
           <button
             onClick={() => setShowKitchen(true)}
             style={{
@@ -214,7 +210,7 @@ export default function DashboardPage() {
               fontFamily: 'inherit',
             }}
           >
-            ごはん
+            持ち物
           </button>
         </div>
       </header>
@@ -332,10 +328,11 @@ export default function DashboardPage() {
 
       </main>
 
-      {/* ごはん / ショップ オーバーレイ */}
+      {/* 持ち物 / ごはん / ショップ オーバーレイ
+          歩く庭(CharacterYard)の各キャラに動的 z-index が付くため、確実に最前面へ出す。 */}
       {showKitchen && (
         <div style={{
-          position: 'fixed', inset: 0, zIndex: 300,
+          position: 'fixed', inset: 0, zIndex: 100000,
           background: 'rgba(0,0,0,0.5)',
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
         }} onClick={() => setShowKitchen(false)}>
@@ -353,7 +350,7 @@ export default function DashboardPage() {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800 }}>ごはん</h2>
+              <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800 }}>持ち物</h2>
               <button onClick={() => setShowKitchen(false)}
                 style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#111', fontWeight: 800 }}>✕</button>
             </div>

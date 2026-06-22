@@ -59,7 +59,7 @@ export const ENERGY_CONFIG = {
     onigiri: { hp: 5, meterRecovery: 1, label: 'おにぎり' },
     sandwich: { hp: 11, meterRecovery: 2, label: 'サンドイッチ' },
     nikujaga: { hp: 18, meterRecovery: 3, label: '肉じゃが定食' },
-    omurice: { hp: 150, meterRecovery: 3, label: 'オムライス' },
+    omurice: { hp: 150, meterRecovery: 2, label: 'オムライス' },
     sushi: { hp: 400, meterRecovery: 3, label: 'お寿司' },
   } as Record<MealKey, { hp: number; meterRecovery: number; label: string }>,
 
@@ -216,6 +216,14 @@ export function getMeterLevel(energy: Energy): number {
 
 export function getMeterStatusText(level: number): string {
   return ENERGY_CONFIG.meter.statusText[level] ?? ENERGY_CONFIG.meter.statusText[0];
+}
+
+// 満腹メーターの上限（満タン=その日の最大HP）を超えて貯まっている分を、
+// 「満タン何個分」かで返す。スポット購入などで上限超過したときの "+X" 表示用。
+// 0 のときは表示しない（メーターは最大3目盛りで頭打ちのため）。
+export function getMeterSurplus(energy: Energy): number {
+  const max = getMaxDailyHp(energy.plan) || 1;
+  return Math.max(0, Math.floor(getTotalHp(energy) / max) - 1);
 }
 
 // ── 消費 ──────────────────────────────────────────────────────────────────────
