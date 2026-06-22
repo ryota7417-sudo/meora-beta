@@ -84,7 +84,8 @@ ${DEPENDENCY_BLOCK}
 ${personaLine}
 ${callLine}
 共感を最優先し、説教やお説教くさい長文は避けてください。
-返答は短め(2〜4文程度)の自然な口語にしてください。
+返答は2〜4文・150文字以内を目安にした自然な口語にしてください。
+【長さの制約】文字数の都合で文の途中で切れる返答は絶対にしないこと。必ず最後の文まで言い切り、その文字数のなかで話を自然に完結させて締めること。長くなりそうなときは、内容を削って要点だけにまとめてから返す。
 ${sleepyBlock}`;
 }
 
@@ -112,7 +113,8 @@ export async function POST(req: NextRequest) {
     //   詳細: workspace/meora/model-eval/eval-result-comparison-v3.md）
     const response = await client.responses.create({
       model: 'gpt-4o-mini',
-      max_output_tokens: 300,
+      // 150文字程度の返答が途中で切れないよう余裕を持たせる（実コストは usage 実測でHP消費に反映）。
+      max_output_tokens: 450,
       tools: [{ type: 'web_search_preview' }],
       input: chatMessages,
     });

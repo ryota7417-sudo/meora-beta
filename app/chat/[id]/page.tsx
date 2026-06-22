@@ -20,45 +20,53 @@ import {
   getMeterStatusText,
   timeUntilNextMeal,
 } from '@/lib/energy';
+import { SatietyMeter } from '@/components/ui/SatietyMeter';
 import { CharAvatarChat } from '@/components/ui/CharacterSvg';
 
-// 携帯バッテリー風の満腹メーター（3目盛り・数値は表示しない）。
-// タップで状態テキスト（満腹／少しお腹が空いている／お腹が空いている／空腹）を出す。
-function SatietyMeter({ energy }: { energy: Energy }) {
+// 胃アイコンの満腹度。タップで状態テキスト（満腹／少しお腹が空いている／お腹が空いている／空腹）を出す。
+function HeaderSatiety({ energy }: { energy: Energy }) {
   const [showStatus, setShowStatus] = useState(false);
-  const level = getMeterLevel(energy);
-  const status = getMeterStatusText(level);
+  const status = getMeterStatusText(getMeterLevel(energy));
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative', zIndex: 1, marginLeft: 'auto' }}>
+      {showStatus && (
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#111', whiteSpace: 'nowrap' }}>{status}</span>
+      )}
       <button
         onClick={() => setShowStatus((v) => !v)}
-        aria-label="満腹メーター"
-        style={{
-          display: 'inline-flex', alignItems: 'center', gap: 0,
-          background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111',
-          padding: 4, cursor: 'pointer', borderRadius: 0,
-        }}
+        aria-label="満腹度"
+        style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
       >
-        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-          <span style={{ display: 'inline-flex', gap: 3, padding: 3, border: '2px solid #111' }}>
-            {[0, 1, 2].map((i) => (
-              <span
-                key={i}
-                style={{
-                  width: 14, height: 16, border: '1px solid #111',
-                  background: i < level ? (level === 1 ? '#ffcf59' : '#e8568a') : 'transparent',
-                }}
-              />
-            ))}
-          </span>
-          <span style={{ width: 4, height: 12, marginLeft: 2, background: '#111' }} />
-        </span>
+        <SatietyMeter energy={energy} size={30} />
       </button>
-      {showStatus && (
-        <span style={{ fontSize: 13, fontWeight: 800, color: '#111' }}>{status}</span>
-      )}
     </div>
   );
+}
+
+// 本文中の URL・電話番号をクリック可能なリンクに変換する。
+const LINK_REGEX = /(https?:\/\/[^\s<>「」（）()]+)|(\b0\d{1,3}-\d{2,4}-\d{3,4}\b)|(\b1(?:10|19)\b)/g;
+function linkify(text: string): React.ReactNode[] {
+  const nodes: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let m: RegExpExecArray | null;
+  LINK_REGEX.lastIndex = 0;
+  let key = 0;
+  while ((m = LINK_REGEX.exec(text)) !== null) {
+    if (m.index > lastIndex) nodes.push(text.slice(lastIndex, m.index));
+    const [matched, url, phone, emergency] = m;
+    const linkStyle: React.CSSProperties = { color: '#e8568a', fontWeight: 800, textDecoration: 'underline', wordBreak: 'break-all' };
+    if (url) {
+      nodes.push(<a key={key++} href={url} target="_blank" rel="noreferrer" style={linkStyle}>{url}</a>);
+    } else if (phone || emergency) {
+      const num = (phone || emergency)!;
+      nodes.push(<a key={key++} href={`tel:${num.replace(/-/g, '')}`} style={linkStyle}>{num}</a>);
+    } else {
+      nodes.push(matched);
+    }
+    lastIndex = m.index + matched.length;
+  }
+  if (lastIndex < text.length) nodes.push(text.slice(lastIndex));
+  return nodes;
 }
 
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
@@ -239,21 +247,14 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             ← ダッシュボード
           </button>
 
-          {/* MEORA名 */}
+          {/* MEORA名（バー中央） */}
           <div style={{ position: 'absolute', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'none' }}>
             <span style={{ fontSize: 20, fontWeight: 800, color: '#111', letterSpacing: '-0.3px', lineHeight: 1.1 }}>{char.name}</span>
           </div>
-        </header>
 
-        {/* 満腹メーター（数値は表示しない） */}
-        <div style={{ padding: '10px 14px 6px', flexShrink: 0 }}>
-          <div style={{ background: '#ffffff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 800, color: '#111', letterSpacing: 1, textTransform: 'uppercase' }}>
-              満腹メーター
-            </span>
-            <SatietyMeter energy={energy} />
-          </div>
-        </div>
+          {/* 満腹度（胃アイコン）：名前バーの右側に配置 */}
+          <HeaderSatiety energy={energy} />
+        </header>
 
         {/* CHAT AREA */}
         <div
@@ -283,14 +284,14 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                 {isUser ? (
                   <div style={{ display: 'flex', justifyContent: 'flex-end', maxWidth: '90%', alignSelf: 'flex-end' }}>
                     <div style={{ background: '#111', color: '#fff', padding: '11px 13px', fontSize: 15.5, lineHeight: 1.68, border: '2px solid #111', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                      {msg.content}
+                      {linkify(msg.content)}
                     </div>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, maxWidth: '90%', alignSelf: 'flex-start' }}>
                     <CharAvatarChat photo={char.photo} name={char.name} />
                     <div style={{ background: '#ffffff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '11px 13px', fontSize: 15.5, lineHeight: 1.68, color: '#111', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                      {msg.content}
+                      {linkify(msg.content)}
                     </div>
                   </div>
                 )}

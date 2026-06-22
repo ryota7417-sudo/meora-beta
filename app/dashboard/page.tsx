@@ -19,6 +19,7 @@ import {
   MealKey,
 } from '@/lib/energy';
 import { BottomNav } from '@/components/ui/BottomNav';
+import { SatietyMeter } from '@/components/ui/SatietyMeter';
 import { CharAvatar } from '@/components/ui/CharacterSvg';
 import { CharacterYard } from '@/components/ui/CharacterYard';
 import { createClient } from '@/lib/supabase';
@@ -45,28 +46,6 @@ function MealIcon({ mealKey }: { mealKey: MealKey }) {
     case 'sushi':
       return <svg viewBox="0 0 24 24" {...common}><rect x="4" y="9" width="16" height="7" rx="2"/><path d="M4 12h16"/></svg>;
   }
-}
-
-// 携帯バッテリー風の満腹メーター（数値は表示しない）。
-function SatietyMeter({ energy, dark = false }: { energy: Energy; dark?: boolean }) {
-  const level = getMeterLevel(energy);
-  const border = dark ? '#fff' : '#111';
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-      <span style={{ display: 'inline-flex', gap: 3, padding: 3, border: `2px solid ${border}` }}>
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            style={{
-              width: 12, height: 14, border: `1px solid ${border}`,
-              background: i < level ? (level === 1 ? '#ffcf59' : '#e8568a') : 'transparent',
-            }}
-          />
-        ))}
-      </span>
-      <span style={{ width: 4, height: 11, marginLeft: 2, background: border }} />
-    </span>
-  );
 }
 
 // 時刻の簡易表記。
