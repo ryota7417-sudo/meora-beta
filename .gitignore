@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local generated files
+.DS_Store
+.next/
+node_modules/
+tsconfig.tsbuildinfo
+
+# Agent runtime
+.agent-loop/logs/

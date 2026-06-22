@@ -40,13 +40,16 @@ export type SkinItem = {
   name: string;
   desc: string;
   price: number;
+  photoUrl?: string;
+  spriteUrl?: string;
+  slot?: 'wear' | 'hat';
 };
 
 // デフォルトお食事アイテム（3段階）
 export const DEFAULT_FOOD_ITEMS: FoodItem[] = [
   { id: 'food-onigiri',  name: 'おにぎり',  desc: '基本のご飯。毎日1個無料支給。',  hpBonus: 30,  price: 0 },
-  { id: 'food-omurice',  name: 'オムライス', desc: '満腹セット。ちょっと贅沢に。',     hpBonus: 50,  price: 150 },
-  { id: 'food-sushi',    name: 'お寿司',    desc: '特上ご飯。たっぷり元気になれる。', hpBonus: 100, price: 300 },
+  { id: 'food-omurice',  name: 'オムライス', desc: '満腹セット。ちょっと贅沢に。',     hpBonus: 80,  price: 150 },
+  { id: 'food-sushi',    name: 'お寿司',    desc: '特上ご飯。たっぷり元気になれる。', hpBonus: 200, price: 300 },
 ];
 
 // マーケットのMEORA。AcquirableCharacter を満たす（入手時にそのまま使える）。
@@ -80,7 +83,6 @@ export type MarketCreator = {
   handle: string; // @handle
   name: string; // 表示名
   followers: string; // フォロワー数（表示用文字列）
-  rating: string; // 評価（表示用文字列）
   bio: string;
   bannerBg: string;
   avatarBg: string;
@@ -96,7 +98,6 @@ export const MARKET_CREATORS: MarketCreator[] = [
     handle: '@opiyo',
     name: 'おぴよ',
     followers: '0',
-    rating: '-',
     bio: '個性あふれる動物MEORAを作っています。',
     bannerBg: '#f7f5f0',
     avatarBg: '#f7f5f0',
@@ -107,7 +108,7 @@ export const MARKET_CREATORS: MarketCreator[] = [
         name: 'ライト',
         price: 480,
         perks: [
-          { kind: 'consume', text: 'おにぎり×3（トーク券）' },
+          { kind: 'consume', text: 'サンドイッチ1ヶ月分が届きます' },
         ],
       },
       {
@@ -115,19 +116,8 @@ export const MARKET_CREATORS: MarketCreator[] = [
         name: 'スタンダード',
         price: 980,
         perks: [
-          { kind: 'consume', text: 'お寿司×2（トーク券）' },
-          { kind: 'consume', text: 'オムライス×2（トーク券）' },
-          { kind: 'consume', text: 'おにぎり×4（トーク券）' },
-        ],
-      },
-      {
-        id: 'opiyo_premium',
-        name: 'プレミアム',
-        price: 1480,
-        perks: [
-          { kind: 'consume', text: 'お寿司×6（トーク券）' },
-          { kind: 'consume', text: 'オムライス×3（トーク券）' },
-          { kind: 'consume', text: 'おにぎり×3（トーク券）' },
+          { kind: 'consume', text: 'サンドイッチ1ヶ月分が届きます' },
+          { kind: 'consume', text: '定食1ヶ月分が届きます' },
         ],
       },
     ],
@@ -158,7 +148,7 @@ export const MARKET_CHARACTERS: MarketCharacter[] = [
     creatorName: 'おぴよ',
     freePoints: [],
     subPoints: [
-      { kind: 'consume', text: 'おにぎり×3（トーク券）' },
+      { kind: 'consume', text: 'サンドイッチ1ヶ月分（31個）が届きます' },
     ],
     subPrice: 480,
     items: [],
@@ -186,7 +176,7 @@ export const MARKET_CHARACTERS: MarketCharacter[] = [
     freePoints: [],
     buyPrice: 300,
     subPoints: [
-      { kind: 'consume', text: 'おにぎり×3（トーク券）' },
+      { kind: 'consume', text: 'サンドイッチ1ヶ月分（31個）が届きます' },
     ],
     subPrice: 480,
     items: [],
@@ -213,7 +203,7 @@ export const MARKET_CHARACTERS: MarketCharacter[] = [
     creatorName: 'おぴよ',
     freePoints: [],
     subPoints: [
-      { kind: 'consume', text: 'おにぎり×3（トーク券）' },
+      { kind: 'consume', text: 'サンドイッチ1ヶ月分（31個）が届きます' },
     ],
     subPrice: 480,
     items: [],
@@ -227,7 +217,32 @@ export type MarketSkinItem = SkinItem & {
   characterId?: string; // 対象MEORA（任意）
 };
 
-export const MARKET_SKIN_ITEMS: MarketSkinItem[] = [];
+export const MARKET_SKIN_ITEMS: MarketSkinItem[] = [
+  {
+    id: 'skin-saio-wear-001',
+    name: 'サイオのふく',
+    desc: 'サイオ用の緑のTシャツ。着せるとちょっとオシャレに。',
+    price: 200,
+    creatorId: 'opiyo',
+    creatorName: 'おぴよ',
+    characterId: 'market-saio',
+    photoUrl: '/skins/opiyo_saio_wear_icon_001.png',
+    spriteUrl: '/skins/opiyo_saio_wear_001.png',
+    slot: 'wear',
+  },
+  {
+    id: 'skin-saio-hat-001',
+    name: 'サイオのぼうし',
+    desc: 'サイオ用の青いキャップ。かぶるとアクティブな印象に。',
+    price: 200,
+    creatorId: 'opiyo',
+    creatorName: 'おぴよ',
+    characterId: 'market-saio',
+    photoUrl: '/skins/opiyo_saio_hat_icon_001.png',
+    spriteUrl: '/skins/opiyo_saio_wear_hat_001.png',
+    slot: 'hat',
+  },
+];
 
 // ---- ヘルパー ----
 

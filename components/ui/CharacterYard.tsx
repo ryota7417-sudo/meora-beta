@@ -12,7 +12,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Character, getSprite } from '@/lib/store';
+import { Character, getSprite, getEquippedSkinUrls } from '@/lib/store';
 
 // 最大表示体数。超過分は先頭 N 体のみ。
 const MAX_CHARS = 10;
@@ -93,28 +93,44 @@ function initialOf(name: string): string {
   return trimmed ? Array.from(trimmed)[0] : '?';
 }
 
-// 1体のスプライト表示。dir / state に応じて出す画像を切替える。
-// 該当スプライトが無ければ photo（左向きは CSS 反転）。photo も無ければイニシャル。
+function resolveFlip(char: Character, view: View): boolean {
+  const wantType = view.state === 'idle' ? 'idle' : view.dir === 'right' ? 'walkRight' : 'walkLeft';
+  let src = getSprite(char, wantType);
+  let flip = false;
+
+  if (!src) {
+    if (view.state === 'walk') {
+      const opp = view.dir === 'right' ? 'walkLeft' : 'walkRight';
+      if (getSprite(char, opp)) {
+        flip = true;
+      }
+    }
+    if (!getSprite(char, wantType) && !flip) src = getSprite(char, 'idle');
+  }
+  if (!src && !flip && char.photo) {
+    flip = view.dir === 'left';
+  }
+  return flip;
+}
+
 function SpriteVisual({ char, view }: { char: Character; view: View }) {
   const wantType = view.state === 'idle' ? 'idle' : view.dir === 'right' ? 'walkRight' : 'walkLeft';
   let src = getSprite(char, wantType);
   let flip = false;
 
   if (!src) {
-    // 歩行スプライトが無い場合、反対向きの歩行 → idle の順で代替し、無ければ photo。
     if (view.state === 'walk') {
       const opp = view.dir === 'right' ? 'walkLeft' : 'walkRight';
       const oppSrc = getSprite(char, opp);
       if (oppSrc) {
         src = oppSrc;
-        flip = true; // 反対向き画像を反転して使う
+        flip = true;
       }
     }
     if (!src) src = getSprite(char, 'idle');
   }
   if (!src && char.photo) {
     src = char.photo;
-    // photo は右向き想定。左を向くなら反転。
     flip = view.dir === 'left';
   }
 
@@ -495,7 +511,20 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
               </div>
             )}
 
-            <SpriteVisual char={char} view={view} />
+            <div style={{ position: 'relative', width: SPRITE_W, height: SPRITE_H }}>
+              <SpriteVisual char={char} view={view} />
+              {(() => {
+                const skins = getEquippedSkinUrls(char.id);
+                const flip = resolveFlip(char, view);
+                const overlayStyle: React.CSSProperties = { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none', imageRendering: 'pixelated', transform: flip ? 'scaleX(-1)' : 'none' };
+                return (
+                  <>
+                    {skins.wear && <img src={skins.wear} alt="" style={overlayStyle} />}
+                    {skins.hat && <img src={skins.hat} alt="" style={overlayStyle} />}
+                  </>
+                );
+              })()}
+            </div>
           </div>
         );
       })}

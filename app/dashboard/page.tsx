@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { loadState, AppState, loadChatHistory } from '@/lib/store';
+import { loadState, AppState, loadChatHistory, getEquippedSkinUrls } from '@/lib/store';
 import {
   Energy,
   loadEnergy,
@@ -270,8 +270,17 @@ export default function DashboardPage() {
                     color: 'inherit',
                   }}
                 >
-                  <div style={{ width: 44, height: 44, border: '2px solid #111', flexShrink: 0, background: '#f0f0ea', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  <div style={{ width: 44, height: 44, border: '2px solid #111', flexShrink: 0, background: '#f0f0ea', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
                     <CharAvatar photo={char.photo} name={char.name} size={40} />
+                    {(() => {
+                      const skins = getEquippedSkinUrls(char.id);
+                      return (
+                        <>
+                          {skins.wear && <img src={skins.wear} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} />}
+                          {skins.hat && <img src={skins.hat} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} />}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>

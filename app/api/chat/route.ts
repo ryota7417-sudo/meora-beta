@@ -91,9 +91,28 @@ ${sleepyBlock}`;
 
 type IncomingMessage = { role: string; content: string };
 
+const MAX_MESSAGES = 50;
+const MAX_FIELD_LEN = 500;
+const MAX_MESSAGE_LEN = 2000;
+
 export async function POST(req: NextRequest) {
   try {
-    const { messages, name, personality, userName } = await req.json();
+    const body = await req.json();
+    const messages = Array.isArray(body.messages) ? body.messages.slice(-MAX_MESSAGES) : [];
+    const name = String(body.name ?? '').slice(0, MAX_FIELD_LEN);
+    const personality = String(body.personality ?? '').slice(0, MAX_FIELD_LEN);
+    const userName = String(body.userName ?? '').slice(0, MAX_FIELD_LEN);
+    const allowSearch = body.allowSearch !== false;
+
+    if (!name) {
+      return Response.json({ error: 'name is required' }, { status: 400 });
+    }
+
+    for (const m of messages) {
+      if (typeof m.content === 'string' && m.content.length > MAX_MESSAGE_LEN) {
+        m.content = m.content.slice(0, MAX_MESSAGE_LEN);
+      }
+    }
 
     const systemPrompt = buildSystemPrompt({ name, personality, userName });
 
@@ -115,7 +134,7 @@ export async function POST(req: NextRequest) {
       model: 'gpt-4o-mini',
       // 150文字程度の返答が途中で切れないよう余裕を持たせる（実コストは usage 実測でHP消費に反映）。
       max_output_tokens: 450,
-      tools: [{ type: 'web_search_preview' }],
+      tools: allowSearch ? [{ type: 'web_search_preview' }] : [],
       input: chatMessages,
     });
 

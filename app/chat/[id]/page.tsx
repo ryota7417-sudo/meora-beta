@@ -8,6 +8,11 @@ import {
   ChatMessage,
   AppState,
   Character,
+  loadOwnedSkins,
+  loadEquippedSkins,
+  equipSkin,
+  getEquippedSkinUrls,
+  type OwnedSkin,
 } from '@/lib/store';
 import {
   Energy,
@@ -78,6 +83,9 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [dressUpOpen, setDressUpOpen] = useState(false);
+  const [ownedSkins, setOwnedSkins] = useState<OwnedSkin[]>([]);
+  const [skinUrls, setSkinUrls] = useState<{ wear?: string; hat?: string }>({});
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const chatAreaRef = useRef<HTMLDivElement>(null);
@@ -106,6 +114,8 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     setEnergy(refreshEnergy(loadEnergy()));
     const history = loadChatHistory(id);
     setMessages(history);
+    setOwnedSkins(loadOwnedSkins().filter(s => s.characterId === id));
+    setSkinUrls(getEquippedSkinUrls(id));
   }, [id, router]);
 
   useEffect(() => {
@@ -116,10 +126,17 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
   const handleSend = async () => {
     if (!input.trim() || loading || !appState || !char || !energy) return;
-    // 内部HPが0なら新規返信は生成しない（空腹ゲート）
     if (!canReply(energy)) return;
 
     const userText = input.trim();
+
+    // 検索意図の判定 — 該当する場合は確認ダイアログを表示
+    const searchPatterns = /調べて|検索して|って何|とは[？?]|ニュース|最新|教えて.*について/;
+    let allowSearch = true;
+    if (searchPatterns.test(userText)) {
+      allowSearch = window.confirm('Web検索を実行しますか？\n\n検索を使うと最新の情報を調べられます。');
+    }
+
     const userMsg: ChatMessage = { role: 'user', content: userText, timestamp: Date.now() };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -139,6 +156,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           name: char.name,
           personality: char.personality,
           userName: appState.userName,
+          allowSearch,
         }),
       });
 
@@ -244,7 +262,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
               zIndex: 1,
             }}
           >
-            ← ダッシュボード
+            ← ホーム
           </button>
 
           {/* MEORA名（バー中央） */}
@@ -252,8 +270,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             <span style={{ fontSize: 20, fontWeight: 800, color: '#111', letterSpacing: '-0.3px', lineHeight: 1.1 }}>{char.name}</span>
           </div>
 
-          {/* 満腹度（胃アイコン）：名前バーの右側に配置 */}
-          <HeaderSatiety energy={energy} />
         </header>
 
         {/* CHAT AREA */}
@@ -289,7 +305,11 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                   </div>
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, maxWidth: '90%', alignSelf: 'flex-start' }}>
-                    <CharAvatarChat photo={char.photo} name={char.name} />
+                    <div style={{ position: 'relative', flexShrink: 0, width: 38, height: 38 }}>
+                      <CharAvatarChat photo={char.photo} name={char.name} />
+                      {skinUrls.wear && <img src={skinUrls.wear} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} />}
+                      {skinUrls.hat && <img src={skinUrls.hat} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} />}
+                    </div>
                     <div style={{ background: '#ffffff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '11px 13px', fontSize: 15.5, lineHeight: 1.68, color: '#111', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                       {linkify(msg.content)}
                     </div>
@@ -301,7 +321,11 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
           {loading && (
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, maxWidth: '90%', alignSelf: 'flex-start' }}>
-              <CharAvatarChat photo={char.photo} name={char.name} />
+              <div style={{ position: 'relative', flexShrink: 0, width: 38, height: 38 }}>
+                <CharAvatarChat photo={char.photo} name={char.name} />
+                {skinUrls.wear && <img src={skinUrls.wear} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} />}
+                {skinUrls.hat && <img src={skinUrls.hat} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none' }} />}
+              </div>
               <div style={{ background: '#ffffff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '11px 13px', fontSize: 15.5, lineHeight: 1.68, color: '#888' }}>
                 入力中...
               </div>
@@ -310,6 +334,49 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
           <div ref={bottomRef} />
         </div>
+
+        {/* DRESS UP PANEL */}
+        {dressUpOpen && (
+          <div style={{ background: '#fff', borderTop: '2px solid #111', padding: '10px 14px', flexShrink: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: '#7a746c', marginBottom: 8 }}>持っているスキン</div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {ownedSkins.map(skin => {
+                const equipped = loadEquippedSkins();
+                const charEquip = equipped[id] || {};
+                const isEquipped = charEquip[skin.slot] === skin.id;
+                return (
+                  <button
+                    key={skin.id}
+                    onClick={() => {
+                      equipSkin(id, skin.slot, isEquipped ? null : skin.id);
+                      setSkinUrls(getEquippedSkinUrls(id));
+                    }}
+                    style={{
+                      width: 56, height: 56, border: isEquipped ? '3px solid #e8568a' : '2px solid #111',
+                      boxShadow: isEquipped ? '2px 2px 0 #e8568a' : '2px 2px 0 #111',
+                      background: '#f7f5f0', cursor: 'pointer', padding: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 0, overflow: 'hidden', position: 'relative',
+                    }}
+                  >
+                    <img src={skin.iconUrl} alt={skin.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    {isEquipped && <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#e8568a', color: '#fff', fontSize: 8, fontWeight: 800, textAlign: 'center', padding: '1px 0' }}>着用中</span>}
+                  </button>
+                );
+              })}
+              {(skinUrls.wear || skinUrls.hat) && (
+                <button
+                  onClick={() => {
+                    equipSkin(id, 'wear', null);
+                    equipSkin(id, 'hat', null);
+                    setSkinUrls({});
+                  }}
+                  style={{ width: 56, height: 56, border: '2px solid #111', boxShadow: '2px 2px 0 #111', background: '#fff', cursor: 'pointer', fontSize: 10, fontWeight: 800, color: '#7a746c', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 0, fontFamily: 'inherit' }}
+                >
+                  全部<br/>はずす
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* INPUT AREA */}
         <div style={{ background: '#ffffff', borderTop: '2px solid #111', padding: '11px 14px 14px', flexShrink: 0 }}>
@@ -331,8 +398,19 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             </div>
           ) : (
             <>
-              <div style={{ fontSize: 13, color: '#777', marginBottom: 8 }}>
-                いっぱい話すとお腹がすくよ
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div style={{ fontSize: 13, color: '#777', flex: 1 }}>
+                  いっぱい話すとお腹がすくよ
+                </div>
+                {ownedSkins.length > 0 && (
+                  <button
+                    onClick={() => setDressUpOpen(v => !v)}
+                    style={{ fontSize: 12, fontWeight: 800, color: '#111', background: dressUpOpen ? '#f5a623' : '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #111', padding: '5px 8px', cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit', flexShrink: 0 }}
+                  >
+                    きせかえ
+                  </button>
+                )}
+                <HeaderSatiety energy={energy} />
               </div>
               <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
                 <textarea

@@ -295,6 +295,94 @@ export function consumeItem(items: Item[], itemId: string): Item[] {
     .filter(i => i.count > 0);
 }
 
+// ===== スキンインベントリ =====
+
+export type OwnedSkin = {
+  id: string;
+  name: string;
+  characterId: string;
+  iconUrl: string;
+  spriteUrl: string;
+  slot: 'wear' | 'hat';
+};
+
+export type EquippedSkins = {
+  [characterId: string]: {
+    wear?: string;
+    hat?: string;
+  };
+};
+
+const SKINS_KEY = 'meora-skins';
+const EQUIPPED_KEY = 'meora-equipped-skins';
+
+export function loadOwnedSkins(): OwnedSkin[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const s = localStorage.getItem(SKINS_KEY);
+    return s ? JSON.parse(s) : [];
+  } catch { return []; }
+}
+
+export function saveOwnedSkins(skins: OwnedSkin[]) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(SKINS_KEY, JSON.stringify(skins));
+}
+
+export function purchaseSkin(skin: OwnedSkin): OwnedSkin[] {
+  const skins = loadOwnedSkins();
+  if (skins.some(s => s.id === skin.id)) return skins;
+  const updated = [...skins, skin];
+  saveOwnedSkins(updated);
+  return updated;
+}
+
+export function isSkinOwned(skinId: string): boolean {
+  return loadOwnedSkins().some(s => s.id === skinId);
+}
+
+export function loadEquippedSkins(): EquippedSkins {
+  if (typeof window === 'undefined') return {};
+  try {
+    const s = localStorage.getItem(EQUIPPED_KEY);
+    return s ? JSON.parse(s) : {};
+  } catch { return {}; }
+}
+
+export function saveEquippedSkins(equipped: EquippedSkins) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(EQUIPPED_KEY, JSON.stringify(equipped));
+}
+
+export function equipSkin(characterId: string, slot: 'wear' | 'hat', skinId: string | null) {
+  const equipped = loadEquippedSkins();
+  if (!equipped[characterId]) equipped[characterId] = {};
+  if (skinId === null) {
+    delete equipped[characterId][slot];
+  } else {
+    equipped[characterId][slot] = skinId;
+  }
+  saveEquippedSkins(equipped);
+  return equipped;
+}
+
+export function getEquippedSkinUrls(characterId: string): { wear?: string; hat?: string } {
+  const equipped = loadEquippedSkins();
+  const charEquip = equipped[characterId];
+  if (!charEquip) return {};
+  const skins = loadOwnedSkins();
+  const result: { wear?: string; hat?: string } = {};
+  if (charEquip.wear) {
+    const s = skins.find(sk => sk.id === charEquip.wear);
+    if (s) result.wear = s.spriteUrl;
+  }
+  if (charEquip.hat) {
+    const s = skins.find(sk => sk.id === charEquip.hat);
+    if (s) result.hat = s.spriteUrl;
+  }
+  return result;
+}
+
 // 毎日のおにぎり受け取り判定
 export function canClaimDailyOnigiri(): boolean {
   if (typeof window === 'undefined') return false;

@@ -13,7 +13,7 @@ import {
   type FoodItem,
   type MarketSkinItem,
 } from '@/lib/market-data';
-import { loadState, saveState, acquireCharacter } from '@/lib/store';
+import { loadState, saveState, acquireCharacter, purchaseSkin, isSkinOwned, type OwnedSkin } from '@/lib/store';
 import { createClient } from '@/lib/supabase';
 
 type DbListing = {
@@ -250,7 +250,19 @@ export default function MarketPage() {
               MEORAの見た目を変えるスキンです。クリエイターが出品しています。
             </div>
             {MARKET_SKIN_ITEMS.map(item => (
-              <SkinCard key={item.id} item={item} onTap={() => setToast('スキン購入は近日対応予定です')} />
+              <SkinCard key={item.id} item={item} onTap={() => {
+                if (!item.spriteUrl || !item.slot || !item.characterId) {
+                  setToast('スキン購入は近日対応予定です');
+                  return;
+                }
+                if (isSkinOwned(item.id)) {
+                  setToast('このスキンは購入済みです');
+                  return;
+                }
+                const skin: OwnedSkin = { id: item.id, name: item.name, characterId: item.characterId, iconUrl: item.photoUrl || '', spriteUrl: item.spriteUrl, slot: item.slot };
+                purchaseSkin(skin);
+                setToast(`${item.name}を購入しました！トーク画面の「きせかえ」から着替えられます。`);
+              }} />
             ))}
             {dbSkins.map(listing => (
               <DbSkinCard key={listing.id} listing={listing} />
@@ -391,13 +403,18 @@ function FoodCard({ item, onTap }: { item: FoodItem; onTap: () => void }) {
 function SkinCard({ item, onTap }: { item: MarketSkinItem; onTap: () => void }) {
   return (
     <div onClick={onTap} style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 14px', cursor: 'pointer' }}>
-      <div style={{ flexShrink: 0, width: 52, height: 52, border: '2px solid #111', background: '#f7f5f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-          <rect x="4" y="8" width="20" height="14" stroke="#111" strokeWidth="2"/>
-          <circle cx="14" cy="15" r="4" stroke="#111" strokeWidth="1.5"/>
-          <line x1="4" y1="8" x2="14" y2="4" stroke="#111" strokeWidth="1.5"/>
-          <line x1="24" y1="8" x2="14" y2="4" stroke="#111" strokeWidth="1.5"/>
-        </svg>
+      <div style={{ flexShrink: 0, width: 52, height: 52, border: '2px solid #111', background: '#f7f5f0', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        {item.photoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.photoUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        ) : (
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect x="4" y="8" width="20" height="14" stroke="#111" strokeWidth="2"/>
+            <circle cx="14" cy="15" r="4" stroke="#111" strokeWidth="1.5"/>
+            <line x1="4" y1="8" x2="14" y2="4" stroke="#111" strokeWidth="1.5"/>
+            <line x1="24" y1="8" x2="14" y2="4" stroke="#111" strokeWidth="1.5"/>
+          </svg>
+        )}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.02em' }}>{item.name}</div>

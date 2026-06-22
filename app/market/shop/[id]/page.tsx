@@ -35,6 +35,10 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
 
   const [following, setFollowing] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [showOshiModal, setShowOshiModal] = useState(false);
+  const [oshiSet, setOshiSet] = useState(false);
+  const [joinedPlan, setJoinedPlan] = useState(false);
+  const [tipSheetOpen, setTipSheetOpen] = useState(false);
 
   if (!creator) {
     return (
@@ -86,10 +90,6 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
                 <b style={{ fontSize: 15, fontWeight: 800 }}>{characters.length}</b>
                 <span style={{ fontSize: 11, color: '#7a746c', display: 'block' }}>MEORA</span>
               </div>
-              <div>
-                <b style={{ fontSize: 15, fontWeight: 800 }}>{creator.rating}</b>
-                <span style={{ fontSize: 11, color: '#7a746c', display: 'block' }}>評価</span>
-              </div>
             </div>
           </div>
         </div>
@@ -113,8 +113,26 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
           >
             {following ? 'フォロー中' : '＋ フォロー'}
           </button>
+          {following && joinedPlan && (
+            oshiSet ? (
+              <span
+                style={{ flex: 1, fontSize: 14, fontWeight: 800, padding: '9px 0', border: '2px solid #e8568a', boxShadow: '3px 3px 0 #e8568a', background: '#fce4ee', color: '#e8568a', fontFamily: 'inherit', borderRadius: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              >
+                <StarIcon size={14} color="#e8568a" />
+                推し設定中
+              </span>
+            ) : (
+              <button
+                onClick={() => setShowOshiModal(true)}
+                style={{ flex: 1, fontSize: 14, fontWeight: 800, padding: '9px 0', cursor: 'pointer', border: '2px solid #e8568a', boxShadow: '3px 3px 0 #e8568a', background: '#fff', color: '#e8568a', fontFamily: 'inherit', borderRadius: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+              >
+                <StarIcon size={14} color="#e8568a" />
+                推し
+              </button>
+            )
+          )}
           <button
-            onClick={() => setToast(`${creator.name}さんへの投げ銭は近日対応予定です。`)}
+            onClick={() => setTipSheetOpen(true)}
             style={{ flex: 1, fontSize: 14, fontWeight: 800, padding: '9px 0', cursor: 'pointer', border: '2px solid #111', boxShadow: '3px 3px 0 #111', background: '#e8568a', color: '#fff', fontFamily: 'inherit', borderRadius: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
           >
             <HeartIcon size={14} color="#fff" />
@@ -145,7 +163,7 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
       </div>
 
       {/* SUBSCRIPTION PLANS（スタブ） */}
-      <SectionLabel>SUBSCRIPTION — 加入プラン</SectionLabel>
+      <SectionLabel>月額プラン</SectionLabel>
       {creator.plans.map((plan) => (
         <div
           key={plan.id}
@@ -190,7 +208,7 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
               </span>
             ) : (
               <button
-                onClick={() => setToast('サブスク加入は近日対応予定です。')}
+                onClick={() => { setJoinedPlan(true); setToast('月額プラン加入（デモ）を反映しました。'); }}
                 style={{ display: 'block', width: '100%', marginTop: 8, background: '#e8568a', color: '#fff', border: '2px solid #111', boxShadow: '3px 3px 0 #111', fontSize: 15, fontWeight: 800, padding: '10px 0', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 0 }}
               >
                 加入して毎月うけとる →
@@ -229,11 +247,61 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
       )}
 
       <p style={{ margin: '12px 16px 0', fontSize: 11, color: '#7a746c', lineHeight: 1.5 }}>
-        ※ サブスクは「月額金額相当のアイテムを毎月お届けする前払い型」です。消費型（おにぎり等）の毎月の付与数には上限があります（上限は要検討）。
+        ※ 月額プランは「月額金額相当のアイテムを毎月お届けする前払い型」です。
       </p>
-      <p style={{ margin: '6px 16px 0', fontSize: 11, color: '#7a746c', lineHeight: 1.5 }}>
-        ※ 投げ銭（応援）の一部はMEORAの手数料となり、残りはクリエイターへ還元されます（分配率は要検討）。
-      </p>
+
+      {tipSheetOpen && (
+        <div
+          onClick={() => setTipSheetOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 500, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: 390, background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '0 0 env(safe-area-inset-bottom)', animation: 'slideUp 0.2s ease-out' }}
+          >
+            <div style={{ padding: '14px 16px 10px', borderBottom: '2px solid #111', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 16, fontWeight: 800 }}>投げ銭（応援）</span>
+              <button onClick={() => setTipSheetOpen(false)} style={{ fontSize: 14, fontWeight: 800, background: 'transparent', border: '2px solid #111', padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 0 }}>閉じる</button>
+            </div>
+            <div style={{ padding: '8px 16px 14px', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {[300, 600, 900, 1500, 3000, 5000, 10000].map((amount) => (
+                <button
+                  key={amount}
+                  onClick={() => { setTipSheetOpen(false); setToast(`¥${amount.toLocaleString()}の投げ銭は近日対応予定です。`); }}
+                  style={{ flex: '0 0 calc(33.33% - 6px)', background: '#fff', border: '2px solid #e8568a', boxShadow: '3px 3px 0 #e8568a', fontSize: 15, fontWeight: 800, padding: '12px 0', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 0, color: '#e8568a' }}
+                >
+                  ¥{amount.toLocaleString()}
+                </button>
+              ))}
+            </div>
+          </div>
+          <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+        </div>
+      )}
+
+      {showOshiModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', padding: 20 }}>
+          <div style={{ width: 'min(340px, 100%)', padding: 24, background: '#f7f5f0', border: '2px solid #111', boxShadow: '4px 4px 0 #111' }}>
+            <div style={{ fontSize: 18, fontWeight: 800 }}>推しに設定しますか？</div>
+            <p style={{ fontSize: 14, color: '#3a3530', marginTop: 12, lineHeight: 1.6 }}>この決定は毎月1回しか設定できません</p>
+            <p style={{ fontSize: 13, color: '#7a746c', marginTop: 8, lineHeight: 1.5 }}>※推しに設定すると月額プランの一部が推しのクリエイターに振り込まれます。</p>
+            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+              <button
+                onClick={() => { setOshiSet(true); setShowOshiModal(false); }}
+                style={{ flex: 1, background: '#e8568a', color: '#fff', border: '2px solid #111', boxShadow: '3px 3px 0 #111', fontSize: 14, fontWeight: 800, padding: '10px 0', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 0 }}
+              >
+                推しに設定する
+              </button>
+              <button
+                onClick={() => setShowOshiModal(false)}
+                style={{ flex: 1, background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '3px 3px 0 #111', fontSize: 14, fontWeight: 800, padding: '10px 0', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 0 }}
+              >
+                キャンセル
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <BottomNav />
       <ComingSoonToast message={toast} onClose={() => setToast(null)} />
