@@ -23,6 +23,15 @@ export async function syncToCloud(userId: string): Promise<SyncResult> {
   let messagesSynced = 0;
 
   try {
+    // テーブル存在チェック: スキーマ未適用なら即座にスキップ
+    const { error: probeError } = await supabase
+      .from('characters')
+      .select('id', { count: 'exact', head: true })
+      .limit(0);
+    if (probeError) {
+      return { synced: false, charactersSynced: 0, messagesSynced: 0 };
+    }
+
     for (const char of state.characters) {
       const charRow = {
         id: char.id,
@@ -105,7 +114,7 @@ export async function syncFromCloud(userId: string): Promise<SyncResult> {
       .eq('user_id', userId);
 
     if (charError) {
-      return { synced: false, charactersSynced: 0, messagesSynced: 0, error: charError.message };
+      return { synced: false, charactersSynced: 0, messagesSynced: 0 };
     }
 
     if (!cloudChars || cloudChars.length === 0) {
