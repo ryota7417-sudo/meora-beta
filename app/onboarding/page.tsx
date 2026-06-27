@@ -220,21 +220,21 @@ function StepIntro({ onNext, onBack, t }: { onNext: () => void; onBack: () => vo
       title: t.slide1Title,
       body: t.slide1Body,
       // eslint-disable-next-line @next/next/no-img-element
-      icon: <img src="/onboarding_02.svg" alt="" style={{ maxHeight: 120, maxWidth: '100%', width: 'auto', height: 'auto', display: 'block', filter: 'invert(1)', mixBlendMode: 'screen' }} />,
+      icon: <img src="/onboarding_01.svg" alt="" style={{ maxHeight: 120, maxWidth: '100%', width: 'auto', height: 'auto', display: 'block' }} />,
     },
     {
       num: '02 / 04',
       title: t.slide2Title,
       body: t.slide2Body,
       // eslint-disable-next-line @next/next/no-img-element
-      icon: <img src="/onboarding_03.svg" alt="" style={{ maxHeight: 120, maxWidth: '100%', width: 'auto', height: 'auto', display: 'block', filter: 'invert(1)', mixBlendMode: 'screen' }} />,
+      icon: <img src="/onboarding_02.svg" alt="" style={{ maxHeight: 120, maxWidth: '100%', width: 'auto', height: 'auto', display: 'block', filter: 'invert(1)', mixBlendMode: 'screen' }} />,
     },
     {
       num: '03 / 04',
       title: t.slide3Title,
       body: t.slide3Body,
       // eslint-disable-next-line @next/next/no-img-element
-      icon: <img src="/onboarding_01.svg" alt="" style={{ maxHeight: 120, maxWidth: '100%', width: 'auto', height: 'auto', display: 'block' }} />,
+      icon: <img src="/onboarding_03.svg" alt="" style={{ maxHeight: 120, maxWidth: '100%', width: 'auto', height: 'auto', display: 'block', filter: 'invert(1)', mixBlendMode: 'screen' }} />,
     },
     {
       num: '04 / 04',
