@@ -18,6 +18,14 @@ const PERSONALITY_TEMPLATE = `性格は、
 得意な話題は、
 苦手な話題は、`;
 
+const PERSONALITY_OMAKASE = `性格は、楽観的で明るい
+口調は、フレンドリー
+語尾は、だで、だっけな
+口癖は、知らんけど
+ユーザーへの呼びかけは、しゃちょう
+得意な話題は、ブラックジョーク
+苦手な話題は、怖い話`;
+
 // 画像を最大 maxSize px に収め dataURL(PNG) で返す。PNG で返すことで透過を維持する。
 function resizeImageToDataUrl(file: File, maxSize = 512): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -255,12 +263,20 @@ export default function CharacterEditPage({ params }: { params: Promise<{ id: st
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
             {sectionLabel('性格・口調')}
             {/* テンプレート挿入ボタン */}
-            <button
-              onClick={() => setPersonality(prev => prev ? prev : PERSONALITY_TEMPLATE)}
-              style={{ marginBottom: 10, padding: '6px 12px', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.04em' }}
-            >
-              テンプレートを挿入
-            </button>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setPersonality(prev => prev ? prev : PERSONALITY_TEMPLATE)}
+                style={{ padding: '6px 12px', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.04em' }}
+              >
+                テンプレートを挿入
+              </button>
+              <button
+                onClick={() => setPersonality(PERSONALITY_OMAKASE)}
+                style={{ padding: '6px 12px', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.04em' }}
+              >
+                おまかせ
+              </button>
+            </div>
             <textarea
               value={personality}
               onChange={e => setPersonality(e.target.value)}
