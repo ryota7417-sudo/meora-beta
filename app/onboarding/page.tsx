@@ -219,48 +219,22 @@ function StepIntro({ onNext, onBack, t }: { onNext: () => void; onBack: () => vo
       num: '01 / 04',
       title: t.slide1Title,
       body: t.slide1Body,
-      icon: (
-        <svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="8" y="14" width="52" height="34" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"/>
-          <polygon points="12,48 8,60 24,48" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinejoin="round"/>
-          <line x1="18" y1="26" x2="48" y2="26" stroke="rgba(255,255,255,0.35)" strokeWidth="2"/>
-          <line x1="18" y1="34" x2="42" y2="34" stroke="rgba(255,255,255,0.35)" strokeWidth="2"/>
-          <rect x="28" y="44" width="52" height="28" fill="rgba(255,255,255,0.15)" stroke="#fff" strokeWidth="2"/>
-          <polygon points="72,72 80,80 68,72" fill="#fff" stroke="#fff" strokeWidth="1.5" strokeLinejoin="round"/>
-          <line x1="38" y1="54" x2="68" y2="54" stroke="rgba(255,255,255,0.7)" strokeWidth="2"/>
-          <line x1="38" y1="62" x2="58" y2="62" stroke="rgba(255,255,255,0.7)" strokeWidth="2"/>
-        </svg>
-      ),
+      // eslint-disable-next-line @next/next/no-img-element
+      icon: <img src="/onboarding_01.png" alt="" style={{ height: 120, width: 'auto', display: 'block', filter: 'invert(1)', mixBlendMode: 'screen' }} />,
     },
     {
       num: '02 / 04',
       title: t.slide2Title,
       body: t.slide2Body,
-      icon: (
-        <svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="44" cy="38" r="24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2"/>
-          <path d="M36 30 C36 24 42 20 48 22 C54 24 54 32 48 34 L44 36 L44 42" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-          <circle cx="44" cy="50" r="2" fill="#fff"/>
-          <line x1="20" y1="68" x2="28" y2="60" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round"/>
-          <line x1="60" y1="68" x2="68" y2="60" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round"/>
-          <circle cx="20" cy="72" r="3" fill="rgba(255,255,255,0.25)"/>
-          <circle cx="68" cy="64" r="2.5" fill="rgba(255,255,255,0.25)"/>
-        </svg>
-      ),
+      // eslint-disable-next-line @next/next/no-img-element
+      icon: <img src="/onboarding_02.png" alt="" style={{ height: 120, width: 'auto', display: 'block', filter: 'invert(1)', mixBlendMode: 'screen' }} />,
     },
     {
       num: '03 / 04',
       title: t.slide3Title,
       body: t.slide3Body,
-      icon: (
-        <svg width="88" height="88" viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M44 72 C44 72 14 54 14 32 C14 22 22 14 32 16 C37 17 41 20 44 24 C47 20 51 17 56 16 C66 14 74 22 74 32 C74 54 44 72 44 72Z" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinejoin="round"/>
-          <rect x="22" y="36" width="44" height="10" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5"/>
-          <rect x="22" y="36" width="32" height="10" fill="rgba(255,255,255,0.7)"/>
-          <circle cx="68" cy="20" r="10" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2"/>
-          <path d="M68 14 L68 20 L73 20" stroke="rgba(255,255,255,0.8)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
+      // eslint-disable-next-line @next/next/no-img-element
+      icon: <img src="/onboarding_03.png" alt="" style={{ height: 120, width: 'auto', display: 'block', filter: 'invert(1)', mixBlendMode: 'screen' }} />,
     },
     {
       num: '04 / 04',
