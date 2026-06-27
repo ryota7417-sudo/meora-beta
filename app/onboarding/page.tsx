@@ -24,9 +24,17 @@ const PERSONALITY_TEMPLATE = `性格は、
 口調は、
 語尾は、
 口癖は、
-ユーザーへの呼びかけは、
+あなたの呼び方は、
 得意な話題は、
 苦手な話題は、`;
+
+const PERSONALITY_OMAKASE = `性格は、楽観的で明るい
+口調は、フレンドリー
+語尾は、だで、だっけな
+口癖は、知らんけど
+あなたの呼び方は、しゃちょう
+得意な話題は、ブラックジョーク
+苦手な話題は、怖い話`;
 
 // 画像を最大 maxSize px に収まるよう縮小し dataURL(PNG) で返す。透過を維持する。
 function resizeImageToDataUrl(file: File, maxSize = 512): Promise<string> {
@@ -1122,12 +1130,20 @@ function StepCharacterCreate({
             <div style={{ fontSize: 14, color: '#888', lineHeight: 1.6, marginBottom: 10 }}>
               テンプレートを使って性格や口調を指定できます。
             </div>
-            <button
-              onClick={() => setDraft(d => ({ ...d, personality: d.personality ? d.personality : PERSONALITY_TEMPLATE }))}
-              style={{ marginBottom: 10, padding: '6px 12px', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.04em' }}
-            >
-              テンプレートを挿入
-            </button>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setDraft(d => ({ ...d, personality: d.personality ? d.personality : PERSONALITY_TEMPLATE }))}
+                style={{ padding: '6px 12px', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', background: '#fff', color: '#111', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.04em' }}
+              >
+                テンプレートを挿入
+              </button>
+              <button
+                onClick={() => setDraft(d => ({ ...d, personality: PERSONALITY_OMAKASE }))}
+                style={{ padding: '6px 12px', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #111', cursor: 'pointer', borderRadius: 0, letterSpacing: '0.04em' }}
+              >
+                おまかせ
+              </button>
+            </div>
             <textarea
               value={draft.personality}
               onChange={e => setDraft(d => ({ ...d, personality: e.target.value }))}
