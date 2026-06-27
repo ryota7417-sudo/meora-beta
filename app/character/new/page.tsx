@@ -234,7 +234,7 @@ export default function CharacterNewPage() {
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
             {sectionLabel('見た目')}
             <div style={{ fontSize: 13, color: '#c00', fontWeight: 700, lineHeight: 1.6, marginBottom: 10, padding: '8px 10px', border: '1.5px solid #c00', background: '#fff5f5' }}>
-              アップロードできるのは自分で制作した画像のみです。アニメ・漫画・ゲームのキャラクターなど他者の著作物を無断でアップロードすることは著作権侵害にあたります。
+              アップロードできるのは自分で制作した画像のみです。アニメ・漫画・ゲームのキャラクターなど他者の著作物を無断でアップロードすること、および実在する人物の写真・画像を本人の同意なくアップロードすることは禁止です。
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {SPRITE_ROWS.map(({ type, label }) => {
