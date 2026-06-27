@@ -10,7 +10,7 @@ export default function TermsPage() {
       maxWidth: 480,
       margin: '0 auto',
       color: '#111',
-      fontFamily: 'var(--font-body)',
+      fontFamily: 'inherit',
     }}>
       <header style={{
         background: '#111',
