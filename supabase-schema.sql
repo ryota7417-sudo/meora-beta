@@ -221,7 +221,7 @@ CREATE TABLE IF NOT EXISTS api_usage_logs (
   id               BIGINT        GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id          UUID          NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
   character_id     TEXT,
-  model            TEXT          NOT NULL,              -- gpt-5.4-mini 等
+  model            TEXT          NOT NULL,              -- gpt-4o-mini 等
   input_tokens     INTEGER       NOT NULL,
   output_tokens    INTEGER       NOT NULL,
   total_tokens     INTEGER       NOT NULL,
@@ -259,8 +259,12 @@ CREATE TABLE IF NOT EXISTS purchases (
   hp_granted       INTEGER     NOT NULL DEFAULT 0,      -- 付与HP
   store_fee_jpy    INTEGER     NOT NULL DEFAULT 0,      -- ストア手数料（円）
   status           TEXT        NOT NULL DEFAULT 'completed', -- pending / completed / refunded
+  stripe_session_id TEXT,                                   -- Stripe Checkout Session ID
+  character_id     TEXT,                                    -- HP付与対象のキャラクターID
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE INDEX IF NOT EXISTS idx_purchases_stripe_session ON purchases (stripe_session_id);
 
 ALTER TABLE purchases ENABLE ROW LEVEL SECURITY;
 
@@ -270,7 +274,7 @@ CREATE POLICY "purchases_select_own"
   TO authenticated
   USING (auth.uid() = user_id);
 
--- INSERT は service_role のみ (ポリシー定義なし)
+-- INSERT / UPDATE は service_role のみ (ポリシー定義なし)
 
 
 -- ===========================================================================
@@ -287,6 +291,7 @@ CREATE TABLE IF NOT EXISTS creator_profiles (
   rating           NUMERIC(2,1),
   banner_bg        TEXT,
   avatar_bg        TEXT,
+  stripe_account_id TEXT,                              -- Stripe Connect Express アカウントID
   created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -578,9 +583,9 @@ CREATE TRIGGER on_auth_user_created
 -- app_config 初期データ
 -- ===========================================================================
 INSERT INTO app_config (key, value, description) VALUES
-  ('model',                    '"gpt-5.4-mini"'::jsonb,  '使用するAIモデル名'),
-  ('model_input_price_per_1m', '0.75'::jsonb,            'モデル入力価格 (USD / 1Mトークン)'),
-  ('model_output_price_per_1m','4.50'::jsonb,            'モデル出力価格 (USD / 1Mトークン)'),
+  ('model',                    '"gpt-4o-mini"'::jsonb,   '使用するAIモデル名'),
+  ('model_input_price_per_1m', '0.15'::jsonb,            'モデル入力価格 (USD / 1Mトークン)'),
+  ('model_output_price_per_1m','0.60'::jsonb,            'モデル出力価格 (USD / 1Mトークン)'),
   ('hp_per_message',           '5'::jsonb,               '1メッセージあたりのHP消費'),
   ('free_daily_hp',            '30'::jsonb,              '毎日付与される無料HP'),
   ('max_recent_messages',      '40'::jsonb,              'コンテキストに含める最大直近メッセージ数'),
@@ -601,6 +606,44 @@ ON CONFLICT (key) DO UPDATE SET
   value = EXCLUDED.value,
   description = EXCLUDED.description,
   updated_at = now();
+
+
+-- ===========================================================================
+-- 14. subscriptions -- サブスクリプション管理
+--     Stripe Subscription と同期。プラン変更・解約はすべてここで管理。
+-- ===========================================================================
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id                  BIGINT      GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id             UUID        NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
+  stripe_customer_id  TEXT        NOT NULL,
+  stripe_subscription_id TEXT     NOT NULL UNIQUE,
+  plan_id             TEXT        NOT NULL DEFAULT 'free',  -- free / light / standard
+  status              TEXT        NOT NULL DEFAULT 'active', -- active / canceled / past_due / incomplete
+  current_period_start TIMESTAMPTZ,
+  current_period_end   TIMESTAMPTZ,
+  cancel_at_period_end BOOLEAN   NOT NULL DEFAULT false,
+  created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON subscriptions (user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_stripe_sub ON subscriptions (stripe_subscription_id);
+
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+
+-- 自分のレコードのみSELECT
+CREATE POLICY "subscriptions_select_own"
+  ON subscriptions FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+-- INSERT / UPDATE は service_role のみ (ポリシー定義なし)
+
+-- updated_at 自動更新
+DROP TRIGGER IF EXISTS trg_subscriptions_updated_at ON subscriptions;
+CREATE TRIGGER trg_subscriptions_updated_at
+  BEFORE UPDATE ON subscriptions
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 
 -- ===========================================================================

@@ -1,27 +1,20 @@
 'use client';
 // MEORAが歩く庭。
 // 与えられた characters を枠内で歩かせ、時々 walk↔idle を切替え、
-// ランダムに独り言の吹き出しを出す。タップでチャットへ遷移する。
+// ランダムに独り言の吹き出しを出す。タップでチャットオーバーレイを開く。
 //
-// 世界観: レトロ×AI。背景は黒〜濃グレー + 方眼紙グリッド（暗色版）。
-// モノクロのレトロな地面/装飾のみ。草原色・絵文字は使わない。
-//
-// パフォーマンス: 位置更新は ref + 直接 style 操作で行い、React 再レンダーは
-// 「向き/状態の切替」「吹き出しの出し入れ」など最小限に限定する。
-// アニメは requestAnimationFrame（約30fpsにスロットル）。
+// thinking 状態: メッセージ送信中はキャラが立ち止まり、
+// 頭の右上に考え中アニメーション（think_1.svg / think_2.svg 交互表示）を出す。
+// 回答完了後は停止を続け、20秒無メッセージで歩き再開。
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Character, getSprite, getEquippedSkinUrls } from '@/lib/store';
 
-// 最大表示体数。超過分は先頭 N 体のみ。
 const MAX_CHARS = 10;
-
-// スプライト/アバターの表示サイズ（px）。
 const SPRITE_W = 112;
 const SPRITE_H = 112;
+const RESUME_WALK_DELAY = 20_000;
 
-// 独り言の汎用プール（JA・絵文字なし）。
 const TALK_LINES = [
   '今日もいい天気',
   'ひまだな〜',
@@ -54,26 +47,22 @@ function getTalkLines(): string[] {
   return TALK_LINES;
 }
 
-// 1体分のランタイム状態（ref で保持し DOM を直接動かす）。
 type Mover = {
   char: Character;
   x: number;
   y: number;
-  vx: number; // px/sec（符号で向き）
-  vy: number; // y方向速度（px/sec）
+  vx: number;
+  vy: number;
   dir: 'left' | 'right';
   state: 'walk' | 'idle';
-  // 次に walk/idle を切替える時刻（performance.now() ベース・ms）
   nextStateChangeAt: number;
-  // 次に独り言を出す時刻
   nextTalkAt: number;
-  // 吹き出しを消す時刻（0 = 非表示）
   talkUntil: number;
   talkText: string;
   el: HTMLDivElement | null;
+  frozen: boolean;
 };
 
-// React に「向き / 状態 / 吹き出し」を伝えるための表示用スナップショット。
 type View = {
   dir: 'left' | 'right';
   state: 'walk' | 'idle';
@@ -155,7 +144,6 @@ function SpriteVisual({ char, view }: { char: Character; view: View }) {
     );
   }
 
-  // フォールバック: イニシャルの黒枠アバター。
   return (
     <div
       style={{
@@ -180,8 +168,45 @@ function SpriteVisual({ char, view }: { char: Character; view: View }) {
   );
 }
 
-export function CharacterYard({ characters }: { characters: Character[] }) {
-  const router = useRouter();
+function ThinkingBubble() {
+  const [frame, setFrame] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setFrame(f => (f + 1) % 2), 600);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div style={{
+      position: 'absolute',
+      top: -6,
+      right: -6,
+      width: 32,
+      height: 32,
+      zIndex: 60,
+      pointerEvents: 'none',
+    }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={frame === 0 ? '/thinking/think_1.svg' : '/thinking/think_2.svg'}
+        alt=""
+        style={{ width: '100%', height: '100%' }}
+      />
+    </div>
+  );
+}
+
+export type YardThinkingState = Record<string, boolean>;
+export type YardFrozenState = Record<string, boolean>;
+
+type Props = {
+  characters: Character[];
+  onCharacterTap?: (charId: string) => void;
+  thinkingState?: YardThinkingState;
+  frozenState?: YardFrozenState;
+};
+
+export function CharacterYard({ characters, onCharacterTap, thinkingState = {}, frozenState = {} }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const moversRef = useRef<Mover[]>([]);
   const rafRef = useRef<number | null>(null);
@@ -189,13 +214,9 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
 
   const list = characters.slice(0, MAX_CHARS);
 
-  // 向き/状態/吹き出しの表示スナップショット（id -> View）。
-  // 位置はここに含めない（位置は ref + 直接 style で動かす）。
   const [views, setViews] = useState<Record<string, View>>({});
-  // ループ内の差分判定用に「最後にコミットした View」を ref で持つ（stale closure 回避）。
   const lastViewsRef = useRef<Record<string, View>>({});
 
-  // movers の初期化。characters の id 構成が変わったときだけ作り直す。
   const idsKey = list.map((c) => c.id).join('|');
 
   useEffect(() => {
@@ -204,14 +225,12 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
     const H = container?.clientHeight ?? 240;
 
     const now = performance.now();
-    // y のバンド（地に足がついた配置）: 下寄りの帯に散らす。
     const bandTop = Math.max(8, H * 0.35);
     const bandBottom = Math.max(bandTop + 1, H - SPRITE_H - 8);
 
     const movers: Mover[] = list.map((char, i) => {
       const dir: 'left' | 'right' = Math.random() < 0.5 ? 'left' : 'right';
       const speed = rand(35, 60);
-      // 重なりすぎない初期配置: 横方向に概ね等間隔 + ランダムゆらぎ。
       const slot = list.length > 0 ? (W - SPRITE_W) / list.length : 0;
       const x = Math.min(
         Math.max(0, slot * i + rand(0, Math.max(1, slot * 0.5))),
@@ -231,23 +250,37 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
         talkUntil: 0,
         talkText: '',
         el: null,
+        frozen: false,
       };
     });
     moversRef.current = movers;
 
-    // 初期 View を設定。
     const initViews: Record<string, View> = {};
     movers.forEach((m) => {
       initViews[m.char.id] = { dir: m.dir, state: m.state, talk: null };
     });
-    // 外部（コンテナ寸法・乱数）から初期化したスナップショットを反映する。
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setViews(initViews);
     lastViewsRef.current = initViews;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idsKey]);
 
-  // 各 mover の DOM 参照を登録する ref コールバック。
+  // frozenState からキャラのfrozenフラグを更新
+  useEffect(() => {
+    for (const m of moversRef.current) {
+      const shouldFreeze = frozenState[m.char.id] ?? false;
+      if (shouldFreeze && !m.frozen) {
+        m.frozen = true;
+        m.state = 'idle';
+      } else if (!shouldFreeze && m.frozen) {
+        m.frozen = false;
+        m.state = 'walk';
+        m.nextStateChangeAt = performance.now() + rand(5000, 12000);
+        m.vy = rand(-0.5, 0.5);
+      }
+    }
+  }, [frozenState]);
+
   const setMoverEl = useCallback((id: string, el: HTMLDivElement | null) => {
     const m = moversRef.current.find((mm) => mm.char.id === id);
     if (m) {
@@ -258,12 +291,11 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
     }
   }, []);
 
-  // アニメーションループ。
   useEffect(() => {
     if (list.length === 0) return;
 
     let viewDirty = false;
-    const THROTTLE = 33; // ms（約30fps）
+    const THROTTLE = 33;
 
     const tick = (t: number) => {
       rafRef.current = requestAnimationFrame(tick);
@@ -290,20 +322,22 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
       for (const m of movers) {
         const prevView = lastViewsRef.current[m.char.id];
 
-        if (t >= m.nextStateChangeAt) {
-          m.state = m.state === 'walk' ? 'idle' : 'walk';
-          m.nextStateChangeAt = t + (m.state === 'walk' ? rand(5000, 12000) : rand(800, 2000));
-          // walk開始時にy方向速度をランダムに設定
-          if (m.state === 'walk') {
-            m.vy = rand(-0.5, 0.5);
+        // frozen キャラは強制idle、移動しない
+        if (m.frozen) {
+          m.state = 'idle';
+        } else {
+          if (t >= m.nextStateChangeAt) {
+            m.state = m.state === 'walk' ? 'idle' : 'walk';
+            m.nextStateChangeAt = t + (m.state === 'walk' ? rand(5000, 12000) : rand(800, 2000));
+            if (m.state === 'walk') {
+              m.vy = rand(-0.5, 0.5);
+            }
           }
         }
 
-        // 移動（walk のときだけ）。
-        if (m.state === 'walk') {
+        if (m.state === 'walk' && !m.frozen) {
           m.x += m.vx * dtSec;
           m.y += m.vy * dtSec;
-          // 端で反転（スプライト幅を考慮してクランプ）。
           if (m.x <= 0) {
             m.x = 0;
             m.vx = Math.abs(m.vx);
@@ -313,7 +347,6 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
             m.vx = -Math.abs(m.vx);
             m.dir = 'left';
           }
-          // y方向の端で反転（コンテナの高さに応じたバンド内に収める）。
           const bandTop = Math.max(8, H * 0.35);
           const bandBottom = Math.max(bandTop + 1, H - SPRITE_H - 8);
           if (m.y <= bandTop) {
@@ -325,30 +358,32 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
           }
         }
 
-        // y のクランプ（リサイズ対策）。
         if (m.y > maxY) m.y = maxY;
         if (m.y < 0) m.y = 0;
 
-        // DOM を直接動かす（再レンダー無し）。
         if (m.el) {
           m.el.style.transform = `translate3d(${m.x.toFixed(1)}px, ${m.y.toFixed(1)}px, 0)`;
           m.el.style.zIndex = String(Math.round(m.y));
         }
 
-        // 独り言の出し入れ。
-        if (m.talkUntil > 0 && t >= m.talkUntil) {
+        // 独り言（frozen中は出さない）
+        if (m.frozen) {
           m.talkUntil = 0;
           m.talkText = '';
-        } else if (m.talkUntil === 0 && t >= m.nextTalkAt) {
-          m.talkText = pick(getTalkLines());
-          m.talkUntil = t + rand(2600, 4200);
-          m.nextTalkAt = m.talkUntil + rand(4000, 11000);
+        } else {
+          if (m.talkUntil > 0 && t >= m.talkUntil) {
+            m.talkUntil = 0;
+            m.talkText = '';
+          } else if (m.talkUntil === 0 && t >= m.nextTalkAt) {
+            m.talkText = pick(getTalkLines());
+            m.talkUntil = t + rand(2600, 4200);
+            m.nextTalkAt = m.talkUntil + rand(4000, 11000);
+          }
         }
 
         const talk = m.talkUntil > 0 ? m.talkText : null;
         nextViews[m.char.id] = { dir: m.dir, state: m.state, talk };
 
-        // 向き/状態/吹き出しのいずれかが変化したときだけ再レンダーする。
         if (
           !prevView ||
           prevView.dir !== m.dir ||
@@ -371,11 +406,9 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
       rafRef.current = null;
       lastTickRef.current = 0;
     };
-    // 差分判定は lastViewsRef を使うため views を依存に入れない（ref中心設計）。
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idsKey]);
 
-  // ボビング（上下揺れ）アニメーション用CSSキーフレームを一度だけ注入。
   useEffect(() => {
     if (document.getElementById('meora-yard-keyframes')) return;
     const style = document.createElement('style');
@@ -389,7 +422,6 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
     document.head.appendChild(style);
   }, []);
 
-  // 背景（白 + 方眼紙グリッド明色版）。
   const yardBg: React.CSSProperties = {
     position: 'relative',
     width: '100%',
@@ -441,7 +473,6 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
 
   return (
     <div ref={containerRef} style={yardBg}>
-      {/* 地面装飾（破線ライン）*/}
       <div
         style={{
           position: 'absolute',
@@ -467,11 +498,13 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
 
       {list.map((char) => {
         const view = views[char.id] ?? { dir: 'right' as const, state: 'idle' as const, talk: null };
+        const isThinking = thinkingState[char.id] ?? false;
+        const isFrozen = frozenState[char.id] ?? false;
         return (
           <div
             key={char.id}
             ref={(el) => setMoverEl(char.id, el)}
-            onClick={() => router.push(`/chat/${char.id}`)}
+            onClick={() => onCharacterTap?.(char.id)}
             style={{
               position: 'absolute',
               top: 0,
@@ -482,11 +515,10 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              animation: view.state === 'walk' ? 'meora-bob 0.4s ease-in-out infinite' : 'none',
+              animation: view.state === 'walk' && !isFrozen ? 'meora-bob 0.4s ease-in-out infinite' : 'none',
             }}
           >
-            {/* 吹き出し（白背景・黒太枠・Nosutaru・絵文字なし）。頭上に表示。 */}
-            {view.talk && (
+            {view.talk && !isThinking && (
               <div
                 style={{
                   position: 'absolute',
@@ -512,10 +544,10 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
             )}
 
             <div style={{ position: 'relative', width: SPRITE_W, height: SPRITE_H }}>
-              <SpriteVisual char={char} view={view} />
+              <SpriteVisual char={char} view={isFrozen ? { ...view, state: 'idle' } : view} />
               {(() => {
                 const skins = getEquippedSkinUrls(char.id);
-                const flip = resolveFlip(char, view);
+                const flip = resolveFlip(char, isFrozen ? { ...view, state: 'idle' } : view);
                 const overlayStyle: React.CSSProperties = { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', pointerEvents: 'none', imageRendering: 'pixelated', transform: flip ? 'scaleX(-1)' : 'none' };
                 return (
                   <>
@@ -524,6 +556,7 @@ export function CharacterYard({ characters }: { characters: Character[] }) {
                   </>
                 );
               })()}
+              {isThinking && <ThinkingBubble />}
             </div>
           </div>
         );

@@ -5,13 +5,15 @@ import { BottomNav } from '@/components/ui/BottomNav';
 import { CharAvatar } from '@/components/ui/CharacterSvg';
 import { loadState, saveState, removeCharacter, deleteChatHistory, AppState, Character } from '@/lib/store';
 import { createClient } from '@/lib/supabase';
+import { resolveAuth } from '@/lib/auth';
 import type { User } from '@supabase/supabase-js';
 
 type Purchase = {
   id: string;
-  listing_id: string;
+  listing_id: string | null;
   amount: number;
   created_at: string;
+  status: string;
   market_listings: {
     name: string;
     type: string;
@@ -35,17 +37,29 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    const { promise, cancel } = resolveAuth(supabase, { graceMs: 1500 });
 
-    supabase
-      .from('purchases')
-      .select('id, listing_id, amount, created_at, market_listings(name, type, photo_url)')
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        setPurchases((data as unknown as Purchase[]) ?? []);
-        setPurchasesLoading(false);
-      });
-  }, []);
+    let active = true;
+    promise.then((loggedIn) => {
+      if (!active) return;
+      if (!loggedIn) {
+        router.replace('/onboarding');
+        return;
+      }
+      supabase.auth.getUser().then(({ data }) => setUser(data.user));
+      supabase
+        .from('purchases')
+        .select('id, listing_id, amount, created_at, status, market_listings(name, type, photo_url)')
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false })
+        .then(({ data }) => {
+          setPurchases((data as unknown as Purchase[]) ?? []);
+          setPurchasesLoading(false);
+        });
+    });
+
+    return () => { active = false; cancel(); };
+  }, [router]);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -78,7 +92,7 @@ export default function SettingsPage() {
     : [];
 
   const typeLabel = (type: string) =>
-    type === 'character' ? 'MEORA' : type === 'food' ? 'お食事' : 'スキン';
+    type === 'character' ? 'MEORA' : type === 'food' ? 'アイテム' : 'スキン';
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 'calc(96px + env(safe-area-inset-bottom))' }}>
@@ -193,16 +207,16 @@ export default function SettingsPage() {
                     {p.market_listings?.photo_url ? (
                       <img src={p.market_listings.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
-                      <span style={{ fontSize: 20 }}>🛍</span>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
                     )}
                   </div>
                   {/* 名前 + 種別 */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 16, fontWeight: 800, color: '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {p.market_listings?.name ?? 'アイテム'}
+                      {p.market_listings?.name ?? (p.amount === 980 ? 'ぶどう' : p.amount === 480 ? 'みかん' : p.amount === 290 ? 'さくらんぼ' : 'アイテム')}
                     </div>
                     <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>
-                      {p.market_listings ? typeLabel(p.market_listings.type) : ''} · {formatDate(p.created_at)}
+                      {p.market_listings ? typeLabel(p.market_listings.type) : 'アイテム'} · {formatDate(p.created_at)}
                     </div>
                   </div>
                   {/* 金額 */}
@@ -221,6 +235,31 @@ export default function SettingsPage() {
           <div style={{ fontSize: 15, color: '#555', lineHeight: 1.8 }}>
             <div>バージョン: 0.1.0</div>
             <div>MEORA — いつもそばに。僕と過ごすAI。</div>
+          </div>
+        </div>
+
+        {/* 法令情報 */}
+        <div className="card" style={{ padding: '20px 16px' }}>
+          <h2 style={{ margin: '0 0 12px', fontSize: 17, fontWeight: 800 }}>法令情報</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', border: '2px solid #111', boxShadow: '4px 4px 0 #111', background: '#fff' }}>
+            {[
+              { href: '/legal/terms', label: '利用規約' },
+              { href: '/legal/privacy', label: 'プライバシーポリシー' },
+              { href: '/legal/commerce', label: '特定商取引法に基づく表示' },
+            ].map((item, i) => (
+              <div
+                key={item.href}
+                onClick={() => router.push(item.href)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '12px 12px', cursor: 'pointer',
+                  borderBottom: i < 2 ? '1px solid #ddd' : 'none',
+                }}
+              >
+                <span style={{ fontSize: 15, fontWeight: 800 }}>{item.label}</span>
+                <span style={{ color: '#bbb', fontSize: 18, fontWeight: 800 }}>›</span>
+              </div>
+            ))}
           </div>
         </div>
 

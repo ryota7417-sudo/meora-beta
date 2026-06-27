@@ -369,6 +369,15 @@ function StepIntro({ onNext, onBack, t }: { onNext: () => void; onBack: () => vo
   );
 }
 
+// 0.0.0.0 → localhost 正規化。Supabase の許可リストに 0.0.0.0 は入れないため。
+function getAuthOrigin(): string {
+  if (typeof window === 'undefined') return '';
+  if (window.location.hostname === '0.0.0.0') {
+    return `${window.location.protocol}//localhost:${window.location.port}`;
+  }
+  return window.location.origin;
+}
+
 // ===== アカウント作成 (step 2) =====
 function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => void; t: Dict }) {
   const [email, setEmail] = useState('');
@@ -401,13 +410,12 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
 
   const handleGoogleLogin = async () => {
     setError('');
-    // OAuth後に戻ってきたときstep 3（自分のMEORA作成）から再開できるよう先に保存
     localStorage.setItem('meora-onboarding-step', '3');
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${getAuthOrigin()}/auth/callback?next=/onboarding`,
       },
     });
   };
@@ -420,7 +428,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: { emailRedirectTo: `${getAuthOrigin()}/auth/callback` },
     });
     setLoading(false);
     if (signUpError) {
@@ -436,8 +444,8 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     setError('');
     setLoading(true);
     const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user?.email_confirmed_at) {
+    const { data: { user: verifiedUser } } = await supabase.auth.getUser();
+    if (verifiedUser?.email_confirmed_at) {
       onNext();
     } else {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
@@ -460,7 +468,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     const { error: signUpError } = await supabase.auth.signUp({
       email: newEmail,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: { emailRedirectTo: `${getAuthOrigin()}/auth/callback` },
     });
     setLoading(false);
     if (signUpError) {
@@ -492,7 +500,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
     setLoading(true);
     const supabase = createClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/auth/reset-callback',
+      redirectTo: getAuthOrigin() + '/auth/reset-callback',
     });
     setLoading(false);
     if (resetError) {
@@ -550,7 +558,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
           </div>
 
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '28px 20px', margin: '0 0 20px', textAlign: 'center' }}>
-            <div style={{ fontSize: 42, marginBottom: 16 }}>✉️</div>
+            <div style={{ marginBottom: 16 }}><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,4 12,13 2,4"/></svg></div>
             <div style={{ fontSize: 18, fontWeight: 800, color: '#111', marginBottom: 16, lineHeight: 1.6 }}>
               確認メールを送信しました
             </div>
@@ -667,7 +675,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
 
           {resetSent ? (
             <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '28px 20px', textAlign: 'center' }}>
-              <div style={{ fontSize: 42, marginBottom: 16 }}>✉️</div>
+              <div style={{ marginBottom: 16 }}><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="22,4 12,13 2,4"/></svg></div>
               <div style={{ fontSize: 18, fontWeight: 800, color: '#111', marginBottom: 16, lineHeight: 1.6 }}>
                 パスワードリセットメールを送信しました
               </div>
@@ -869,7 +877,7 @@ function StepAccount({ onNext, onBack, t }: { onNext: () => void; onBack: () => 
 
         {/* 利用規約 */}
         <p style={{ fontSize: 13, color: '#999', textAlign: 'center', marginTop: 12, lineHeight: 1.6, padding: '0 8px' }}>
-          {t.termsPrefix}<a href="#" style={{ color: '#555', textDecoration: 'underline' }}>{t.termsOfService}</a>{t.termsMiddle}<a href="#" style={{ color: '#555', textDecoration: 'underline' }}>{t.privacyPolicy}</a>{t.termsSuffix}
+          {t.termsPrefix}<a href="/legal/terms" style={{ color: '#555', textDecoration: 'underline' }}>{t.termsOfService}</a>{t.termsMiddle}<a href="/legal/privacy" style={{ color: '#555', textDecoration: 'underline' }}>{t.privacyPolicy}</a>{t.termsSuffix}
         </p>
 
         {/* ログインリンク + アカウント復旧 */}

@@ -1,55 +1,68 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { loadState, AppState, loadChatHistory, getEquippedSkinUrls } from '@/lib/store';
 import {
-  Energy,
-  loadEnergy,
-  saveEnergy,
-  refreshEnergy,
-  purchaseSpot,
+  type Wallet,
+  loadWallet,
+  saveWallet,
+  refreshWallet,
   changePlan,
-  getMeterLevel,
-  getMeterStatusText,
-  getDailyMeals,
   getPlan,
+  getMonthlyLimit,
+  getRemainingMessages,
   ENERGY_CONFIG,
   PlanId,
   SpotKey,
-  MealKey,
 } from '@/lib/energy';
 import { BottomNav } from '@/components/ui/BottomNav';
-import { SatietyMeter } from '@/components/ui/SatietyMeter';
 import { CharAvatar } from '@/components/ui/CharacterSvg';
-import { CharacterYard } from '@/components/ui/CharacterYard';
+import { CharacterYard, type YardThinkingState, type YardFrozenState } from '@/components/ui/CharacterYard';
+import { ChatOverlay } from '@/components/ui/ChatOverlay';
 import { createClient } from '@/lib/supabase';
 import { resolveAuth } from '@/lib/auth';
+import { fullSync } from '@/lib/sync';
 
-// トーク一覧用のMEORAごとプレビュー型
 type ChatPreview = {
-  text: string;   // 最後のメッセージ本文（無ければ空文字）
-  ts: number;     // 最後のメッセージの timestamp（無ければ 0）
+  text: string;
+  ts: number;
 };
 
-// モノクロSVGのお食事アイコン（色付き絵文字は使わない）
-function MealIcon({ mealKey }: { mealKey: MealKey }) {
+function SpotIcon({ spotKey }: { spotKey: SpotKey }) {
   const common = { width: 22, height: 22, fill: 'none', stroke: '#111', strokeWidth: 2 } as const;
-  switch (mealKey) {
-    case 'onigiri':
-      return <svg viewBox="0 0 24 24" {...common} strokeLinejoin="round"><path d="M12 4 4 19h16L12 4Z"/><rect x="9" y="13" width="6" height="5" fill="#111" stroke="none"/></svg>;
-    case 'sandwich':
-      return <svg viewBox="0 0 24 24" {...common} strokeLinejoin="round"><path d="M4 18 12 6l8 12H4Z"/><path d="M7 18h10"/></svg>;
-    case 'nikujaga':
-      return <svg viewBox="0 0 24 24" {...common}><path d="M4 13a8 4 0 0 0 16 0"/><path d="M4 13a8 4 0 0 1 16 0"/><path d="M6 17h12"/></svg>;
-    case 'omurice':
-      return <svg viewBox="0 0 24 24" {...common}><ellipse cx="12" cy="13" rx="9" ry="5"/><path d="M7 11c2-2 8-2 10 0"/></svg>;
-    case 'sushi':
-      return <svg viewBox="0 0 24 24" {...common}><rect x="4" y="9" width="16" height="7" rx="2"/><path d="M4 12h16"/></svg>;
+  switch (spotKey) {
+    case 'cherry':
+      return (
+        <svg viewBox="0 0 24 24" {...common} strokeLinejoin="round" strokeLinecap="round">
+          <circle cx="9" cy="16" r="4" />
+          <circle cx="16" cy="16" r="4" />
+          <path d="M9 12C9 8 12 5 12 5" />
+          <path d="M16 12C16 8 12 5 12 5" />
+          <path d="M12 5C14 4 16 4.5 17 5" />
+        </svg>
+      );
+    case 'mikan':
+      return (
+        <svg viewBox="0 0 24 24" {...common} strokeLinejoin="round" strokeLinecap="round">
+          <circle cx="12" cy="14" r="6" />
+          <path d="M12 8V6" />
+          <path d="M10 7C11 5 13 5 14 7" />
+        </svg>
+      );
+    case 'grape':
+      return (
+        <svg viewBox="0 0 24 24" {...common} strokeLinejoin="round" strokeLinecap="round">
+          <circle cx="12" cy="10" r="2.5" />
+          <circle cx="8.5" cy="14" r="2.5" />
+          <circle cx="15.5" cy="14" r="2.5" />
+          <circle cx="12" cy="18" r="2.5" />
+          <path d="M12 7.5V5" />
+          <path d="M10 6C11 4 13 4 14 6" />
+        </svg>
+      );
   }
 }
 
-// 時刻の簡易表記。
-// 当日: HH:MM / 前日: 昨日 / 同週(2〜6日前): 曜日 / それ以前: M/D
 function formatChatTime(ts: number): string {
   if (!ts) return '';
   const now = new Date();
@@ -72,38 +85,149 @@ function formatChatTime(ts: number): string {
 }
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f5f0' }}>
+        <span style={{ fontSize: 16, color: '#888' }}>読み込み中...</span>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [state, setState] = useState<AppState | null>(null);
   const [previews, setPreviews] = useState<Record<string, ChatPreview>>({});
-  const [energy, setEnergy] = useState<Energy | null>(null);
-  const [showKitchen, setShowKitchen] = useState(false);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [showShop, setShowShop] = useState(searchParams.get('shop') === '1');
   const [toast, setToast] = useState('');
+
+  // ChatGPT-like overlay state
+  const [chatCharId, setChatCharId] = useState<string | null>(null);
+  const [thinkingState, setThinkingState] = useState<YardThinkingState>({});
+  const [frozenState, setFrozenState] = useState<YardFrozenState>({});
+  const resumeTimerRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  const handleCharacterTap = useCallback((charId: string) => {
+    setChatCharId(charId);
+  }, []);
+
+  const handleChatClose = useCallback(() => {
+    setChatCharId(null);
+  }, []);
+
+  const handleThinkingChange = useCallback((charId: string, thinking: boolean) => {
+    setThinkingState(prev => ({ ...prev, [charId]: thinking }));
+    if (thinking) {
+      // 考え中: frozen にする（歩き停止）
+      if (resumeTimerRef.current[charId]) {
+        clearTimeout(resumeTimerRef.current[charId]);
+        delete resumeTimerRef.current[charId];
+      }
+      setFrozenState(prev => ({ ...prev, [charId]: true }));
+    }
+  }, []);
+
+  const handleReplyComplete = useCallback((charId: string) => {
+    // 回答完了: 立ち止まったまま。20秒後に歩き再開
+    if (resumeTimerRef.current[charId]) {
+      clearTimeout(resumeTimerRef.current[charId]);
+    }
+    resumeTimerRef.current[charId] = setTimeout(() => {
+      setFrozenState(prev => ({ ...prev, [charId]: false }));
+      delete resumeTimerRef.current[charId];
+    }, 20_000);
+  }, []);
+
+  // cleanup timers
+  useEffect(() => {
+    const timers = resumeTimerRef.current;
+    return () => {
+      Object.values(timers).forEach(t => clearTimeout(t));
+    };
+  }, []);
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(''), 3000);
   };
 
-  const doPurchaseSpot = (spotKey: SpotKey) => {
-    const next = refreshEnergy(loadEnergy());
-    const res = purchaseSpot(next, spotKey);
-    if (!res) return;
-    saveEnergy(next);
-    setEnergy({ ...next });
-    showToast(`${ENERGY_CONFIG.meals[ENERGY_CONFIG.spotItems[spotKey].mealKey].label}を購入しました！（仮）`);
+  const [purchasing, setPurchasing] = useState(false);
+
+  const doPurchaseSpot = async (spotKey: SpotKey) => {
+    if (purchasing) return;
+    setPurchasing(true);
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ spotKey }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        showToast(data.error || '購入処理に失敗しました');
+        setPurchasing(false);
+      }
+    } catch {
+      showToast('購入処理に失敗しました');
+      setPurchasing(false);
+    }
   };
 
-  const doChangePlan = (planId: PlanId) => {
-    const next = changePlan(refreshEnergy(loadEnergy()), planId);
-    saveEnergy(next);
-    setEnergy({ ...next });
-    showToast(`${getPlan(planId).label}に変更しました（仮）`);
+  const [subscribing, setSubscribing] = useState(false);
+  const [subStatus, setSubStatus] = useState<{ planId: string; status: string; cancelAtPeriodEnd?: boolean } | null>(null);
+
+  const doSubscribe = async (planId: PlanId) => {
+    if (subscribing || planId === 'free') return;
+    setSubscribing(true);
+    try {
+      const res = await fetch('/api/stripe/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId }),
+      });
+      const data = await res.json();
+      if (data.upgraded && wallet) {
+        const w = changePlan(wallet, data.planId as PlanId);
+        saveWallet(w);
+        setWallet({ ...w });
+        setSubStatus({ planId: data.planId, status: 'active' });
+        showToast(`${getPlan(data.planId).label}にアップグレードしました`);
+        setSubscribing(false);
+      } else if (data.url) {
+        window.location.href = data.url;
+      } else {
+        showToast(data.error || 'プラン登録に失敗しました');
+        setSubscribing(false);
+      }
+    } catch {
+      showToast('プラン登録に失敗しました');
+      setSubscribing(false);
+    }
+  };
+
+  const doOpenPortal = async () => {
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        showToast('ポータルを開けませんでした');
+      }
+    } catch {
+      showToast('ポータルを開けませんでした');
+    }
   };
 
   useEffect(() => {
     const supabase = createClient();
 
-    // 認証解決は「肯定(session あり)は速攻採用 / 否定(null)は猶予と再確認の後に採用」。
     const { promise, cancel } = resolveAuth(supabase, { graceMs: 1500 });
 
     let active = true;
@@ -134,10 +258,41 @@ export default function DashboardPage() {
       });
       setPreviews(map);
       setState(s);
-      // 満腹度を最新化（毎朝5時の食事配布・24h失効を自動反映）して保存。
-      const e = refreshEnergy(loadEnergy());
-      saveEnergy(e);
-      setEnergy(e);
+      const w = refreshWallet(loadWallet());
+      saveWallet(w);
+      setWallet(w);
+
+      // クラウド同期（バックグラウンド）
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user && active) {
+          fullSync(user.id).then(result => {
+            if (!active) return;
+            if (result.charactersSynced > 0) {
+              const refreshed = loadState();
+              setState(refreshed);
+              const refreshedMap: Record<string, ChatPreview> = {};
+              refreshed.characters.forEach(c => {
+                const history = loadChatHistory(c.id);
+                const last = history[history.length - 1];
+                refreshedMap[c.id] = last
+                  ? { text: last.content, ts: last.timestamp }
+                  : { text: '', ts: 0 };
+              });
+              setPreviews(refreshedMap);
+            }
+          }).catch(() => {});
+        }
+      });
+
+      fetch('/api/subscription').then(r => r.json()).then(data => {
+        if (!active) return;
+        setSubStatus(data);
+        if (data.planId && data.planId !== 'free' && data.status === 'active') {
+          const updated = changePlan(w, data.planId as PlanId);
+          saveWallet(updated);
+          setWallet({ ...updated });
+        }
+      }).catch(() => {});
     });
 
     return () => {
@@ -146,7 +301,7 @@ export default function DashboardPage() {
     };
   }, [router]);
 
-  if (!state || !energy) {
+  if (!state || !wallet) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f5f0' }}>
         <span style={{ fontSize: 16, color: '#888' }}>読み込み中...</span>
@@ -154,14 +309,13 @@ export default function DashboardPage() {
     );
   }
 
-  const plan = getPlan(energy.plan);
-  const dailyMeals = getDailyMeals(energy.plan);
+  const remaining = getRemainingMessages(wallet);
+  const monthlyLimit = getMonthlyLimit(wallet);
+  const plans = Object.values(ENERGY_CONFIG.plans);
   const spotEntries = (Object.keys(ENERGY_CONFIG.spotItems) as SpotKey[]).map((key) => ({
     key,
     ...ENERGY_CONFIG.spotItems[key],
-    ...ENERGY_CONFIG.meals[ENERGY_CONFIG.spotItems[key].mealKey],
   }));
-  const plans = Object.values(ENERGY_CONFIG.plans);
 
   return (
     <div style={{
@@ -196,7 +350,7 @@ export default function DashboardPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
-            onClick={() => setShowKitchen(true)}
+            onClick={() => setShowShop(true)}
             style={{
               background: '#fff',
               color: '#111',
@@ -210,14 +364,19 @@ export default function DashboardPage() {
               fontFamily: 'inherit',
             }}
           >
-            持ち物
+            ショップ
           </button>
         </div>
       </header>
 
-      {/* 上部: MEORAが歩く庭（空きスペースを広く占有） */}
+      {/* 上部: MEORAが歩く庭 */}
       <div style={{ flex: 1, minHeight: 180, position: 'relative' }}>
-        <CharacterYard characters={state.characters} />
+        <CharacterYard
+          characters={state.characters}
+          onCharacterTap={handleCharacterTap}
+          thinkingState={thinkingState}
+          frozenState={frozenState}
+        />
       </div>
 
       {/* MAIN CONTENT（下部: トーク一覧） */}
@@ -259,7 +418,7 @@ export default function DashboardPage() {
               return (
                 <div
                   key={char.id}
-                  onClick={() => router.push(`/chat/${char.id}`)}
+                  onClick={() => handleCharacterTap(char.id)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -300,7 +459,6 @@ export default function DashboardPage() {
               );
             })}
 
-            {/* ＋ 自分のMEORAを作る（自作MEORAが無い場合のみ表示） */}
             {!state.characters.some(c => c.userCreated) && (
               <div
                 style={{ display: 'flex', alignItems: 'center', padding: '12px 12px', gap: 11, cursor: 'pointer', background: '#f7f5f0', borderBottom: '1px solid #ddd' }}
@@ -317,7 +475,6 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* ＋ MEORAを探す（クリエイターマーケットへ） */}
             <div
               style={{ display: 'flex', alignItems: 'center', padding: '12px 12px', gap: 11, cursor: 'pointer', background: '#f7f5f0' }}
               onClick={() => router.push('/market')}
@@ -337,14 +494,13 @@ export default function DashboardPage() {
 
       </main>
 
-      {/* 持ち物 / ごはん / ショップ オーバーレイ
-          歩く庭(CharacterYard)の各キャラに動的 z-index が付くため、確実に最前面へ出す。 */}
-      {showKitchen && (
+      {/* ショップ オーバーレイ */}
+      {showShop && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 100000,
           background: 'rgba(0,0,0,0.5)',
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-        }} onClick={() => setShowKitchen(false)}>
+        }} onClick={() => setShowShop(false)}>
           <div
             onClick={e => e.stopPropagation()}
             style={{
@@ -358,10 +514,15 @@ export default function DashboardPage() {
               overflowY: 'auto',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800 }}>持ち物</h2>
-              <button onClick={() => setShowKitchen(false)}
-                style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#111', fontWeight: 800 }}>✕</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800 }}>ショップ</h2>
+              <button onClick={() => setShowShop(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#111', padding: 4, display: 'flex', alignItems: 'center' }}>
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <line x1="3" y1="3" x2="15" y2="15" stroke="#111" strokeWidth="2.5" strokeLinecap="round"/>
+                  <line x1="15" y1="3" x2="3" y2="15" stroke="#111" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+              </button>
             </div>
 
             {toast && (
@@ -370,77 +531,160 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* 満腹メーター */}
-            <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: 14, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
-              <SatietyMeter energy={energy} />
-              <strong style={{ fontSize: 16 }}>{getMeterStatusText(getMeterLevel(energy))}</strong>
-            </div>
-
-            {/* 毎日のごはん */}
+            {/* 残り通数 */}
             <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: 14, marginBottom: 14 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#7a746c', marginBottom: 4 }}>毎日のごはん（{plan.label}）</div>
-              <p style={{ fontSize: 13, color: '#888', margin: '0 0 10px', lineHeight: 1.6 }}>毎朝5時に届きます。その日のうちに食べないと翌朝には新しい食事に切り替わります（貯められません）。</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {dailyMeals.map((meal) => (
-                  <div key={meal.key} style={{ display: 'flex', alignItems: 'center', gap: 10, border: '2px solid #111', padding: '8px 10px', background: '#fff' }}>
-                    <MealIcon mealKey={meal.key} />
-                    <span style={{ fontWeight: 800 }}>{meal.label}</span>
-                    <span style={{ marginLeft: 'auto', fontSize: 12, color: '#888' }}>満腹メーター +{meal.meterRecovery}</span>
-                  </div>
-                ))}
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#7a746c', marginBottom: 8 }}>今月の残りメッセージ</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                <span style={{ fontSize: 28, fontWeight: 800, fontFamily: 'var(--font-mono)', color: '#111' }}>
+                  {remaining.monthly}
+                </span>
+                <span style={{ fontSize: 14, color: '#888' }}>
+                  / {monthlyLimit}通
+                </span>
               </div>
+              {remaining.bonus > 0 && (
+                <div style={{ fontSize: 13, color: '#e8568a', fontWeight: 700, marginTop: 4 }}>
+                  + ボーナス {remaining.bonus}通（180日間有効）
+                </div>
+              )}
             </div>
 
-            {/* スポット購入 */}
+            {/* フルーツショップ（スポット購入） */}
             <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: 14, marginBottom: 14 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#7a746c', marginBottom: 4 }}>スポットで買えるごはん</div>
-              <p style={{ fontSize: 13, color: '#888', margin: '0 0 10px', lineHeight: 1.6 }}>買ったごはんは失効しません。毎日のごはんを使い切ったあとに消費されます。</p>
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#7a746c', marginBottom: 10 }}>アイテムショップ</div>
+              <div style={{ fontSize: 11, color: '#999', marginBottom: 10 }}>
+                購入するとボーナス通数が追加されます（180日間有効）
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {spotEntries.map((item) => (
-                  <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: 10, border: '2px solid #111', padding: '8px 10px', background: '#fff' }}>
-                    <MealIcon mealKey={item.mealKey} />
-                    <span style={{ fontWeight: 800 }}>{item.label}</span>
-                    <span style={{ marginLeft: 'auto', fontSize: 12, color: '#888' }}>満腹メーター +{item.meterRecovery}</span>
-                    <button onClick={() => doPurchaseSpot(item.key)}
-                      style={{ background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', padding: '6px 10px', fontSize: 13, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
-                      ¥{item.priceYen}で買う
-                    </button>
-                  </div>
+                  <button key={item.key} onClick={() => doPurchaseSpot(item.key)}
+                    disabled={purchasing}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '12px 14px', background: '#f8f8f4', border: '2px solid #111',
+                      boxShadow: '2px 2px 0 #111', cursor: purchasing ? 'not-allowed' : 'pointer',
+                      fontFamily: 'inherit', opacity: purchasing ? 0.5 : 1, width: '100%',
+                    }}>
+                    <SpotIcon spotKey={item.key} />
+                    <div style={{ textAlign: 'left', flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 800 }}>{item.label}</div>
+                      <div style={{ fontSize: 12, color: '#888' }}>+{item.messagesGranted}通</div>
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 800, fontFamily: 'var(--font-mono)', color: '#e8568a', flexShrink: 0 }}>
+                      {item.priceYen}円
+                    </div>
+                  </button>
                 ))}
               </div>
-              <p style={{ fontSize: 12, color: '#aaa', margin: '10px 0 0' }}>※ 決済は準備中のため、いまは「仮購入」としてその場で反映されます。</p>
             </div>
 
-            {/* プラン */}
+            {/* 月額プラン */}
             <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: 14 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#7a746c', marginBottom: 10 }}>プラン</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {plans.map((p) => {
-                  const active = p.id === energy.plan;
-                  const mealLabels = p.dailyMeals.map((k: MealKey) => ENERGY_CONFIG.meals[k].label).join('・');
-                  return (
-                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, border: active ? '2px solid #e8568a' : '2px solid #111', boxShadow: active ? '4px 4px 0 #e8568a' : 'none', padding: '10px 12px', background: '#fff' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <strong>{p.label}</strong>
-                        <span style={{ fontSize: 12, color: '#888' }}>{p.priceYen === 0 ? '無料' : `月額¥${p.priceYen}`}・毎日：{mealLabels}</span>
-                      </div>
-                      {active ? (
-                        <span style={{ fontSize: 12, fontWeight: 800, background: '#e8568a', color: '#fff', padding: '3px 8px', border: '2px solid #111' }}>利用中</span>
-                      ) : (
-                        <button onClick={() => doChangePlan(p.id)}
-                          style={{ background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', padding: '6px 10px', fontSize: 13, fontWeight: 800, cursor: 'pointer', borderRadius: 0, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
-                          {p.priceYen === 0 ? '無料に戻す' : 'このプランにする'}
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
+              <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.1em', color: '#7a746c', marginBottom: 4 }}>月額プラン</div>
+              <div style={{ fontSize: 11, color: '#999', marginBottom: 10 }}>
+                毎日のメッセージ上限がアップグレードされます
               </div>
-              <p style={{ fontSize: 12, color: '#aaa', margin: '10px 0 0' }}>※ 決済は準備中のため、プラン変更は「仮」としてその場で反映されます。</p>
+
+              {(() => {
+                const currentPlanId = subStatus?.planId ?? 'free';
+                const isSubscribed = subStatus && currentPlanId !== 'free' && subStatus.status === 'active';
+                const planOrder: PlanId[] = ['free', 'light', 'standard'];
+                const currentIdx = planOrder.indexOf(currentPlanId as PlanId);
+
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {isSubscribed && (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                          <span style={{ background: '#e8568a', color: '#fff', fontSize: 11, fontWeight: 800, padding: '2px 8px', border: '1.5px solid #111' }}>
+                            加入中
+                          </span>
+                          <span style={{ fontSize: 15, fontWeight: 800 }}>
+                            {getPlan(currentPlanId as PlanId).label}
+                          </span>
+                        </div>
+                        {subStatus.cancelAtPeriodEnd && (
+                          <div style={{ fontSize: 12, color: '#c62828' }}>
+                            次回更新日に解約されます
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {plans.filter(p => p.id !== 'free' && p.id !== currentPlanId).map((p) => {
+                      const idx = planOrder.indexOf(p.id);
+                      const isUpgrade = idx > currentIdx;
+                      return (
+                        <button key={p.id} onClick={() => doSubscribe(p.id)}
+                          disabled={subscribing}
+                          style={{
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                            padding: '12px 14px', background: '#f8f8f4', border: '2px solid #111',
+                            boxShadow: '2px 2px 0 #111', cursor: subscribing ? 'not-allowed' : 'pointer',
+                            fontFamily: 'inherit', opacity: subscribing ? 0.5 : 1, width: '100%',
+                          }}>
+                          <div style={{ textAlign: 'left' }}>
+                            <div style={{ fontSize: 14, fontWeight: 800 }}>
+                              {isSubscribed ? (isUpgrade ? 'アップグレード: ' : 'ダウングレード: ') : ''}{p.label}
+                            </div>
+                            <div style={{ fontSize: 11, color: '#888' }}>
+                              {p.monthlyLimit}通/月
+                            </div>
+                          </div>
+                          <div style={{ fontSize: 15, fontWeight: 800, fontFamily: 'var(--font-mono)', color: isUpgrade || !isSubscribed ? '#e8568a' : '#888' }}>
+                            {p.priceYen}円/月
+                          </div>
+                        </button>
+                      );
+                    })}
+
+                    {/* 無料プランの表示 */}
+                    {!isSubscribed && (
+                      <div style={{
+                        padding: '12px 14px', background: '#f0f0ea', border: '2px solid #111',
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      }}>
+                        <div>
+                          <div style={{ fontSize: 14, fontWeight: 800 }}>現在: 無料プラン</div>
+                          <div style={{ fontSize: 11, color: '#888' }}>約50通/月</div>
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: '#888' }}>0円</div>
+                      </div>
+                    )}
+
+                    {isSubscribed && (
+                      <button onClick={doOpenPortal}
+                        style={{
+                          width: '100%', padding: '10px', background: '#f8f8f4', border: '2px solid #111',
+                          boxShadow: '2px 2px 0 #111', fontSize: 13, fontWeight: 800, cursor: 'pointer',
+                          fontFamily: 'inherit', marginTop: 4,
+                        }}>
+                        プランを管理する（解約）
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
       )}
+
+      {/* Chat overlay */}
+      {chatCharId && state && (() => {
+        const chatChar = state.characters.find(c => c.id === chatCharId);
+        if (!chatChar) return null;
+        return (
+          <ChatOverlay
+            char={chatChar}
+            appState={state}
+            open={!!chatCharId}
+            onClose={handleChatClose}
+            onThinkingChange={handleThinkingChange}
+            onReplyComplete={handleReplyComplete}
+          />
+        );
+      })()}
 
       <BottomNav />
     </div>
