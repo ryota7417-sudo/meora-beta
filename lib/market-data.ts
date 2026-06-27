@@ -25,13 +25,13 @@ export type MarketPlan = {
   joined?: boolean; // 「加入中」表示のサンプル用
 };
 
-// お食事アイテム（満腹度/HP 回復用）
+// アイテム（ボーナス通数追加用）
 export type FoodItem = {
   id: string;
   name: string;
   desc: string;
-  hpBonus: number; // 満腹度回復量
-  price: number;   // 表示用価格（円）。0 = 毎日無料支給
+  messagesGranted: number;
+  price: number;
 };
 
 // スキンアイテム
@@ -45,11 +45,10 @@ export type SkinItem = {
   slot?: 'wear' | 'hat';
 };
 
-// デフォルトお食事アイテム（3段階）
 export const DEFAULT_FOOD_ITEMS: FoodItem[] = [
-  { id: 'food-onigiri',  name: 'おにぎり',  desc: '基本のご飯。毎日1個無料支給。',  hpBonus: 30,  price: 0 },
-  { id: 'food-omurice',  name: 'オムライス', desc: '満腹セット。ちょっと贅沢に。',     hpBonus: 80,  price: 150 },
-  { id: 'food-sushi',    name: 'お寿司',    desc: '特上ご飯。たっぷり元気になれる。', hpBonus: 200, price: 300 },
+  { id: 'food-cherry', name: 'さくらんぼ', desc: 'ちょっとしたおやつに。', messagesGranted: 50, price: 290 },
+  { id: 'food-mikan',  name: 'みかん',    desc: 'たっぷり元気が出る。',   messagesGranted: 90, price: 480 },
+  { id: 'food-grape',  name: 'ぶどう',    desc: 'ごほうびフルーツ。',     messagesGranted: 200, price: 980 },
 ];
 
 // マーケットのMEORA。AcquirableCharacter を満たす（入手時にそのまま使える）。
@@ -69,10 +68,10 @@ export type MarketCharacter = AcquirableCharacter & {
   creatorId: string;
   creatorName: string;
   freePoints: string[]; // 無料で話せる範囲
-  subPoints: { kind: 'consume' | 'skin'; text: string }[]; // サブスクで届く内容
+  subPoints: { kind: 'consume' | 'skin'; text: string }[];
   subPrice: number; // サブ価格（表示用）
   items: MarketItem[]; // 関連アイテム（スタブ）
-  foodItems?: FoodItem[]; // お店で買えるお食事アイテム（任意）
+  foodItems?: FoodItem[];
   buyPrice?: number; // 買い切り価格（0または未指定 = 無料入手可能、値あり = 有料買い切り）
 };
 
@@ -87,6 +86,7 @@ export type MarketCreator = {
   bannerBg: string;
   avatarBg: string;
   avatarUrl?: string; // クリエイターアバター画像（未指定時はデフォルト画像）
+  sns_x?: string; // X (Twitter) handle (@付き)
   plans: MarketPlan[];
   items: MarketItem[]; // お店扱いのアイテム（スタブ）
 };
@@ -102,22 +102,22 @@ export const MARKET_CREATORS: MarketCreator[] = [
     bannerBg: '#f7f5f0',
     avatarBg: '#f7f5f0',
     avatarUrl: '/characters/opiyo_icon.PNG',
+    sns_x: '@ryotanoe',
     plans: [
       {
         id: 'opiyo_light',
         name: 'ライト',
-        price: 480,
+        price: 680,
         perks: [
-          { kind: 'consume', text: 'サンドイッチ1ヶ月分が届きます' },
+          { kind: 'consume', text: '毎月200通までお話できます' },
         ],
       },
       {
         id: 'opiyo_standard',
         name: 'スタンダード',
-        price: 980,
+        price: 1480,
         perks: [
-          { kind: 'consume', text: 'サンドイッチ1ヶ月分が届きます' },
-          { kind: 'consume', text: '定食1ヶ月分が届きます' },
+          { kind: 'consume', text: '毎月700通までお話できます' },
         ],
       },
     ],
@@ -148,9 +148,9 @@ export const MARKET_CHARACTERS: MarketCharacter[] = [
     creatorName: 'おぴよ',
     freePoints: [],
     subPoints: [
-      { kind: 'consume', text: 'サンドイッチ1ヶ月分（31個）が届きます' },
+      { kind: 'consume', text: '毎月200通までお話できます' },
     ],
-    subPrice: 480,
+    subPrice: 680,
     items: [],
   },
   {
@@ -174,11 +174,10 @@ export const MARKET_CHARACTERS: MarketCharacter[] = [
     creatorId: 'opiyo',
     creatorName: 'おぴよ',
     freePoints: [],
-    buyPrice: 300,
     subPoints: [
-      { kind: 'consume', text: 'サンドイッチ1ヶ月分（31個）が届きます' },
+      { kind: 'consume', text: '毎月200通までお話できます' },
     ],
-    subPrice: 480,
+    subPrice: 680,
     items: [],
   },
   {
@@ -203,9 +202,9 @@ export const MARKET_CHARACTERS: MarketCharacter[] = [
     creatorName: 'おぴよ',
     freePoints: [],
     subPoints: [
-      { kind: 'consume', text: 'サンドイッチ1ヶ月分（31個）が届きます' },
+      { kind: 'consume', text: '毎月200通までお話できます' },
     ],
-    subPrice: 480,
+    subPrice: 680,
     items: [],
   },
 ];

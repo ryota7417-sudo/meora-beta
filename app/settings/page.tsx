@@ -33,7 +33,11 @@ export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [purchasesLoading, setPurchasesLoading] = useState(true);
-  const [state, setLocalState] = useState<AppState | null>(() => loadState());
+  const [state, setLocalState] = useState<AppState | null>(null);
+
+  useEffect(() => {
+    setLocalState(loadState());
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -261,6 +265,53 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* お問い合わせ・フィードバック */}
+        <div className="card" style={{ padding: '20px 16px' }}>
+          <h2 style={{ margin: '0 0 8px', fontSize: 17, fontWeight: 800 }}>フィードバック・お問い合わせ</h2>
+          <p style={{ margin: '0 0 14px', fontSize: 14, color: '#888', lineHeight: 1.6 }}>
+            ご意見・ご要望・バグ報告をお聞かせください。より良いMEORAを作るためにお役立てします。
+          </p>
+          <a
+            href="https://forms.gle/DfRvTLBLVJwH3Eog6"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'block',
+              textAlign: 'center',
+              background: '#111',
+              color: '#fff',
+              border: '2px solid #111',
+              boxShadow: '3px 3px 0 #555',
+              fontWeight: 800,
+              fontSize: 15,
+              padding: '12px',
+              textDecoration: 'none',
+              letterSpacing: '0.02em',
+              marginBottom: 10,
+            }}
+          >
+            フィードバックを送る
+          </a>
+          <a
+            href="mailto:info@aritude.com"
+            style={{
+              display: 'block',
+              textAlign: 'center',
+              background: '#fff',
+              color: '#111',
+              border: '2px solid #111',
+              boxShadow: '3px 3px 0 #111',
+              fontWeight: 800,
+              fontSize: 14,
+              padding: '10px',
+              textDecoration: 'none',
+              letterSpacing: '0.02em',
+            }}
+          >
+            メールで問い合わせる（info@aritude.com）
+          </a>
         </div>
 
         {/* データ管理 */}

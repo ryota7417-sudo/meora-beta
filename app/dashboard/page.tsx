@@ -16,6 +16,7 @@ import {
   SpotKey,
 } from '@/lib/energy';
 import { BottomNav } from '@/components/ui/BottomNav';
+import { ReleaseSoonModal } from '@/components/ui/ReleaseSoonModal';
 import { CharAvatar } from '@/components/ui/CharacterSvg';
 import { CharacterYard } from '@/components/ui/CharacterYard';
 import { createClient } from '@/lib/supabase';
@@ -27,39 +28,17 @@ type ChatPreview = {
   ts: number;
 };
 
+const SPOT_ICON_MAP: Record<SpotKey, string> = {
+  cherry: '/items/cherry.png',
+  mikan:  '/items/mikan.png',
+  grape:  '/items/grape.png',
+};
+
 function SpotIcon({ spotKey }: { spotKey: SpotKey }) {
-  const common = { width: 22, height: 22, fill: 'none', stroke: '#111', strokeWidth: 2 } as const;
-  switch (spotKey) {
-    case 'cherry':
-      return (
-        <svg viewBox="0 0 24 24" {...common} strokeLinejoin="round" strokeLinecap="round">
-          <circle cx="9" cy="16" r="4" />
-          <circle cx="16" cy="16" r="4" />
-          <path d="M9 12C9 8 12 5 12 5" />
-          <path d="M16 12C16 8 12 5 12 5" />
-          <path d="M12 5C14 4 16 4.5 17 5" />
-        </svg>
-      );
-    case 'mikan':
-      return (
-        <svg viewBox="0 0 24 24" {...common} strokeLinejoin="round" strokeLinecap="round">
-          <circle cx="12" cy="14" r="6" />
-          <path d="M12 8V6" />
-          <path d="M10 7C11 5 13 5 14 7" />
-        </svg>
-      );
-    case 'grape':
-      return (
-        <svg viewBox="0 0 24 24" {...common} strokeLinejoin="round" strokeLinecap="round">
-          <circle cx="12" cy="10" r="2.5" />
-          <circle cx="8.5" cy="14" r="2.5" />
-          <circle cx="15.5" cy="14" r="2.5" />
-          <circle cx="12" cy="18" r="2.5" />
-          <path d="M12 7.5V5" />
-          <path d="M10 6C11 4 13 4 14 6" />
-        </svg>
-      );
-  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={SPOT_ICON_MAP[spotKey]} alt={spotKey} width={40} height={40} style={{ objectFit: 'contain', imageRendering: 'pixelated' }} />
+  );
 }
 
 function formatChatTime(ts: number): string {
@@ -110,74 +89,21 @@ function DashboardContent() {
     setTimeout(() => setToast(''), 3000);
   };
 
-  const [purchasing, setPurchasing] = useState(false);
-
-  const doPurchaseSpot = async (spotKey: SpotKey) => {
-    if (purchasing) return;
-    setPurchasing(true);
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ spotKey }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        showToast(data.error || '購入処理に失敗しました');
-        setPurchasing(false);
-      }
-    } catch {
-      showToast('購入処理に失敗しました');
-      setPurchasing(false);
-    }
-  };
-
-  const [subscribing, setSubscribing] = useState(false);
+  const [showReleaseSoon, setShowReleaseSoon] = useState(false);
+  const purchasing = false;
+  const subscribing = false;
   const [subStatus, setSubStatus] = useState<{ planId: string; status: string; cancelAtPeriodEnd?: boolean } | null>(null);
 
-  const doSubscribe = async (planId: PlanId) => {
-    if (subscribing || planId === 'free') return;
-    setSubscribing(true);
-    try {
-      const res = await fetch('/api/stripe/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId }),
-      });
-      const data = await res.json();
-      if (data.upgraded && wallet) {
-        const w = changePlan(wallet, data.planId as PlanId);
-        saveWallet(w);
-        setWallet({ ...w });
-        setSubStatus({ planId: data.planId, status: 'active' });
-        showToast(`${getPlan(data.planId).label}にアップグレードしました`);
-        setSubscribing(false);
-      } else if (data.url) {
-        window.location.href = data.url;
-      } else {
-        showToast(data.error || 'プラン登録に失敗しました');
-        setSubscribing(false);
-      }
-    } catch {
-      showToast('プラン登録に失敗しました');
-      setSubscribing(false);
-    }
+  const doPurchaseSpot = (_spotKey: SpotKey) => {
+    setShowReleaseSoon(true);
   };
 
-  const doOpenPortal = async () => {
-    try {
-      const res = await fetch('/api/stripe/portal', { method: 'POST' });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        showToast('ポータルを開けませんでした');
-      }
-    } catch {
-      showToast('ポータルを開けませんでした');
-    }
+  const doSubscribe = (_planId: PlanId) => {
+    setShowReleaseSoon(true);
+  };
+
+  const doOpenPortal = () => {
+    setShowReleaseSoon(true);
   };
 
   useEffect(() => {
@@ -621,6 +547,7 @@ function DashboardContent() {
       )}
 
       <BottomNav />
+      {showReleaseSoon && <ReleaseSoonModal onClose={() => setShowReleaseSoon(false)} />}
     </div>
   );
 }

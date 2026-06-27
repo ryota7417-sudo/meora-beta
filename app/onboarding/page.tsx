@@ -331,7 +331,7 @@ function StepIntro({ onNext, onBack, t }: { onNext: () => void; onBack: () => vo
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 12 }}>{slide.num}</div>
                 <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '0.04em', textAlign: 'center', lineHeight: 1.3, marginBottom: 16 }}>{withBreaks(slide.title)}</div>
-                <div style={{ fontSize: 16, color: 'rgba(255,255,255,0.65)', textAlign: 'center', lineHeight: 1.8, letterSpacing: '0.02em', maxWidth: 340 }}>{slide.body}</div>
+                <div style={{ fontSize: 16, color: 'rgba(255,255,255,0.65)', textAlign: 'center', lineHeight: 1.8, letterSpacing: '0.02em', maxWidth: 340 }}>{withBreaks(slide.body)}</div>
               </div>
             ))}
           </div>
@@ -1117,24 +1117,24 @@ function StepCharacterCreate({
           </div>
 
           {/* プレビュー（見た目の下に配置） */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 16px 16px', background: '#111', border: '2px solid #111', boxShadow: '4px 4px 0 #555' }}>
-            <div style={{ background: 'rgba(255,255,255,0.06)', border: '2px solid rgba(255,255,255,0.2)', padding: 16, marginBottom: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 16px 16px', background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111' }}>
+            <div style={{ background: '#f8f8f4', border: '2px solid #ccc', padding: 16, marginBottom: 12 }}>
               {useDefault ? (
                 <img src="/icon_default.png" alt={draft.name || t.charPreviewName} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
               ) : previewSprite ? (
                 <img src={previewSprite.dataUrl} alt={draft.name || t.charPreviewName} style={{ width: 100, height: 100, objectFit: 'contain', display: 'block' }} />
               ) : (
-                <div style={{ width: 100, height: 100, border: '2px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: 'rgba(255,255,255,0.5)' }}>
+                <div style={{ width: 100, height: 100, border: '2px dashed #ccc', background: '#f0f0e8', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, color: '#999' }}>
                   <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="7" width="28" height="22" stroke="rgba(255,255,255,0.5)" strokeWidth="2"/>
-                    <path d="M11 7 L13 4 L21 4 L23 7" stroke="rgba(255,255,255,0.5)" strokeWidth="2" fill="none" strokeLinejoin="round"/>
-                    <circle cx="17" cy="18" r="6" stroke="rgba(255,255,255,0.5)" strokeWidth="2"/>
+                    <rect x="3" y="7" width="28" height="22" stroke="#bbb" strokeWidth="2"/>
+                    <path d="M11 7 L13 4 L21 4 L23 7" stroke="#bbb" strokeWidth="2" fill="none" strokeLinejoin="round"/>
+                    <circle cx="17" cy="18" r="6" stroke="#bbb" strokeWidth="2"/>
                   </svg>
-                  <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>{t.photoSelectShort}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.06em', fontFamily: 'var(--font-mono)', color: '#bbb' }}>{t.photoSelectShort}</span>
                 </div>
               )}
             </div>
-            <div style={{ color: '#fff', fontSize: 18, fontWeight: 800, letterSpacing: '0.04em' }}>
+            <div style={{ color: '#111', fontSize: 18, fontWeight: 800, letterSpacing: '0.04em' }}>
               {draft.name || t.charPreviewName}
             </div>
           </div>

@@ -49,6 +49,12 @@ function resizeImageToDataUrl(file: File, maxSize = 512): Promise<string> {
 export default function CharacterNewPage() {
   const router = useRouter();
 
+  const [name, setName] = useState('');
+  const [spriteMap, setSpriteMap] = useState<Partial<Record<SpriteType, string>>>({});
+  const [personality, setPersonality] = useState('');
+  const fileRefs = useRef<Partial<Record<SpriteType, HTMLInputElement | null>>>({});
+
+  // フック呼び出しの後に条件チェックを行う（Reactのフック順序ルール遵守）。
   const existingState = loadState();
   if (existingState.characters.some(c => c.userCreated)) {
     return (
@@ -63,11 +69,6 @@ export default function CharacterNewPage() {
       </div>
     );
   }
-
-  const [name, setName] = useState('');
-  const [spriteMap, setSpriteMap] = useState<Partial<Record<SpriteType, string>>>({});
-  const [personality, setPersonality] = useState('');
-  const fileRefs = useRef<Partial<Record<SpriteType, HTMLInputElement | null>>>({});
 
   const handleFileChange = async (type: SpriteType, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

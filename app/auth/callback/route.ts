@@ -6,10 +6,13 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const { searchParams } = url;
   const code = searchParams.get('code');
+  const next = searchParams.get('next') || '/onboarding';
 
-  const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? url.host;
-  const proto = request.headers.get('x-forwarded-proto') ?? url.protocol.replace(':', '');
-  const origin = `${proto}://${host}`;
+  // リダイレクト先は常にリクエスト元のオリジンを使う。
+  // 0.0.0.0 は localhost に正規化（ブラウザの localStorage が分離されるのを防ぐ）。
+  const origin = url.hostname === '0.0.0.0'
+    ? `${url.protocol}//localhost:${url.port}`
+    : url.origin;
 
   if (code) {
     const cookieStore = await cookies();
@@ -27,8 +30,11 @@ export async function GET(request: NextRequest) {
         },
       }
     );
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      return NextResponse.redirect(`${origin}/onboarding?error=auth_failed`);
+    }
   }
 
-  return NextResponse.redirect(`${origin}/onboarding`);
+  return NextResponse.redirect(`${origin}${next}`);
 }

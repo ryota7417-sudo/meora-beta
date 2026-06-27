@@ -51,6 +51,6 @@ export const config = {
     // - _next/image (画像最適化)
     // - favicon.ico
     // - 画像など静的アセット拡張子
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|json|txt|woff|woff2|ttf|otf|mp4|webm)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/stripe/webhook|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|json|txt|woff|woff2|ttf|otf|mp4|webm)$).*)',
   ],
 };

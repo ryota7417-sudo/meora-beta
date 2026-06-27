@@ -74,12 +74,12 @@ export function resolveAuth(
     }
   });
 
-  // 肯定確認: グレース期間に依存せず getSession() でも session を確認。
+  // 肯定確認: グレース期間に依存せず getUser() でもサーバー検証済みの認証を確認。
   // 取れたら即 true 確定。取れなくても false 確定はしない(タイマーに委ねる)。
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) finish(true);
+  supabase.auth.getUser().then(({ data: { user } }) => {
+    if (user) finish(true);
   }).catch(() => {
-    // getSession 失敗は否定確定にしない(タイマー or 後続イベントに委ねる)。
+    // getUser 失敗は否定確定にしない(タイマー or 後続イベントに委ねる)。
   });
 
   const cancel = () => {

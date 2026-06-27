@@ -33,12 +33,12 @@ export default function CommercePage() {
 
         <table style={{ width: '100%', borderCollapse: 'collapse', border: '2px solid #111', background: '#fff', boxShadow: '4px 4px 0 #111' }}>
           <tbody>
-            <Row label="事業者名" value="TODO: 事業者名を記入" />
-            <Row label="代表者" value="TODO: 代表者名を記入" />
-            <Row label="所在地" value="TODO: 住所を記入（請求があった場合に遅滞なく開示）" />
-            <Row label="電話番号" value="TODO: 電話番号を記入（請求があった場合に遅滞なく開示）" />
+            <Row label="事業者名" value="Aritude" />
+            <Row label="代表者" value="松岡亮汰" />
+            <Row label="所在地" value="〒150-0044 東京都渋谷区円山町5番3号 MIEUX渋谷ビル8階" />
+            <Row label="電話番号" value="電話番号は設けておりません。お問い合わせはメール（info@aritude.com）にてご連絡ください。" />
             <Row label="メールアドレス" value="info@aritude.com" />
-            <Row label="販売URL" value="https://meora.app（予定）" />
+            <Row label="販売URL" value="https://meora.aritude.com" />
             <Row label="販売価格" value={
               <div>
                 <div>【月額プラン】</div>
@@ -62,9 +62,9 @@ export default function CommercePage() {
           </tbody>
         </table>
 
-        <div style={{ marginTop: 20, padding: '12px 14px', background: '#fff3cd', border: '2px solid #111', fontSize: 13, lineHeight: 1.7 }}>
-          <div style={{ fontWeight: 800, marginBottom: 4 }}>NOTE</div>
-          <div>所在地・電話番号は、消費者からの請求があった場合に遅滞なく開示いたします（特定商取引法第11条ただし書）。</div>
+        <div style={{ marginTop: 20, padding: '12px 14px', background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', fontSize: 13, lineHeight: 1.7 }}>
+          <div style={{ fontWeight: 800, marginBottom: 4 }}>注記</div>
+          <div>お問い合わせはメール（info@aritude.com）にて承ります。特定商取引法第11条ただし書に基づき、消費者からの請求があった場合には電話番号を遅滞なく開示いたします。</div>
         </div>
       </main>
     </div>

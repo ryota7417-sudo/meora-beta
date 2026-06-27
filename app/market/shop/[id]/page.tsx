@@ -4,8 +4,10 @@ import { useRouter } from 'next/navigation';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { CharAvatar } from '@/components/ui/CharacterSvg';
 import { ComingSoonToast } from '@/components/ui/ComingSoonToast';
+import { ReleaseSoonModal } from '@/components/ui/ReleaseSoonModal';
 import { getMarketCreator, getCharactersByCreator } from '@/lib/market-data';
 import { HeartIcon, StarIcon } from '@/components/ui/Icons';
+import type { PlanId } from '@/lib/energy';
 
 const PAPER_BG = {
   backgroundColor: '#f7f5f0',
@@ -37,8 +39,19 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
   const [toast, setToast] = useState<string | null>(null);
   const [showOshiModal, setShowOshiModal] = useState(false);
   const [oshiSet, setOshiSet] = useState(false);
-  const [joinedPlan, setJoinedPlan] = useState(false);
+  const [joinedPlan] = useState(false);
   const [tipSheetOpen, setTipSheetOpen] = useState(false);
+  const [showReleaseSoon, setShowReleaseSoon] = useState(false);
+  const processing = false;
+
+  const handleSubscribe = (_planId: PlanId) => {
+    setShowReleaseSoon(true);
+  };
+
+  const handleTip = (_amount: number) => {
+    setTipSheetOpen(false);
+    setShowReleaseSoon(true);
+  };
 
   if (!creator) {
     return (
@@ -94,6 +107,18 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
         <div style={{ padding: '0 14px 12px', fontSize: 14, color: '#3a3530', lineHeight: 1.5 }}>{creator.bio}</div>
+        {creator.sns_x && (
+          <div style={{ padding: '0 14px 12px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <a
+              href={`https://x.com/${creator.sns_x.replace('@', '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 800, color: '#111', textDecoration: 'none', border: '1.5px solid #111', padding: '4px 10px', background: '#fff' }}
+            >
+              X {creator.sns_x}
+            </a>
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 8, padding: '0 14px 14px' }}>
           <button
             onClick={() => setFollowing((f) => !f)}
@@ -178,7 +203,7 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
           </div>
           <div style={{ padding: '12px 14px' }}>
             <p style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.04em', color: '#7a746c', marginBottom: 9 }}>
-              {plan.joined ? '毎月うけとっている内容' : '加入すると、毎月この内容が届きます'}
+              {plan.joined ? '現在のプラン内容' : 'プランに加入すると以下の特典があります'}
             </p>
             {plan.perks.map((perk, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, fontSize: 14, fontWeight: 600, marginBottom: 8, alignItems: 'flex-start', lineHeight: 1.45 }}>
@@ -196,7 +221,7 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
                     letterSpacing: '0.04em',
                   }}
                 >
-                  {perk.kind === 'consume' ? '消費型' : 'スキン'}
+                  {perk.kind === 'consume' ? 'メッセージ' : 'スキン'}
                 </span>
                 <span>{perk.text}</span>
               </div>
@@ -208,10 +233,11 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
               </span>
             ) : (
               <button
-                onClick={() => { setJoinedPlan(true); setToast('月額プラン加入（デモ）を反映しました。'); }}
-                style={{ display: 'block', width: '100%', marginTop: 8, background: '#e8568a', color: '#fff', border: '2px solid #111', boxShadow: '3px 3px 0 #111', fontSize: 15, fontWeight: 800, padding: '10px 0', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 0 }}
+                onClick={() => handleSubscribe(plan.id as PlanId)}
+                disabled={processing}
+                style={{ display: 'block', width: '100%', marginTop: 8, background: '#e8568a', color: '#fff', border: '2px solid #111', boxShadow: '3px 3px 0 #111', fontSize: 15, fontWeight: 800, padding: '10px 0', cursor: processing ? 'wait' : 'pointer', fontFamily: 'inherit', borderRadius: 0, opacity: processing ? 0.5 : 1 }}
               >
-                加入して毎月うけとる →
+                プランに加入する →
               </button>
             )}
           </div>
@@ -234,7 +260,7 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
                   <span style={{ flexShrink: 0, background: '#eee', color: '#999', border: '2px solid #ccc', fontSize: 13, fontWeight: 800, padding: '6px 12px' }}>購入済み</span>
                 ) : (
                   <button
-                    onClick={() => setToast('アイテム購入は近日対応予定です。')}
+                    onClick={() => setToast('クリエイターアイテムの購入は近日対応予定です。')}
                     style={{ flexShrink: 0, background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', fontSize: 13, fontWeight: 800, padding: '6px 12px', cursor: 'pointer', fontFamily: 'inherit' }}
                   >
                     購入
@@ -247,7 +273,7 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
       )}
 
       <p style={{ margin: '12px 16px 0', fontSize: 11, color: '#7a746c', lineHeight: 1.5 }}>
-        ※ 月額プランは「月額金額相当のアイテムを毎月お届けする前払い型」です。
+        ※ 月額プランで毎日のメッセージ上限がアップグレードされます。
       </p>
 
       {tipSheetOpen && (
@@ -267,8 +293,9 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
               {[300, 600, 900, 1500, 3000, 5000, 10000].map((amount) => (
                 <button
                   key={amount}
-                  onClick={() => { setTipSheetOpen(false); setToast(`¥${amount.toLocaleString()}の投げ銭は近日対応予定です。`); }}
-                  style={{ flex: '0 0 calc(33.33% - 6px)', background: '#fff', border: '2px solid #e8568a', boxShadow: '3px 3px 0 #e8568a', fontSize: 15, fontWeight: 800, padding: '12px 0', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 0, color: '#e8568a' }}
+                  onClick={() => handleTip(amount)}
+                  disabled={processing}
+                  style={{ flex: '0 0 calc(33.33% - 6px)', background: '#fff', border: '2px solid #e8568a', boxShadow: '3px 3px 0 #e8568a', fontSize: 15, fontWeight: 800, padding: '12px 0', cursor: processing ? 'wait' : 'pointer', fontFamily: 'inherit', borderRadius: 0, color: '#e8568a', opacity: processing ? 0.5 : 1 }}
                 >
                   ¥{amount.toLocaleString()}
                 </button>
@@ -305,6 +332,7 @@ export default function MarketShopPage({ params }: { params: Promise<{ id: strin
 
       <BottomNav />
       <ComingSoonToast message={toast} onClose={() => setToast(null)} />
+      {showReleaseSoon && <ReleaseSoonModal onClose={() => setShowReleaseSoon(false)} />}
     </div>
   );
 }

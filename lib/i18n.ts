@@ -114,16 +114,16 @@ const ja: Dict = {
 
   slide1Title: 'キャラクターと話そう',
   slide1Body:
-    '気軽に生成AIと話せるキャラクターのMEORA（ミオラ）だよ。自分だけのMEORAを作ったり、好きなMEORAを見つけたら一緒に過ごせるよ。',
+    '気軽に生成AIと話せるキャラクターのMEORA（ミオラ）だよ。自分だけのMEORAを作ったり、お気に入りのMEORAを見つけたら話すことができるよ。',
   slide2Title: '何ができるの？',
   slide2Body:
-    '雑談をしたり、悩みを聞いてもらったりできるよ。困りごとでもなんでも聞いていいからね。',
-  slide3Title: 'お腹がすいたら\nごはんで回復',
+    '雑談をしたり、悩みを聞いてもらったりできるよ。調べたいことや困りごとでもなんでも聞いていいからね。',
+  slide3Title: '毎日たくさん\nお話できるよ',
   slide3Body:
-    'MEORAには「満腹度」があります。お話するとお腹が空いて満腹度が下がります。満腹度が0になると、MEORAが疲れてしまってお話を聞くことができなくなります。でも安心してください！お食事のおにぎりが毎日届いて満腹度を回復することができます。',
+    'MEORAを登録すると毎月30通までお話ができるよ。もっと話したいときはショップでアイテムを買うか、月額プランに加入するとたくさんお話ができるよ。',
   slide4Title: 'マーケットで\nキャラクターを追加しよう',
   slide4Body:
-    'クリエイターが作ったMEORAをマーケットで探せます。お気に入りのMEORAと出会って一緒に過ごそう。',
+    'クリエイターが作ったMEORAをマーケットで探せるよ。お気に入りのMEORAと出会って一緒に過ごそう！\n\nBeta版では開発者が製作したMEORAを体験できます。',
   navBack: '← 戻る',
   navSkip: 'スキップ →',
   navNext: '次へ →',
@@ -209,13 +209,13 @@ const en: Dict = {
     'MEORA (Miora) is a character powered by AI that you can chat with anytime. Create your very own MEORA, or find one you love and spend time together.',
   slide2Title: 'What can MEORA do?',
   slide2Body:
-    'You can have casual chats or talk about your worries. Feel free to ask anything — MEORA is always here to listen.',
-  slide3Title: 'Hungry? A meal\nbrings them back',
+    'Have casual chats, talk about your worries, or ask anything on your mind. MEORA is always here to listen.',
+  slide3Title: 'Chat every day\nfor free',
   slide3Body:
-    'Every MEORA has a "fullness" level. Chatting makes them hungry and their fullness drops. When it hits zero, your MEORA gets tired and can\'t chat anymore. But don\'t worry! A rice ball meal arrives every day to restore their fullness.',
+    'You can chat up to 30 times per month for free after signing up. Want more? Get extra items from the shop or subscribe to a monthly plan.',
   slide4Title: 'Add new characters\nfrom the Market',
   slide4Body:
-    'Discover MEORAs made by creators in the Market. Find a favorite and spend time together.',
+    'Discover MEORAs made by creators in the Market. Find a favorite and spend time together!\n\nIn the Beta, you can try MEORAs created by the development team.',
   navBack: '← Back',
   navSkip: 'Skip →',
   navNext: 'Next →',
@@ -302,12 +302,12 @@ const ko: Dict = {
   slide2Title: '무엇을 할 수 있나요?',
   slide2Body:
     '수다를 떨거나 고민을 들어줄 수 있어요. 뭐든 편하게 물어봐도 괜찮아요.',
-  slide3Title: '배가 고프면\n밥으로 회복',
+  slide3Title: '매달 무료로\n대화할 수 있어요',
   slide3Body:
-    'MEORA에게는 "포만감"이 있어요. 대화를 나누면 배가 고파져 포만감이 줄어들어요. 포만감이 0이 되면 MEORA가 지쳐서 이야기를 들을 수 없게 돼요. 하지만 안심하세요! 매일 주먹밥이 도착해 포만감을 회복할 수 있어요.',
+    '가입하면 매달 30통까지 무료로 이야기할 수 있어요. 더 이야기하고 싶을 때는 샵에서 아이템을 구매하거나 월정액 플랜에 가입하세요.',
   slide4Title: '마켓에서\n캐릭터를 추가해요',
   slide4Body:
-    '크리에이터가 만든 MEORA를 마켓에서 찾을 수 있어요. 마음에 드는 MEORA와 만나 함께 지내요.',
+    '크리에이터가 만든 MEORA를 마켓에서 찾을 수 있어요. 마음에 드는 MEORA와 만나 함께 지내요!\n\nBeta 버전에서는 개발팀이 제작한 MEORA를 체험할 수 있어요.',
   navBack: '← 뒤로',
   navSkip: '건너뛰기 →',
   navNext: '다음 →',
@@ -394,12 +394,12 @@ const zhHant: Dict = {
   slide2Title: '能做什麼呢？',
   slide2Body:
     '可以閒聊，也可以傾訴煩惱。什麼都可以問，MEORA 隨時在這裡聽你說。',
-  slide3Title: '肚子餓了\n用餐就能回復',
+  slide3Title: '每個月\n免費聊天',
   slide3Body:
-    '每個 MEORA 都有「飽足度」。聊天會讓牠肚子餓，飽足度會下降。當飽足度歸零時，MEORA 會累到無法聊天。但請放心！每天都會送來飯糰，幫牠恢復飽足度。',
+    '註冊後每個月最多可以免費聊 30 則訊息。想聊更多？在商店購買道具，或訂閱月費方案吧。',
   slide4Title: '在市集\n新增角色',
   slide4Body:
-    '在市集裡能找到創作者打造的 MEORA。遇見你喜歡的 MEORA，一起共度時光吧。',
+    '在市集裡能找到創作者打造的 MEORA。遇見你喜歡的 MEORA，一起共度時光吧！\n\nBeta 版本中，可以體驗開發團隊製作的 MEORA。',
   navBack: '← 返回',
   navSkip: '略過 →',
   navNext: '下一步 →',

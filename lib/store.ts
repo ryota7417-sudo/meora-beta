@@ -126,28 +126,6 @@ export function saveState(state: AppState) {
   localStorage.setItem('meora-state', JSON.stringify({ ...state, schemaVersion: SCHEMA_VERSION }));
 }
 
-// 次回のお食事到着時刻（毎日 AM5:00）までの残り時間を返す。
-// HP は AM5:00 に全回復する仕様なので、その時刻を「お食事到着時刻」として扱う。
-export function timeUntilMeal(now: Date = new Date()): { hours: number; minutes: number } {
-  const next = new Date(now);
-  next.setHours(5, 0, 0, 0);
-  if (now.getTime() >= next.getTime()) {
-    // すでに今日の AM5:00 を過ぎている → 翌日の AM5:00
-    next.setDate(next.getDate() + 1);
-  }
-  const diffMs = next.getTime() - now.getTime();
-  const totalMinutes = Math.max(0, Math.ceil(diffMs / 60000));
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return { hours, minutes };
-}
-
-// 「お食事到着まであと X時間 Y分」の表示文字列を返す。
-export function mealCountdownLabel(now: Date = new Date()): string {
-  const { hours, minutes } = timeUntilMeal(now);
-  return `お食事到着まであと ${hours}時間 ${minutes}分`;
-}
-
 export function removeCharacter(state: AppState, characterId: string): AppState {
   return {
     ...state,
@@ -158,15 +136,6 @@ export function removeCharacter(state: AppState, characterId: string): AppState 
 export function deleteChatHistory(characterId: string) {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(`meora-chat-${characterId}`);
-}
-
-export function consumeHp(state: AppState, characterId: string, amount: number): AppState {
-  return {
-    ...state,
-    characters: state.characters.map(c =>
-      c.id === characterId ? { ...c, hp: Math.max(0, c.hp - amount) } : c
-    ),
-  };
 }
 
 // マーケットで入手できるMEORAの最小スキーマ。
@@ -242,57 +211,6 @@ export function saveChatHistory(characterId: string, messages: ChatMessage[]) {
   if (typeof window === 'undefined') return;
   const trimmed = messages.slice(-50);
   localStorage.setItem(`meora-chat-${characterId}`, JSON.stringify(trimmed));
-}
-
-// ===== アイテムインベントリ =====
-
-// アイテム型
-export type Item = {
-  id: string;
-  name: string;
-  icon: string; // テキスト絵文字
-  effect: number; // HP回復量
-  count: number;
-};
-
-// デフォルトアイテム定義
-export const ITEM_DEFS: Omit<Item, 'count'>[] = [
-  { id: 'onigiri', name: 'おにぎり', icon: '\u{1F359}', effect: 30 },
-];
-
-// アイテムインベントリの読み込み
-export function loadInventory(): Item[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const s = localStorage.getItem('meora-inventory');
-    return s ? JSON.parse(s) : [];
-  } catch {
-    return [];
-  }
-}
-
-// アイテムインベントリの保存
-export function saveInventory(items: Item[]) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem('meora-inventory', JSON.stringify(items));
-}
-
-// アイテムを追加（既存なら count を増やす）
-export function addItem(items: Item[], itemId: string, amount: number = 1): Item[] {
-  const def = ITEM_DEFS.find(d => d.id === itemId);
-  if (!def) return items;
-  const existing = items.find(i => i.id === itemId);
-  if (existing) {
-    return items.map(i => i.id === itemId ? { ...i, count: i.count + amount } : i);
-  }
-  return [...items, { ...def, count: amount }];
-}
-
-// アイテムを消費（count を減らす。0になったら削除）
-export function consumeItem(items: Item[], itemId: string): Item[] {
-  return items
-    .map(i => i.id === itemId ? { ...i, count: i.count - 1 } : i)
-    .filter(i => i.count > 0);
 }
 
 // ===== スキンインベントリ =====
@@ -383,17 +301,3 @@ export function getEquippedSkinUrls(characterId: string): { wear?: string; hat?:
   return result;
 }
 
-// 毎日のおにぎり受け取り判定
-export function canClaimDailyOnigiri(): boolean {
-  if (typeof window === 'undefined') return false;
-  const lastClaim = localStorage.getItem('meora-last-onigiri');
-  if (!lastClaim) return true;
-  const today = new Date().toDateString();
-  return lastClaim !== today;
-}
-
-// おにぎり受け取り済みマーク
-export function markDailyOnigiriClaimed() {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem('meora-last-onigiri', new Date().toDateString());
-}

@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { ENERGY_CONFIG, type SpotKey, type PlanId } from './energy';
+import { ENERGY_CONFIG, type PlanId } from './energy';
 
 let stripeInstance: Stripe | null = null;
 
@@ -10,36 +10,6 @@ export function getStripe(): Stripe {
     stripeInstance = new Stripe(key);
   }
   return stripeInstance;
-}
-
-// ── スポット購入 ─────────────────────────────────────────────────────────────
-
-export type SpotPriceEntry = {
-  spotKey: SpotKey;
-  stripePriceId: string;
-  priceYen: number;
-  messagesGranted: number;
-  label: string;
-};
-
-const SPOT_PRICE_IDS: Record<SpotKey, string> = {
-  cherry: process.env.STRIPE_PRICE_CHERRY || '',
-  mikan: process.env.STRIPE_PRICE_MIKAN || '',
-  grape: process.env.STRIPE_PRICE_GRAPE || '',
-};
-
-export function getSpotPrice(spotKey: SpotKey): SpotPriceEntry | null {
-  const spot = ENERGY_CONFIG.spotItems[spotKey];
-  if (!spot) return null;
-  const stripePriceId = SPOT_PRICE_IDS[spotKey];
-  if (!stripePriceId) return null;
-  return {
-    spotKey,
-    stripePriceId,
-    priceYen: spot.priceYen,
-    messagesGranted: spot.messagesGranted,
-    label: spot.label,
-  };
 }
 
 // ── サブスクリプション ───────────────────────────────────────────────────────

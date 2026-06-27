@@ -3,6 +3,7 @@ import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CharAvatar } from '@/components/ui/CharacterSvg';
 import { ComingSoonToast } from '@/components/ui/ComingSoonToast';
+import { ReleaseSoonModal } from '@/components/ui/ReleaseSoonModal';
 import { loadState, saveState, acquireCharacter, isCharacterOwned } from '@/lib/store';
 import { getMarketCharacter, getMarketCreator, MARKET_SKIN_ITEMS } from '@/lib/market-data';
 import { purchaseSkin, isSkinOwned, type OwnedSkin } from '@/lib/store';
@@ -19,11 +20,6 @@ const PAPER_BG = {
   `,
 } as const;
 
-const SUB_PLANS = [
-  { id: 'light', name: 'ライト', price: 480, items: 'サンドイッチ1ヶ月分（31個）' },
-  { id: 'standard', name: 'スタンダード', price: 980, items: 'サンドイッチ1ヶ月分＋定食1ヶ月分（各31個）' },
-] as const;
-
 const TIP_AMOUNTS = [300, 600, 900, 1500, 3000, 5000, 10000] as const;
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -31,82 +27,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.14em', color: '#7a746c', textTransform: 'uppercase', padding: '18px 16px 8px', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-mono)' }}>
       {children}
       <span style={{ flex: 1, height: 1, background: '#cfcabf' }} />
-    </div>
-  );
-}
-
-function PlanBottomSheet({ open, onClose, onSelect }: { open: boolean; onClose: () => void; onSelect: (planName: string) => void }) {
-  if (!open) return null;
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.45)',
-        zIndex: 500,
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '100%',
-          maxWidth: 390,
-          background: '#fff',
-          border: '2px solid #111',
-          boxShadow: '4px 4px 0 #111',
-          borderRadius: 0,
-          padding: '0 0 env(safe-area-inset-bottom)',
-          animation: 'slideUp 0.2s ease-out',
-        }}
-      >
-        <div style={{ padding: '14px 16px 10px', borderBottom: '2px solid #111', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '0.02em' }}>月額プランを選択</span>
-          <button
-            onClick={onClose}
-            style={{ fontSize: 14, fontWeight: 800, background: 'transparent', border: '2px solid #111', padding: '4px 10px', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 0 }}
-          >
-            閉じる
-          </button>
-        </div>
-        <div style={{ padding: '8px 0' }}>
-          {SUB_PLANS.map((plan) => (
-            <button
-              key={plan.id}
-              onClick={() => onSelect(plan.name)}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 4,
-                width: '100%',
-                padding: '14px 16px',
-                background: '#fff',
-                border: 'none',
-                borderBottom: '1px solid #eee',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                textAlign: 'left',
-                color: '#111',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <span style={{ fontSize: 16, fontWeight: 700 }}>{plan.name}</span>
-                <span style={{ fontSize: 16, fontWeight: 800, color: '#e8568a' }}>{plan.price.toLocaleString()}円/月</span>
-              </div>
-              <span style={{ fontSize: 12, color: '#7a746c' }}>毎月届く: {plan.items}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-      <style>{`
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }
@@ -119,12 +39,12 @@ export default function MarketCharacterPage({ params }: { params: Promise<{ id: 
 
   const [owned, setOwned] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [planSheetOpen, setPlanSheetOpen] = useState(false);
   const [tipSheetOpen, setTipSheetOpen] = useState(false);
+  const [showReleaseSoon, setShowReleaseSoon] = useState(false);
+  const processing = false;
 
   useEffect(() => {
     if (!char) return;
-    // localStorage（外部ソース）からの初期同期。
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setOwned(isCharacterOwned(loadState(), char.id));
   }, [char]);
@@ -143,7 +63,6 @@ export default function MarketCharacterPage({ params }: { params: Promise<{ id: 
     );
   }
 
-  // メインCTA: 入手して話す（実機能）。入手済みならそのまま /chat へ。
   const handleTalk = () => {
     const state = loadState();
     if (!isCharacterOwned(state, char.id)) {
@@ -154,15 +73,13 @@ export default function MarketCharacterPage({ params }: { params: Promise<{ id: 
 
   const hasBuyPrice = char.buyPrice != null && char.buyPrice > 0;
 
-  // 買い切り購入CTA（ComingSoon）
   const handleBuy = () => {
     setToast('購入機能は近日対応予定です');
   };
 
-  // プラン選択 → ComingSoonToast
-  const handlePlanSelect = (_planName: string) => {
-    setPlanSheetOpen(false);
-    setToast('月額プラン加入は近日対応予定です');
+  const handleTip = (_amount: number) => {
+    setTipSheetOpen(false);
+    setShowReleaseSoon(true);
   };
 
   return (
@@ -217,31 +134,6 @@ export default function MarketCharacterPage({ params }: { params: Promise<{ id: 
         <b style={{ color: '#111' }}>得意な話題:</b> {char.intro.topics}
       </div>
 
-      {/* SUBSCRIBE */}
-      <SectionLabel>SUBSCRIBE</SectionLabel>
-      <div style={{ margin: '0 14px', background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111' }}>
-        <div style={{ padding: '10px 14px', borderBottom: '2px solid #111', fontSize: 14, fontWeight: 800, letterSpacing: '0.04em', background: '#e8568a', color: '#fff', display: 'flex', alignItems: 'center', gap: 7 }}>
-          <GiftIcon size={15} color="#fff" />
-          <span style={{ flex: 1 }}>ライトプラン</span>
-          <span style={{ fontSize: 13, fontWeight: 700 }}>480円/月~</span>
-        </div>
-        <div style={{ padding: '12px 14px' }}>
-          <p style={{ fontSize: 12, fontWeight: 800, color: '#7a746c', marginBottom: 9, letterSpacing: '0.02em' }}>
-            月額プランは「月額金額相当のアイテムを毎月お届けする前払い型」です。
-          </p>
-          <div style={{ display: 'flex', gap: 8, fontSize: 14, fontWeight: 600, marginBottom: 7, alignItems: 'flex-start', lineHeight: 1.45 }}>
-            <span style={{ fontSize: 10, fontWeight: 800, border: '1.5px solid #111', background: '#f5a623', color: '#111', padding: '1px 5px', flexShrink: 0, marginTop: 1, letterSpacing: '0.04em' }}>消費型</span>
-            <span>サンドイッチ1ヶ月分（31個）が届きます</span>
-          </div>
-        </div>
-        <button
-          onClick={() => setPlanSheetOpen(true)}
-          style={{ display: 'block', width: '100%', background: '#e8568a', color: '#fff', border: 'none', borderTop: '2px solid #111', fontSize: 15, fontWeight: 800, padding: '11px 0', cursor: 'pointer', fontFamily: 'inherit' }}
-        >
-          月額プランに加入する 480円/月~
-        </button>
-      </div>
-
       {/* RELATED ITEMS */}
       {char.items.length > 0 && (
         <>
@@ -273,7 +165,7 @@ export default function MarketCharacterPage({ params }: { params: Promise<{ id: 
         if (skins.length === 0) return null;
         return (
           <>
-            <SectionLabel>SKINS — スキン</SectionLabel>
+            <SectionLabel>SKINS</SectionLabel>
             <div style={{ margin: '0 14px', border: '2px solid #111', boxShadow: '4px 4px 0 #111', background: '#fff' }}>
               {skins.map((skin, i) => {
                 const alreadyOwned = isSkinOwned(skin.id);
@@ -299,7 +191,7 @@ export default function MarketCharacterPage({ params }: { params: Promise<{ id: 
                           if (!skin.spriteUrl || !skin.slot) return;
                           const ownedSkin: OwnedSkin = { id: skin.id, name: skin.name, characterId: char.id, iconUrl: skin.photoUrl || '', spriteUrl: skin.spriteUrl, slot: skin.slot };
                           purchaseSkin(ownedSkin);
-                          setToast(`${skin.name}を購入しました！トーク画面の「きせかえ」から着替えられます。`);
+                          setToast(`${skin.name}を購入しました。トーク画面の「きせかえ」から着替えられます。`);
                         }}
                         style={{ flexShrink: 0, background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '2px 2px 0 #555', fontSize: 13, fontWeight: 800, padding: '6px 12px', cursor: 'pointer', fontFamily: 'inherit' }}
                       >
@@ -316,35 +208,21 @@ export default function MarketCharacterPage({ params }: { params: Promise<{ id: 
 
       {/* STICKY CTA FOOTER */}
       <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 390, background: '#fff', borderTop: '2px solid #111', padding: '10px 14px calc(10px + env(safe-area-inset-bottom))', display: 'flex', flexDirection: 'column', gap: 8, zIndex: 200 }}>
-        {/* 黒いメインボタン: 買い切り購入 or 入手して話す or 話す */}
         <button
           onClick={owned ? handleTalk : hasBuyPrice ? handleBuy : handleTalk}
           style={{ background: '#111', color: '#fff', border: '2px solid #111', boxShadow: '3px 3px 0 #555', fontSize: 17, fontWeight: 800, padding: '13px 0', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 0 }}
         >
           {owned ? '話す →' : hasBuyPrice ? `¥${char.buyPrice!.toLocaleString()} で購入する →` : '入手して話す →'}
         </button>
-        {/* ピンクのサブボタン: サブスク導線 */}
-        <button
-          onClick={() => setPlanSheetOpen(true)}
-          style={{ background: '#fff', color: '#e8568a', border: '2px solid #e8568a', fontSize: 14, fontWeight: 800, padding: '9px 0', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 0 }}
-        >
-          月額プランに加入する 480円/月~
-        </button>
         <button
           onClick={() => setTipSheetOpen(true)}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 13, fontWeight: 800, color: '#e8568a', background: 'transparent', border: 'none', padding: '2px 0 0', cursor: 'pointer', fontFamily: 'inherit' }}
+          disabled={processing}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: 13, fontWeight: 800, color: '#e8568a', background: 'transparent', border: 'none', padding: '2px 0 0', cursor: processing ? 'wait' : 'pointer', fontFamily: 'inherit' }}
         >
           <HeartIcon size={13} color="#e8568a" />
           このコを作ったクリエイターを応援する（投げ銭）
         </button>
       </div>
-
-      {/* プラン選択ボトムシート */}
-      <PlanBottomSheet
-        open={planSheetOpen}
-        onClose={() => setPlanSheetOpen(false)}
-        onSelect={handlePlanSelect}
-      />
 
       {/* 投げ銭ボトムシート */}
       {tipSheetOpen && (
@@ -364,18 +242,21 @@ export default function MarketCharacterPage({ params }: { params: Promise<{ id: 
               {TIP_AMOUNTS.map((amount) => (
                 <button
                   key={amount}
-                  onClick={() => { setTipSheetOpen(false); setToast(`¥${amount.toLocaleString()}の投げ銭は近日対応予定です。`); }}
-                  style={{ flex: '0 0 calc(33.33% - 6px)', background: '#fff', border: '2px solid #e8568a', boxShadow: '3px 3px 0 #e8568a', fontSize: 15, fontWeight: 800, padding: '12px 0', cursor: 'pointer', fontFamily: 'inherit', borderRadius: 0, color: '#e8568a' }}
+                  onClick={() => handleTip(amount)}
+                  disabled={processing}
+                  style={{ flex: '0 0 calc(33.33% - 6px)', background: '#fff', border: '2px solid #e8568a', boxShadow: '3px 3px 0 #e8568a', fontSize: 15, fontWeight: 800, padding: '12px 0', cursor: processing ? 'wait' : 'pointer', fontFamily: 'inherit', borderRadius: 0, color: '#e8568a', opacity: processing ? 0.5 : 1 }}
                 >
                   ¥{amount.toLocaleString()}
                 </button>
               ))}
             </div>
           </div>
+          <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
         </div>
       )}
 
       <ComingSoonToast message={toast} onClose={() => setToast(null)} />
+      {showReleaseSoon && <ReleaseSoonModal onClose={() => setShowReleaseSoon(false)} />}
     </div>
   );
 }

@@ -48,3 +48,9 @@ tsconfig.tsbuildinfo
 
 # Agent runtime
 .agent-loop/logs/
+
+# Credentials memo
+API
+
+# Stripe CLI binary
+/stripe

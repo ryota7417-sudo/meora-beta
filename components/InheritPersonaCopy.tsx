@@ -15,7 +15,6 @@ export function InheritPersonaCopy({ lang = DEFAULT_LANG }: { lang?: Lang }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // クリップボード API 不可時のフォールバック
       try {
         const ta = document.createElement('textarea');
         ta.value = t.inheritPrompt;
@@ -38,9 +37,52 @@ export function InheritPersonaCopy({ lang = DEFAULT_LANG }: { lang?: Lang }) {
       <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#666', marginBottom: 8, fontFamily: 'var(--font-mono)' }}>
         {t.inheritTitle}
       </div>
+      <div style={{ fontSize: 14, color: '#555', lineHeight: 1.8, marginBottom: 14 }}>
+        現在、利用中のAIが持っている設定や喋り方などの設定をMEORAに引き継ぐことができます。引き継ぐことによって、元のAIが削除されるようなことはありません。元のAIも変わりなくご利用いただけます。
+      </div>
       <div style={{ fontSize: 14, color: '#666', lineHeight: 2.0, marginBottom: 14 }}>
-        <div>①「プロンプトをコピー」を押す</div>
+        <div>① 下記ボタンの「プロンプトをコピー」を押す</div>
         <div>② いつも使っているAI(ChatGPT等)に貼り付け・送信</div>
+        <div style={{ paddingLeft: 16, marginTop: 6, marginBottom: 6, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <a
+            href="https://chat.openai.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-block',
+              padding: '5px 12px',
+              fontSize: 13,
+              fontWeight: 700,
+              background: '#fff',
+              color: '#111',
+              border: '2px solid #111',
+              boxShadow: '2px 2px 0 #111',
+              textDecoration: 'none',
+              letterSpacing: '0.02em',
+            }}
+          >
+            ChatGPTを開く
+          </a>
+          <a
+            href="https://gemini.google.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-block',
+              padding: '5px 12px',
+              fontSize: 13,
+              fontWeight: 700,
+              background: '#fff',
+              color: '#111',
+              border: '2px solid #111',
+              boxShadow: '2px 2px 0 #111',
+              textDecoration: 'none',
+              letterSpacing: '0.02em',
+            }}
+          >
+            Geminiを開く
+          </a>
+        </div>
         <div>③ 返ってきた文章を全てコピーし、上の「性格・口調」に貼り付け</div>
       </div>
       <button

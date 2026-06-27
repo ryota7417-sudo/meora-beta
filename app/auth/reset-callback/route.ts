@@ -7,9 +7,9 @@ export async function GET(request: NextRequest) {
   const { searchParams } = url;
   const code = searchParams.get('code');
 
-  const host = request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? url.host;
-  const proto = request.headers.get('x-forwarded-proto') ?? url.protocol.replace(':', '');
-  const origin = `${proto}://${host}`;
+  const origin = url.hostname === '0.0.0.0'
+    ? `${url.protocol}//localhost:${url.port}`
+    : url.origin;
 
   if (code) {
     const cookieStore = await cookies();
@@ -27,7 +27,10 @@ export async function GET(request: NextRequest) {
         },
       }
     );
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      return NextResponse.redirect(`${origin}/onboarding?error=reset_failed`);
+    }
   }
 
   return NextResponse.redirect(`${origin}/reset-password`);
