@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
 
     // Responses API を使用: web_search_preview を有効化
     const response = await client.responses.create({
-      model: 'gpt-5.4-mini',
+      model: 'gpt-4o-mini',
       // 150文字程度の返答が途中で切れないよう余裕を持たせる。
       max_output_tokens: 450,
       tools: allowSearch ? [{ type: 'web_search_preview' }] : [],
