@@ -1,5 +1,5 @@
 'use client';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { loadState, AppState, loadChatHistory, getEquippedSkinUrls } from '@/lib/store';
 import {
@@ -17,8 +17,7 @@ import {
 } from '@/lib/energy';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { CharAvatar } from '@/components/ui/CharacterSvg';
-import { CharacterYard, type YardThinkingState, type YardFrozenState } from '@/components/ui/CharacterYard';
-import { ChatOverlay } from '@/components/ui/ChatOverlay';
+import { CharacterYard } from '@/components/ui/CharacterYard';
 import { createClient } from '@/lib/supabase';
 import { resolveAuth } from '@/lib/auth';
 import { fullSync } from '@/lib/sync';
@@ -105,50 +104,6 @@ function DashboardContent() {
   const [showShop, setShowShop] = useState(searchParams.get('shop') === '1');
   const [toast, setToast] = useState('');
 
-  // ChatGPT-like overlay state
-  const [chatCharId, setChatCharId] = useState<string | null>(null);
-  const [thinkingState, setThinkingState] = useState<YardThinkingState>({});
-  const [frozenState, setFrozenState] = useState<YardFrozenState>({});
-  const resumeTimerRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-
-  const handleCharacterTap = useCallback((charId: string) => {
-    setChatCharId(charId);
-  }, []);
-
-  const handleChatClose = useCallback(() => {
-    setChatCharId(null);
-  }, []);
-
-  const handleThinkingChange = useCallback((charId: string, thinking: boolean) => {
-    setThinkingState(prev => ({ ...prev, [charId]: thinking }));
-    if (thinking) {
-      // 考え中: frozen にする（歩き停止）
-      if (resumeTimerRef.current[charId]) {
-        clearTimeout(resumeTimerRef.current[charId]);
-        delete resumeTimerRef.current[charId];
-      }
-      setFrozenState(prev => ({ ...prev, [charId]: true }));
-    }
-  }, []);
-
-  const handleReplyComplete = useCallback((charId: string) => {
-    // 回答完了: 立ち止まったまま。20秒後に歩き再開
-    if (resumeTimerRef.current[charId]) {
-      clearTimeout(resumeTimerRef.current[charId]);
-    }
-    resumeTimerRef.current[charId] = setTimeout(() => {
-      setFrozenState(prev => ({ ...prev, [charId]: false }));
-      delete resumeTimerRef.current[charId];
-    }, 20_000);
-  }, []);
-
-  // cleanup timers
-  useEffect(() => {
-    const timers = resumeTimerRef.current;
-    return () => {
-      Object.values(timers).forEach(t => clearTimeout(t));
-    };
-  }, []);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -371,12 +326,7 @@ function DashboardContent() {
 
       {/* 上部: MEORAが歩く庭 */}
       <div style={{ flex: 1, minHeight: 180, position: 'relative' }}>
-        <CharacterYard
-          characters={state.characters}
-          onCharacterTap={handleCharacterTap}
-          thinkingState={thinkingState}
-          frozenState={frozenState}
-        />
+        <CharacterYard characters={state.characters} />
       </div>
 
       {/* MAIN CONTENT（下部: トーク一覧） */}
@@ -418,7 +368,7 @@ function DashboardContent() {
               return (
                 <div
                   key={char.id}
-                  onClick={() => handleCharacterTap(char.id)}
+                  onClick={() => router.push(`/chat/${char.id}`)}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -669,22 +619,6 @@ function DashboardContent() {
           </div>
         </div>
       )}
-
-      {/* Chat overlay */}
-      {chatCharId && state && (() => {
-        const chatChar = state.characters.find(c => c.id === chatCharId);
-        if (!chatChar) return null;
-        return (
-          <ChatOverlay
-            char={chatChar}
-            appState={state}
-            open={!!chatCharId}
-            onClose={handleChatClose}
-            onThinkingChange={handleThinkingChange}
-            onReplyComplete={handleReplyComplete}
-          />
-        );
-      })()}
 
       <BottomNav />
     </div>
