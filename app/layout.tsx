@@ -27,6 +27,9 @@ export const metadata: Metadata = {
     description: 'あなただけのAIキャラクターと、もっと近くに。',
     site: '@ryotanoe',
   },
+  verification: {
+    google: 'ju4ilEX4Owwo1WAr_OyuPMOFEujk7fC75jZp4NelL1k',
+  },
 };
 
 export const viewport: Viewport = {
