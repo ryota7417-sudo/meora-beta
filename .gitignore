@@ -50,7 +50,7 @@ tsconfig.tsbuildinfo
 .agent-loop/logs/
 
 # Credentials memo
-API
+/API
 
 # Stripe CLI binary
 /stripe

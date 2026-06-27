@@ -181,7 +181,8 @@ export async function POST(req: NextRequest) {
       input: chatMessages,
     });
 
-    const text = response.output_text ?? '';
+    // web_search_preview が挿入する引用マーカー（例: 【4†source】）を除去する
+    const text = (response.output_text ?? '').replace(/【\d+†[^】]*】/g, '');
 
     // アプリ側ガードレール:
     // 直近のユーザー発話に危機ワードが含まれていたら、モデル出力とは別に
