@@ -1044,6 +1044,9 @@ function StepCharacterCreate({
           {/* 見た目（スプライト・タイプ別） */}
           <div style={{ background: '#fff', border: '2px solid #111', boxShadow: '4px 4px 0 #111', padding: '16px 14px' }}>
             {sectionLabel('見た目')}
+            <div style={{ fontSize: 13, color: '#c00', fontWeight: 700, lineHeight: 1.6, marginBottom: 10, padding: '8px 10px', border: '1.5px solid #c00', background: '#fff5f5' }}>
+              アップロードできるのは自分で制作した画像のみです。アニメ・漫画・ゲームのキャラクターなど他者の著作物を無断でアップロードすることは著作権侵害にあたります。
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {SPRITE_ROWS.map(({ type, label }) => {
                 const src = getSpriteByType(type);
