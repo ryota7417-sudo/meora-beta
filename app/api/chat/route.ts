@@ -60,10 +60,12 @@ function buildSystemPrompt({
   name,
   personality,
   userName,
+  isFirstMessage,
 }: {
   name?: string;
   personality?: string;
   userName?: string;
+  isFirstMessage?: boolean;
 }): string {
   const safeName = (name || 'メオラ').trim();
   const safeUser = (userName || '').trim();
@@ -76,7 +78,7 @@ function buildSystemPrompt({
   // 設定済み（旧データ等）の場合のみ呼び方を指定する。
   const callLine = safeUser ? `\nユーザーのことは「${safeUser}」と呼んでください。` : '';
 
-  const sleepyBlock = getSleepyBlock();
+  const sleepyBlock = isFirstMessage ? getSleepyBlock() : '';
 
   return `${SAFETY_BLOCK}
 
@@ -160,7 +162,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const systemPrompt = buildSystemPrompt({ name, personality, userName });
+    const systemPrompt = buildSystemPrompt({ name, personality, userName, isFirstMessage: messages.length <= 1 });
 
     // OpenAI Responses API の input 形式に整形:
     // system(安全ブロック+MEORA設定) + これまでの会話履歴 + 最新ユーザー発話。
@@ -206,6 +208,10 @@ export async function POST(req: NextRequest) {
 
     return Response.json({ text: finalText, crisisNotice, usage });
   } catch (error) {
+    const e = error as { status?: number; error?: { code?: string } };
+    if (e?.status === 429 && e?.error?.code === 'insufficient_quota') {
+      return Response.json({ error: 'quota_exceeded' }, { status: 503 });
+    }
     console.error('API chat error:', error instanceof Error ? error.message : 'unknown');
     return Response.json({ error: 'Internal server error' }, { status: 500 });
   }

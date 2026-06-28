@@ -237,7 +237,7 @@ export default function SettingsPage() {
         <div className="card" style={{ padding: '20px 16px' }}>
           <h2 style={{ margin: '0 0 12px', fontSize: 17, fontWeight: 800 }}>アプリについて</h2>
           <div style={{ fontSize: 15, color: '#555', lineHeight: 1.8 }}>
-            <div>バージョン: 0.1.0</div>
+            <div>バージョン: 0.1.1</div>
             <div>MEORA — いつもそばに。僕と過ごすAI。</div>
           </div>
         </div>
@@ -318,7 +318,7 @@ export default function SettingsPage() {
         <div className="card" style={{ padding: '20px 16px' }}>
           <h2 style={{ margin: '0 0 12px', fontSize: 17, fontWeight: 800 }}>データ管理</h2>
           <p style={{ margin: '0 0 16px', fontSize: 15, color: '#555', lineHeight: 1.6 }}>
-            全てのデータをリセットしてオンボーディングからやり直します。
+            すべてのデータをリセットして最初から始めることができます。
           </p>
           <button
             onClick={handleReset}

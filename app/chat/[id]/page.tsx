@@ -167,6 +167,20 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         }, RESUME_WALK_DELAY);
         return;
       }
+      if (res.status === 503) {
+        const errMsg: ChatMessage = {
+          role: 'assistant',
+          content: 'ベータ版は終了しました。リリースをお待ちください。',
+          timestamp: Date.now(),
+        };
+        setMessages([...newMessages, errMsg]);
+        setLoading(false);
+        setThinkingState({ [id]: false });
+        resumeTimerRef.current = setTimeout(() => {
+          setFrozenState({ [id]: false });
+        }, RESUME_WALK_DELAY);
+        return;
+      }
       if (!res.ok) throw new Error(`API error: ${res.status}`);
       const data = await res.json();
       const replyText: string = data.text ?? '';

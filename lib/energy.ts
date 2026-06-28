@@ -2,7 +2,7 @@
 // MEORA メッセージ管理エンジン
 //
 // 月次制:
-//   無料: 約50通/月（繰越なし）
+//   無料: 約700通/月（ベータ期間中はスタンダードと同等）
 //   ライト: 約200通/月（680円）
 //   スタンダード: 約700通/月（1,480円）
 //   月次通数は翌月に繰り越さない
@@ -50,13 +50,13 @@ export const ENERGY_CONFIG = {
   usdPer1MOutputTokens: 4.5,
 
   monthlyLimits: {
-    free: 50,
+    free: 700,
     light: 200,
     standard: 700,
   },
 
   plans: {
-    free: { id: 'free' as PlanId, label: '無料プラン', priceYen: 0, monthlyLimit: 50 },
+    free: { id: 'free' as PlanId, label: '無料プラン', priceYen: 0, monthlyLimit: 700 },
     light: { id: 'light' as PlanId, label: 'ライトプラン', priceYen: 680, monthlyLimit: 200 },
     standard: { id: 'standard' as PlanId, label: 'スタンダードプラン', priceYen: 1480, monthlyLimit: 700 },
   } as Record<PlanId, { id: PlanId; label: string; priceYen: number; monthlyLimit: number }>,
